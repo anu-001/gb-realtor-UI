@@ -6,6 +6,7 @@ import { cn } from "@/utils/cn";
 
 export function TopNav() {
   const [open, setOpen] = useState(false);
+  const menuLabel = open ? "Close navigation menu" : "Open navigation menu";
 
   return (
     <header className="sticky top-0 z-40 border-b border-[var(--color-border)]/80 bg-[color-mix(in_srgb,var(--color-bg)_82%,white)]/90 backdrop-blur-xl">
@@ -51,8 +52,9 @@ export function TopNav() {
         <button
           type="button"
           className="ml-auto inline-flex h-10 w-10 items-center justify-center rounded-full border border-[var(--color-border)] bg-[var(--color-surface)] text-[var(--color-text-primary)] lg:hidden"
-          aria-label="Open navigation menu"
+          aria-label={menuLabel}
           aria-expanded={open}
+          aria-controls="mobile-navigation"
           onClick={() => setOpen((value) => !value)}
         >
           <Menu className="h-5 w-5" />
@@ -64,6 +66,7 @@ export function TopNav() {
               initial={{ opacity: 0, y: -8 }}
               animate={{ opacity: 1, y: 0, transition: { duration: 0.18 } }}
               exit={{ opacity: 0, y: -8, transition: { duration: 0.14 } }}
+              id="mobile-navigation"
               className="absolute left-4 right-4 top-[calc(100%+0.5rem)] z-50 rounded-card border border-[var(--color-border)] bg-[var(--color-surface)] p-3 shadow-modal lg:hidden"
             >
               <div className="grid gap-1">
