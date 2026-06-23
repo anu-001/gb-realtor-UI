@@ -1,8 +1,8 @@
-import { useEffect, useMemo, useState, type ReactNode } from "react";
-import { createSearchParams, Link } from "react-router-dom";
+import { useEffect, useState, type ReactNode } from "react";
+import { Link } from "react-router-dom";
 import { useQuery } from "@tanstack/react-query";
 import { motion } from "framer-motion";
-import { ArrowRight, Filter, MapPin, Search, Sparkles } from "lucide-react";
+import { ArrowRight, Filter, MapPin, Search } from "lucide-react";
 import { PropertyCard } from "@/components/property/PropertyCard";
 import { EmptyState } from "@/components/feedback/EmptyState";
 import { SkeletonLoader } from "@/components/feedback/SkeletonLoader";
@@ -64,19 +64,6 @@ function sanitizeAmount(value: string): number | undefined {
   return Number.isFinite(amount) ? amount : undefined;
 }
 
-function buildSearchHref(filters: HeroFilters): string {
-  const params = createSearchParams();
-
-  if (filters.keyword.trim()) params.set("q", filters.keyword.trim());
-  if (filters.location.trim()) params.set("location", filters.location.trim());
-  if (filters.listingType) params.set("listingType", filters.listingType);
-  if (filters.minPrice) params.set("minPrice", filters.minPrice.replace(/[^\d]/g, ""));
-  if (filters.maxPrice) params.set("maxPrice", filters.maxPrice.replace(/[^\d]/g, ""));
-  if (filters.beds) params.set("beds", filters.beds);
-
-  return `/search?${params.toString()}`;
-}
-
 function FilterField({ label, children }: { label: string; children: ReactNode }) {
   return (
     <label className="space-y-2">
@@ -128,7 +115,6 @@ export default function HomePage() {
     refetchOnWindowFocus: false,
   });
 
-  const searchHref = useMemo(() => buildSearchHref(filters), [filters]);
   const properties = listingsQuery.data?.data ?? [];
   const totalListings = listingsQuery.data?.meta.total ?? 0;
 
@@ -146,10 +132,6 @@ export default function HomePage() {
         <div className="relative app-container py-8 md:py-10">
           <div className="grid gap-8 lg:grid-cols-[minmax(0,1.05fr)_minmax(0,0.95fr)] lg:items-center">
             <div className="max-w-2xl space-y-6">
-              <div className="inline-flex items-center gap-2 rounded-full border border-white/12 bg-white/8 px-3 py-1.5 text-small font-medium text-white/78 backdrop-blur">
-                <Sparkles className="h-4 w-4 text-[var(--color-accent)]" />
-                Premium listings, direct enquiry, faster search
-              </div>
               <div className="space-y-4">
                 <h1 className="font-display text-[clamp(2.8rem,7vw,5rem)] font-bold leading-[0.96] tracking-[-0.04em]">
                   Find a refined home without the clutter.
@@ -180,9 +162,6 @@ export default function HomePage() {
                 <div>
                   <p className="text-small font-semibold uppercase tracking-[0.18em] text-[var(--color-text-secondary)]">
                     Search live
-                  </p>
-                  <p className="mt-1 text-body text-[var(--color-text-secondary)]">
-                    Keep the homepage results in sync while you refine the search.
                   </p>
                 </div>
                 <button
@@ -305,22 +284,14 @@ export default function HomePage() {
                 <p className="text-small text-[var(--color-text-secondary)]" aria-live="polite">
                   {listingsQuery.isLoading ? "Loading listings..." : `${totalListings} properties available`}
                 </p>
-                <div className="flex flex-wrap items-center gap-2">
-                  <Link
-                    to={searchHref}
-                    className="inline-flex h-11 items-center justify-center rounded-full border border-[var(--color-border)] px-4 text-sm font-medium text-[var(--color-text-primary)] transition hover:bg-[var(--color-surface-raised)]"
-                  >
-                    Open full search
-                  </Link>
-                  <button
-                    type="button"
-                    onClick={() => scrollTo("listings")}
-                    className="inline-flex h-11 items-center justify-center gap-2 rounded-full bg-[var(--color-accent)] px-4 text-sm font-medium text-white transition hover:bg-[var(--color-accent-hover)]"
-                  >
-                    View results
-                    <ArrowRight className="h-4 w-4" />
-                  </button>
-                </div>
+                <button
+                  type="button"
+                  onClick={() => scrollTo("listings")}
+                  className="inline-flex h-11 items-center justify-center gap-2 rounded-full bg-[var(--color-accent)] px-4 text-sm font-medium text-white transition hover:bg-[var(--color-accent-hover)]"
+                >
+                  View results
+                  <ArrowRight className="h-4 w-4" />
+                </button>
               </div>
             </div>
           </div>
@@ -400,44 +371,6 @@ export default function HomePage() {
         )}
       </motion.section>
 
-      <motion.section
-        {...slideUp}
-        id="lead-cta"
-        className="overflow-hidden rounded-[32px] border border-[var(--color-border)] bg-[linear-gradient(135deg,color-mix(in_srgb,var(--color-surface)_96%,white)_0%,var(--color-surface)_100%)] shadow-card"
-      >
-        <div className="app-container grid gap-6 py-8 lg:grid-cols-[minmax(0,1.2fr)_minmax(0,0.8fr)] lg:items-center">
-          <div className="space-y-3">
-            <p className="text-small font-semibold uppercase tracking-[0.2em] text-[var(--color-text-secondary)]">
-              Request a property
-            </p>
-            <h2 className="font-display text-h2 text-[var(--color-text-primary)]">Can’t find the right fit?</h2>
-            <p className="max-w-2xl text-body text-[var(--color-text-secondary)]">
-              Tell us what you need and we’ll help turn it into a lead. It’s a direct path when the live inventory is not enough.
-            </p>
-          </div>
-
-          <div className="flex flex-col gap-3 rounded-[24px] border border-[var(--color-border)] bg-[var(--color-surface)] p-5">
-            <p className="text-body text-[var(--color-text-secondary)]">
-              Share your brief, browse again, or contact the team when you are ready to move forward.
-            </p>
-            <div className="flex flex-wrap gap-3">
-              <button
-                type="button"
-                onClick={() => scrollTo("listings")}
-                className="inline-flex h-11 items-center justify-center rounded-full border border-[var(--color-border)] bg-[var(--color-surface)] px-4 text-sm font-medium text-[var(--color-text-primary)] transition hover:bg-[var(--color-surface-raised)]"
-              >
-                Browse listings
-              </button>
-              <Link
-                to="/request-property"
-                className="inline-flex h-11 items-center justify-center rounded-full bg-[var(--color-accent)] px-4 text-sm font-medium text-white transition hover:bg-[var(--color-accent-hover)]"
-              >
-                Contact team
-              </Link>
-            </div>
-          </div>
-        </div>
-      </motion.section>
     </div>
   );
 }
