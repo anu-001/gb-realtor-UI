@@ -2,6 +2,7 @@ import type { ReactNode } from "react";
 import { Navigate, Outlet, useLocation } from "react-router-dom";
 import { useAppSelector } from "@/store/hooks";
 import { UserRole } from "@/constants/api-enums";
+import { resolveAgentRole } from "@/utils/agent-access";
 
 type ProtectedRouteProps = {
   children?: ReactNode;
@@ -23,7 +24,7 @@ function LoadingState() {
 export function ProtectedRoute({ children, requiredRole, allowedRoles }: ProtectedRouteProps) {
   const location = useLocation();
   const auth = useAppSelector((state) => state.auth);
-  const resolvedRole = auth.user?.role ?? auth.user?.roles?.[0]?.code ?? null;
+  const resolvedRole = resolveAgentRole(auth.user?.role ?? auth.user?.roles?.[0]?.code ?? null);
 
   if (auth.isInitializing) {
     return <LoadingState />;

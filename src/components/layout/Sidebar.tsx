@@ -16,6 +16,7 @@ import { closeModal, setSidebarOpen } from "@/store/slices/uiSlice";
 import { UserRole } from "@/constants/api-enums";
 import { cn } from "@/utils/cn";
 import { BrandMark } from "@/components/layout/BrandMark";
+import { resolveAgentRole } from "@/utils/agent-access";
 
 type NavItem = {
   label: string;
@@ -48,7 +49,7 @@ export function Sidebar() {
   const navigate = useNavigate();
   const sidebarOpen = useAppSelector((state) => state.ui.sidebarOpen);
   const user = useAppSelector((state) => state.auth.user);
-  const role = user?.role ?? user?.roles?.[0]?.code ?? UserRole.PropertyManager;
+  const role = resolveAgentRole(user?.role ?? user?.roles?.[0]?.code ?? UserRole.PropertyManager) ?? UserRole.PropertyManager;
 
   const items = useMemo(
     () => navigation.filter((item) => !item.roles || item.roles.includes(role as UserRole)),

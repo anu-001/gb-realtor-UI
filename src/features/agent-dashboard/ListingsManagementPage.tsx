@@ -11,7 +11,7 @@ import { StatCard } from "@/components/data-display/StatCard";
 import { PropertyStatus } from "@/constants/api-enums";
 import { useAppSelector } from "@/store";
 import { cn } from "@/utils/cn";
-import { canArchiveListing, canCreateListing, canEditListing, canManageFeaturedListing, canPublishListing } from "@/utils/agent-access";
+import { canArchiveListing, canCreateListing, canEditListing, canManageFeaturedListing, canPublishListing, resolveAgentRole } from "@/utils/agent-access";
 
 type Filters = {
   search: string;
@@ -52,7 +52,7 @@ export default function ListingsManagementPage() {
   const queryClient = useQueryClient();
   const [filters, setFilters] = useState<Filters>(initialFilters);
   const debounced = useDebouncedValue(filters.search, 300);
-  const role = useAppSelector((state) => state.auth.user?.role ?? state.auth.user?.roles?.[0]?.code ?? null);
+  const role = resolveAgentRole(useAppSelector((state) => state.auth.user?.role ?? state.auth.user?.roles?.[0]?.code ?? null)) ?? null;
 
   const propertiesQuery = useQuery({
     queryKey: ["agent-properties", { ...filters, search: debounced }],

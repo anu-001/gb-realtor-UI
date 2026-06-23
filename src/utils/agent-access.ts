@@ -4,7 +4,7 @@ const elevatedRoles = [UserRole.PropertyManager, UserRole.ContentEditor, UserRol
 const publishRoles = [UserRole.PropertyManager, UserRole.SuperAdmin] as const;
 const leadRoles = [UserRole.SupportAgent, UserRole.PropertyManager, UserRole.SuperAdmin] as const;
 
-function normalizeRole(role?: string | null): string | null {
+export function resolveAgentRole(role?: string | null): string | null {
   if (!role) return null;
 
   const compact = role.replace(/[\s_-]+/g, "").toLowerCase();
@@ -27,7 +27,7 @@ function normalizeRole(role?: string | null): string | null {
 }
 
 export function canCreateListing(role?: string | null): boolean {
-  const resolved = normalizeRole(role);
+  const resolved = resolveAgentRole(role);
   return Boolean(resolved && elevatedRoles.includes(resolved as (typeof elevatedRoles)[number]));
 }
 
@@ -36,7 +36,7 @@ export function canEditListing(role?: string | null): boolean {
 }
 
 export function canPublishListing(role?: string | null): boolean {
-  const resolved = normalizeRole(role);
+  const resolved = resolveAgentRole(role);
   return Boolean(resolved && publishRoles.includes(resolved as (typeof publishRoles)[number]));
 }
 
@@ -49,15 +49,15 @@ export function canManageFeaturedListing(role?: string | null): boolean {
 }
 
 export function canViewLeads(role?: string | null): boolean {
-  const resolved = normalizeRole(role);
+  const resolved = resolveAgentRole(role);
   return Boolean(resolved && leadRoles.includes(resolved as (typeof leadRoles)[number]));
 }
 
 export function canViewAnalytics(role?: string | null): boolean {
-  const resolved = normalizeRole(role);
+  const resolved = resolveAgentRole(role);
   return resolved === UserRole.Analyst || resolved === UserRole.SuperAdmin || resolved === UserRole.PropertyManager;
 }
 
 export function canManageTeam(role?: string | null): boolean {
-  return normalizeRole(role) === UserRole.SuperAdmin;
+  return resolveAgentRole(role) === UserRole.SuperAdmin;
 }

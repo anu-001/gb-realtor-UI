@@ -6,7 +6,7 @@ import { StatCard } from "@/components/data-display/StatCard";
 import { SkeletonLoader } from "@/components/feedback/SkeletonLoader";
 import { EmptyState } from "@/components/feedback/EmptyState";
 import { useAppSelector } from "@/store";
-import { canCreateListing, canViewLeads } from "@/utils/agent-access";
+import { canCreateListing, canViewLeads, resolveAgentRole } from "@/utils/agent-access";
 
 function asRecord(value: unknown): Record<string, unknown> {
   return value && typeof value === "object" ? (value as Record<string, unknown>) : {};
@@ -56,7 +56,7 @@ function getPerformanceRows(value: unknown): Array<{ label: string; value: strin
 }
 
 export default function AgentOverviewPage() {
-  const role = useAppSelector((state) => state.auth.user?.role ?? state.auth.user?.roles?.[0]?.code ?? "PropertyManager");
+  const role = resolveAgentRole(useAppSelector((state) => state.auth.user?.role ?? state.auth.user?.roles?.[0]?.code ?? "PropertyManager")) ?? "PropertyManager";
   const dashboardQuery = useQuery({
     queryKey: ["analytics-dashboard"],
     queryFn: () => getAnalyticsDashboard(),

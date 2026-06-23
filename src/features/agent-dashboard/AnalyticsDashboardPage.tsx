@@ -23,6 +23,7 @@ import { SkeletonLoader } from "@/components/feedback/SkeletonLoader";
 import { EmptyState } from "@/components/feedback/EmptyState";
 import { useAppSelector } from "@/store";
 import { UserRole } from "@/constants/api-enums";
+import { resolveAgentRole } from "@/utils/agent-access";
 
 const colors = ["#2563EB", "#6CABDD", "#16A34A", "#F59E0B", "#DC2626"];
 
@@ -35,7 +36,7 @@ function toNumericData(value: unknown) {
 
 export default function AnalyticsDashboardPage() {
   const auth = useAppSelector((state) => state.auth);
-  const role = auth.user?.role ?? auth.user?.roles?.[0]?.code ?? "PropertyManager";
+  const role = resolveAgentRole(auth.user?.role ?? auth.user?.roles?.[0]?.code ?? "PropertyManager") ?? "PropertyManager";
   const canViewAnalytics = role === UserRole.Analyst || role === UserRole.SuperAdmin || role === "PropertyManager";
   const [range, setRange] = useState<"7d" | "30d" | "90d" | "custom">("30d");
   const query = useQuery({
