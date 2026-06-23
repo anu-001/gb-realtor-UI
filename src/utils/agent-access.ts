@@ -1,8 +1,15 @@
 import { UserRole } from "@/constants/api-enums";
 
-const elevatedRoles = [UserRole.PropertyManager, UserRole.ContentEditor, UserRole.SuperAdmin] as const;
-const publishRoles = [UserRole.PropertyManager, UserRole.SuperAdmin] as const;
-const leadRoles = [UserRole.SupportAgent, UserRole.PropertyManager, UserRole.SuperAdmin] as const;
+const dashboardRoles = [UserRole.SuperAdmin, UserRole.PropertyManager, UserRole.Analyst] as const;
+const propertyViewRoles = [UserRole.SuperAdmin, UserRole.PropertyManager, UserRole.ContentEditor, UserRole.Analyst, UserRole.SupportAgent] as const;
+const propertyCreateRoles = [UserRole.SuperAdmin, UserRole.PropertyManager] as const;
+const propertyEditRoles = [UserRole.SuperAdmin, UserRole.PropertyManager, UserRole.ContentEditor] as const;
+const propertyPublishRoles = [UserRole.SuperAdmin, UserRole.PropertyManager, UserRole.ContentEditor] as const;
+const propertyArchiveRoles = [UserRole.SuperAdmin, UserRole.PropertyManager] as const;
+const leadViewRoles = [UserRole.SuperAdmin, UserRole.PropertyManager, UserRole.SupportAgent, UserRole.Analyst] as const;
+const leadManageRoles = [UserRole.SuperAdmin, UserRole.PropertyManager, UserRole.SupportAgent] as const;
+const analyticsRoles = [UserRole.SuperAdmin, UserRole.Analyst] as const;
+const featuredRoles = [UserRole.SuperAdmin, UserRole.PropertyManager, UserRole.ContentEditor] as const;
 
 export function resolveAgentRole(role?: string | null): string | null {
   if (!role) return null;
@@ -54,34 +61,52 @@ export function resolveAgentRole(role?: string | null): string | null {
 
 export function canCreateListing(role?: string | null): boolean {
   const resolved = resolveAgentRole(role);
-  return Boolean(resolved && elevatedRoles.includes(resolved as (typeof elevatedRoles)[number]));
+  return Boolean(resolved && propertyCreateRoles.includes(resolved as (typeof propertyCreateRoles)[number]));
 }
 
 export function canEditListing(role?: string | null): boolean {
-  return canCreateListing(role);
+  const resolved = resolveAgentRole(role);
+  return Boolean(resolved && propertyEditRoles.includes(resolved as (typeof propertyEditRoles)[number]));
 }
 
 export function canPublishListing(role?: string | null): boolean {
   const resolved = resolveAgentRole(role);
-  return Boolean(resolved && publishRoles.includes(resolved as (typeof publishRoles)[number]));
+  return Boolean(resolved && propertyPublishRoles.includes(resolved as (typeof propertyPublishRoles)[number]));
 }
 
 export function canArchiveListing(role?: string | null): boolean {
-  return canPublishListing(role);
+  const resolved = resolveAgentRole(role);
+  return Boolean(resolved && propertyArchiveRoles.includes(resolved as (typeof propertyArchiveRoles)[number]));
 }
 
 export function canManageFeaturedListing(role?: string | null): boolean {
-  return canPublishListing(role);
+  const resolved = resolveAgentRole(role);
+  return Boolean(resolved && featuredRoles.includes(resolved as (typeof featuredRoles)[number]));
 }
 
 export function canViewLeads(role?: string | null): boolean {
   const resolved = resolveAgentRole(role);
-  return Boolean(resolved && leadRoles.includes(resolved as (typeof leadRoles)[number]));
+  return Boolean(resolved && leadViewRoles.includes(resolved as (typeof leadViewRoles)[number]));
+}
+
+export function canManageLeadActions(role?: string | null): boolean {
+  const resolved = resolveAgentRole(role);
+  return Boolean(resolved && leadManageRoles.includes(resolved as (typeof leadManageRoles)[number]));
 }
 
 export function canViewAnalytics(role?: string | null): boolean {
   const resolved = resolveAgentRole(role);
-  return resolved === UserRole.Analyst || resolved === UserRole.SuperAdmin || resolved === UserRole.PropertyManager;
+  return Boolean(resolved && analyticsRoles.includes(resolved as (typeof analyticsRoles)[number]));
+}
+
+export function canViewDashboard(role?: string | null): boolean {
+  const resolved = resolveAgentRole(role);
+  return Boolean(resolved && dashboardRoles.includes(resolved as (typeof dashboardRoles)[number]));
+}
+
+export function canViewProperties(role?: string | null): boolean {
+  const resolved = resolveAgentRole(role);
+  return Boolean(resolved && propertyViewRoles.includes(resolved as (typeof propertyViewRoles)[number]));
 }
 
 export function canManageTeam(role?: string | null): boolean {

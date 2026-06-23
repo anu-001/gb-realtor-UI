@@ -21,12 +21,14 @@ export function AgentLayout({ children }: AgentLayoutProps) {
     location.pathname === "/agent"
       ? "Overview"
       : location.pathname.includes("/listings")
-        ? "Listings"
-        : location.pathname.includes("/leads")
+        ? "Properties"
+      : location.pathname.includes("/leads")
           ? "Leads"
           : location.pathname.includes("/analytics")
             ? "Analytics"
-            : location.pathname.includes("/team")
+            : location.pathname.includes("/audit-logs")
+              ? "Audit logs"
+          : location.pathname.includes("/team")
               ? "Team"
               : "Workspace";
 

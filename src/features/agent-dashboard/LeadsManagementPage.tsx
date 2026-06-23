@@ -6,6 +6,8 @@ import { LeadDetailDrawer } from "./components/LeadDetailDrawer";
 import { EmptyState } from "@/components/feedback/EmptyState";
 import { SkeletonLoader } from "@/components/feedback/SkeletonLoader";
 import { StatusBadge } from "@/components/property/StatusBadge";
+import { useAppSelector } from "@/store";
+import { canManageLeadActions, canViewLeads, resolveAgentRole } from "@/utils/agent-access";
 
 type LeadFilters = {
   status: string;
@@ -25,6 +27,9 @@ function useDebouncedValue<T>(value: T, delay = 300): T {
 }
 
 export default function LeadsManagementPage() {
+  const role = resolveAgentRole(useAppSelector((state) => state.auth.user?.role ?? state.auth.user?.roles?.[0]?.code ?? null));
+  const canView = canViewLeads(role);
+  const canManage = canManageLeadActions(role);
   const [filters, setFilters] = useState<LeadFilters>({ status: "", search: "", assignee: "" });
   const [selectedLeadId, setSelectedLeadId] = useState<string | null>(null);
   const debouncedSearch = useDebouncedValue(filters.search, 300);
@@ -38,12 +43,22 @@ export default function LeadsManagementPage() {
         assigneeId: filters.assignee || undefined,
       }),
     retry: 1,
+    enabled: canView,
     placeholderData: (previous) => previous,
   });
 
   const leads = leadsQuery.data?.data ?? [];
   const leadsMeta = leadsQuery.data?.meta as { total?: number } | undefined;
   const selectedLead = leads.find((lead) => lead.id === selectedLeadId) ?? null;
+
+  if (!canView) {
+    return (
+      <EmptyState
+        heading="Access denied"
+        message="Your role does not allow viewing the leads inbox."
+      />
+    );
+  }
 
   return (
     <div className="space-y-6">
@@ -147,6 +162,7 @@ export default function LeadsManagementPage() {
         lead={selectedLead}
         open={Boolean(selectedLead)}
         onClose={() => setSelectedLeadId(null)}
+        readOnly={!canManage}
       />
     </div>
   );

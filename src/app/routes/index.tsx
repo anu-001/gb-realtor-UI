@@ -31,6 +31,7 @@ const EditListingPage = lazy(() => import("@/features/agent-dashboard/EditListin
 const LeadsManagementPage = lazy(() => import("@/features/agent-dashboard/LeadsManagementPage"));
 const AnalyticsDashboardPage = lazy(() => import("@/features/agent-dashboard/AnalyticsDashboardPage"));
 const TeamManagementPage = lazy(() => import("@/features/agent-dashboard/TeamManagementPage"));
+const AuditLogsPage = lazy(() => import("@/features/agent-dashboard/AuditLogsPage"));
 const NotFoundPage = lazy(() => import("@/features/public/NotFoundPage"));
 
 function LoadingFallback() {
@@ -97,7 +98,7 @@ const router = createBrowserRouter([
       {
         path: "listings/new",
         element: (
-          <ProtectedRoute allowedRoles={[UserRole.PropertyManager, UserRole.ContentEditor, UserRole.SuperAdmin]}>
+          <ProtectedRoute allowedRoles={[UserRole.PropertyManager, UserRole.SuperAdmin]}>
             <AddListingPage />
           </ProtectedRoute>
         ),
@@ -110,8 +111,30 @@ const router = createBrowserRouter([
           </ProtectedRoute>
         ),
       },
-      { path: "leads", element: <LeadsManagementPage /> },
-      { path: "analytics", element: <AnalyticsDashboardPage /> },
+      {
+        path: "leads",
+        element: (
+          <ProtectedRoute allowedRoles={[UserRole.PropertyManager, UserRole.SupportAgent, UserRole.Analyst, UserRole.SuperAdmin]}>
+            <LeadsManagementPage />
+          </ProtectedRoute>
+        ),
+      },
+      {
+        path: "analytics",
+        element: (
+          <ProtectedRoute allowedRoles={[UserRole.Analyst, UserRole.SuperAdmin]}>
+            <AnalyticsDashboardPage />
+          </ProtectedRoute>
+        ),
+      },
+      {
+        path: "audit-logs",
+        element: (
+          <ProtectedRoute requiredRole="SuperAdmin">
+            <AuditLogsPage />
+          </ProtectedRoute>
+        ),
+      },
       {
         path: "team",
         element: (

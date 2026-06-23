@@ -1,13 +1,13 @@
 import { useQuery } from "@tanstack/react-query";
 import { Link } from "react-router-dom";
-import { ArrowRight, Bell, BookOpen, Building2, Compass, FolderOpen, LayoutDashboard, Plus, Users } from "lucide-react";
-import { getAnalyticsDashboard } from "@/services/analytics.service";
+import { ArrowRight, Bell, BookOpen, Building2, Compass, FolderOpen, LayoutDashboard, Plus, ScrollText, Users } from "lucide-react";
+import { getAnalyticsDashboard, getAnalyticsSummary } from "@/services/analytics.service";
 import { listAuditLogs } from "@/services/users.service";
 import { StatCard } from "@/components/data-display/StatCard";
 import { SkeletonLoader } from "@/components/feedback/SkeletonLoader";
 import { EmptyState } from "@/components/feedback/EmptyState";
 import { useAppSelector } from "@/store";
-import { canCreateListing, canManageTeam, canViewAnalytics, canViewLeads, resolveAgentRole } from "@/utils/agent-access";
+import { canCreateListing, canManageTeam, canViewAnalytics, canViewDashboard, canViewLeads, resolveAgentRole } from "@/utils/agent-access";
 
 function asRecord(value: unknown): Record<string, unknown> {
   return value && typeof value === "object" ? (value as Record<string, unknown>) : {};
@@ -93,11 +93,13 @@ function getAuditTarget(entry: unknown): string | null {
 
 export default function AgentOverviewPage() {
   const role = resolveAgentRole(useAppSelector((state) => state.auth.user?.role ?? state.auth.user?.roles?.[0]?.code ?? "PropertyManager")) ?? "PropertyManager";
+  const canViewOverview = canViewDashboard(role);
   const dashboardQuery = useQuery({
-    queryKey: ["analytics-dashboard"],
-    queryFn: () => getAnalyticsDashboard(),
+    queryKey: ["analytics-dashboard", role],
+    queryFn: () => (role === "Analyst" || role === "SuperAdmin" ? getAnalyticsDashboard() : getAnalyticsSummary()),
     staleTime: 300_000,
     retry: 1,
+    enabled: canViewOverview,
   });
 
   const auditQuery = useQuery({
@@ -146,6 +148,13 @@ export default function AgentOverviewPage() {
       visible: canSeeTeam,
     },
     {
+      label: "Audit logs",
+      description: "Review key administrative changes and user actions.",
+      to: "/agent/audit-logs",
+      icon: ScrollText,
+      visible: canSeeTeam,
+    },
+    {
       label: "Public search",
       description: "See the visitor-facing catalog exactly as prospects do.",
       to: "/search",
@@ -164,6 +173,23 @@ export default function AgentOverviewPage() {
         </div>
         <SkeletonLoader height="240px" />
       </div>
+    );
+  }
+
+  if (!canViewOverview) {
+    return (
+      <EmptyState
+        heading="Access denied"
+        message="Your role does not include dashboard access."
+        action={
+          <Link
+            to={canViewLeadQueue ? "/agent/leads" : "/agent/listings"}
+            className="inline-flex h-11 items-center justify-center rounded-input bg-[var(--color-accent)] px-4 text-sm font-medium text-white"
+          >
+            Go to your workspace
+          </Link>
+        }
+      />
     );
   }
 

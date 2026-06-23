@@ -11,7 +11,7 @@ import { StatCard } from "@/components/data-display/StatCard";
 import { PropertyStatus } from "@/constants/api-enums";
 import { useAppSelector } from "@/store";
 import { cn } from "@/utils/cn";
-import { canArchiveListing, canCreateListing, canEditListing, canManageFeaturedListing, canPublishListing, resolveAgentRole } from "@/utils/agent-access";
+import { canArchiveListing, canCreateListing, canEditListing, canManageFeaturedListing, canPublishListing, canViewProperties, resolveAgentRole } from "@/utils/agent-access";
 
 type Filters = {
   search: string;
@@ -53,6 +53,7 @@ export default function ListingsManagementPage() {
   const [filters, setFilters] = useState<Filters>(initialFilters);
   const debounced = useDebouncedValue(filters.search, 300);
   const role = resolveAgentRole(useAppSelector((state) => state.auth.user?.role ?? state.auth.user?.roles?.[0]?.code ?? null)) ?? null;
+  const canView = canViewProperties(role);
 
   const propertiesQuery = useQuery({
     queryKey: ["agent-properties", { ...filters, search: debounced }],
@@ -68,6 +69,7 @@ export default function ListingsManagementPage() {
       }),
     placeholderData: (previous) => previous,
     retry: 1,
+    enabled: canView,
   });
 
   const featuredQuery = useQuery({
@@ -135,6 +137,15 @@ export default function ListingsManagementPage() {
   };
 
   const totalPages = meta?.totalPages ?? 1;
+
+  if (!canView) {
+    return (
+      <EmptyState
+        heading="Access denied"
+        message="Your role does not allow viewing properties."
+      />
+    );
+  }
 
   return (
     <div className="space-y-6">

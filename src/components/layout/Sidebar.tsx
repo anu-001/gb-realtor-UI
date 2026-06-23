@@ -8,6 +8,7 @@ import {
   ChevronRight,
   LayoutDashboard,
   LogOut,
+  ScrollText,
   Users,
 } from "lucide-react";
 import { useAppDispatch, useAppSelector } from "@/store";
@@ -27,10 +28,11 @@ type NavItem = {
 };
 
 const navigation: NavItem[] = [
-  { label: "Overview", to: "/agent", icon: LayoutDashboard, exact: true },
-  { label: "Listings", to: "/agent/listings", icon: Building2, roles: [UserRole.PropertyManager, UserRole.ContentEditor, UserRole.SuperAdmin] },
-  { label: "Leads", to: "/agent/leads", icon: Bell, roles: [UserRole.SupportAgent, UserRole.PropertyManager, UserRole.SuperAdmin] },
+  { label: "Dashboard", to: "/agent", icon: LayoutDashboard, exact: true, roles: [UserRole.SuperAdmin, UserRole.PropertyManager, UserRole.Analyst] },
+  { label: "Properties", to: "/agent/listings", icon: Building2, roles: [UserRole.SupportAgent, UserRole.PropertyManager, UserRole.ContentEditor, UserRole.Analyst, UserRole.SuperAdmin] },
+  { label: "Leads", to: "/agent/leads", icon: Bell, roles: [UserRole.SupportAgent, UserRole.PropertyManager, UserRole.Analyst, UserRole.SuperAdmin] },
   { label: "Analytics", to: "/agent/analytics", icon: BarChart3, roles: [UserRole.Analyst, UserRole.SuperAdmin] },
+  { label: "Audit Logs", to: "/agent/audit-logs", icon: ScrollText, roles: [UserRole.SuperAdmin] },
   { label: "Team", to: "/agent/team", icon: Users, roles: [UserRole.SuperAdmin] },
 ];
 
