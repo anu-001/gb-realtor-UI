@@ -1,14 +1,17 @@
-import { useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { useParams } from "react-router-dom";
 import { useForm } from "react-hook-form";
 import { z } from "zod";
 import { zodResolver } from "@hookform/resolvers/zod";
+import { motion } from "framer-motion";
 import { getPublicPropertyById } from "@/services/properties.service";
 import { createPublicLead } from "@/services/leads.service";
+import { RichTextContent } from "@/components/data-display/RichTextContent";
 import { StatusBadge } from "@/components/property/StatusBadge";
 import { SkeletonLoader } from "@/components/feedback/SkeletonLoader";
 import NotFoundPage from "@/features/public/NotFoundPage";
+import { htmlTextLength } from "@/utils/html-text-length";
 
 const leadSchema = z.object({
   fullName: z.string().min(1, "Full name is required"),
@@ -18,6 +21,83 @@ const leadSchema = z.object({
 });
 
 type LeadValues = z.infer<typeof leadSchema>;
+const COLLAPSED_DESCRIPTION_HEIGHT = 240;
+
+function PropertyDescription({ description }: { description?: string | null }) {
+  const content = description ?? "";
+  const [expanded, setExpanded] = useState(false);
+  const [contentHeight, setContentHeight] = useState(COLLAPSED_DESCRIPTION_HEIGHT);
+  const contentRef = useRef<HTMLDivElement | null>(null);
+  const textLength = htmlTextLength(content);
+  const hasContent = textLength > 0;
+
+  useEffect(() => {
+    const element = contentRef.current;
+    if (!element || !hasContent) {
+      return undefined;
+    }
+
+    const measure = () => {
+      setContentHeight(element.scrollHeight);
+    };
+
+    measure();
+
+    if (typeof ResizeObserver === "undefined") {
+      return undefined;
+    }
+
+    const observer = new ResizeObserver(() => {
+      measure();
+    });
+    observer.observe(element);
+
+    return () => {
+      observer.disconnect();
+    };
+  }, [content, hasContent]);
+
+  if (!hasContent) {
+    return (
+      <div className="mt-4 text-body text-[var(--color-text-muted)]">
+        No description provided
+      </div>
+    );
+  }
+
+  const isCollapsed = !expanded && contentHeight > COLLAPSED_DESCRIPTION_HEIGHT;
+  const displayHeight = isCollapsed ? COLLAPSED_DESCRIPTION_HEIGHT : contentHeight;
+
+  return (
+    <div className="mt-4">
+      <div className="relative">
+        <motion.div
+          initial={false}
+          animate={{ height: displayHeight }}
+          transition={{ duration: 0.25, ease: "easeOut" }}
+          style={{ overflow: "hidden", maxHeight: displayHeight }}
+        >
+          <div ref={contentRef}>
+            <RichTextContent html={content} className="property-description" />
+          </div>
+        </motion.div>
+        {isCollapsed ? (
+          <div className="pointer-events-none absolute inset-x-0 bottom-0 h-24 bg-gradient-to-t from-[var(--color-surface)] to-transparent" />
+        ) : null}
+      </div>
+      {contentHeight > COLLAPSED_DESCRIPTION_HEIGHT ? (
+        <button
+          type="button"
+          onClick={() => setExpanded((value) => !value)}
+          className="mt-3 text-sm font-semibold text-[var(--color-accent)]"
+          aria-expanded={expanded}
+        >
+          {expanded ? "Show less" : "Show more"}
+        </button>
+      ) : null}
+    </div>
+  );
+}
 
 function LeadForm({ propertyId, preferredLocation }: { propertyId: string; preferredLocation?: string }) {
   const [submitted, setSubmitted] = useState(false);
@@ -131,7 +211,7 @@ export default function PropertyDetailPage() {
           <p className="mt-2 text-body-lg text-[var(--color-text-secondary)]">
             {property.area}, {property.city}, {property.state}
           </p>
-          <p className="mt-4 text-body">{property.description}</p>
+          <PropertyDescription description={property.description} />
         </div>
       </div>
       <div className="space-y-4">

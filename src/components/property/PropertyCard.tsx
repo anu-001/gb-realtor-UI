@@ -5,6 +5,7 @@ import { motion } from "framer-motion";
 import type { components } from "@/types/api.generated";
 import { StatusBadge } from "./StatusBadge";
 import { cn } from "@/utils/cn";
+import { InquiryModal } from "./InquiryModal";
 
 type PropertyCardProps = {
   property: components["schemas"]["PublicPropertyResponseDto"];
@@ -38,6 +39,7 @@ function toLabel(value: unknown): string {
 
 export function PropertyCard({ property, showEnquiry = false, variant = "grid", className }: PropertyCardProps) {
   const [favorite, setFavorite] = useState(false);
+  const [inquiryOpen, setInquiryOpen] = useState(false);
   const image = property.thumbnails?.[0];
 
   return (
@@ -123,6 +125,7 @@ export function PropertyCard({ property, showEnquiry = false, variant = "grid", 
           <div className="mt-auto flex gap-3">
             <button
               type="button"
+              onClick={() => setInquiryOpen(true)}
               className="inline-flex h-11 flex-1 items-center justify-center rounded-input bg-[var(--color-accent)] px-4 text-sm font-medium text-white transition hover:bg-[var(--color-accent-hover)]"
             >
               Enquire
@@ -136,6 +139,15 @@ export function PropertyCard({ property, showEnquiry = false, variant = "grid", 
           </div>
         ) : null}
       </div>
+      {showEnquiry ? (
+        <InquiryModal
+          open={inquiryOpen}
+          onOpenChange={setInquiryOpen}
+          propertyId={property.id}
+          propertyTitle={property.title}
+          preferredLocation={`${property.area}, ${property.city}`}
+        />
+      ) : null}
     </motion.article>
   );
 }

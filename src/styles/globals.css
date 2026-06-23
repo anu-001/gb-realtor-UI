@@ -1,4 +1,5 @@
 @import "tailwindcss";
+@import "./rich-text.css";
 
 @source "../index.html";
 @source "../src/**/*.{ts,tsx}";
@@ -60,8 +61,12 @@
   --space-64: 64px;
   --space-96: 96px;
   --radius-input: 12px;
+  --radius-sm: 8px;
   --radius-card: 16px;
   --radius-modal: 20px;
+  --color-surface-raised: color-mix(in srgb, var(--color-surface) 94%, var(--color-border));
+  --color-accent-subtle: color-mix(in srgb, var(--color-accent) 12%, var(--color-surface));
+  --color-text-muted: var(--color-text-secondary);
   --shadow-card: 0 1px 3px rgba(15, 23, 42, 0.08), 0 4px 16px rgba(15, 23, 42, 0.06);
   --shadow-card-hover: 0 4px 12px rgba(15, 23, 42, 0.12), 0 16px 40px rgba(15, 23, 42, 0.1);
   --shadow-modal: 0 20px 60px rgba(15, 23, 42, 0.2);
@@ -75,6 +80,9 @@
   --color-border: #1e293b;
   --color-text-primary: #f1f5f9;
   --color-text-secondary: #94a3b8;
+  --color-surface-raised: color-mix(in srgb, var(--color-surface) 94%, var(--color-border));
+  --color-accent-subtle: color-mix(in srgb, var(--color-accent) 12%, var(--color-surface));
+  --color-text-muted: var(--color-text-secondary);
 }
 
 *,

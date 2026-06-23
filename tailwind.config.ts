@@ -31,6 +31,7 @@ export default {
         "space-96": "var(--space-96)",
       },
       borderRadius: {
+        sm: "var(--radius-sm)",
         input: "12px",
         card: "16px",
         modal: "20px",
@@ -50,9 +51,12 @@ export default {
         danger: "#DC2626",
         bg: "#F8FAFC",
         surface: "#FFFFFF",
+        "surface-raised": "var(--color-surface-raised)",
         border: "#E2E8F0",
         "text-primary": "#0F172A",
         "text-secondary": "#64748B",
+        "text-muted": "var(--color-text-muted)",
+        "accent-subtle": "var(--color-accent-subtle)",
       },
       maxWidth: {
         layout: "1440px",
