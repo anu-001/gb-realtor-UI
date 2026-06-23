@@ -31,6 +31,10 @@ const EditListingPage = lazy(() => import("@/features/agent-dashboard/EditListin
 const LeadsManagementPage = lazy(() => import("@/features/agent-dashboard/LeadsManagementPage"));
 const AnalyticsDashboardPage = lazy(() => import("@/features/agent-dashboard/AnalyticsDashboardPage"));
 const TeamManagementPage = lazy(() => import("@/features/agent-dashboard/TeamManagementPage"));
+const AuditLogsPage = lazy(() => import("@/features/agent-dashboard/AuditLogsPage"));
+const RolesPermissionsPage = lazy(() => import("@/features/agent-dashboard/RolesPermissionsPage"));
+const FeaturedPropertiesPage = lazy(() => import("@/features/agent-dashboard/FeaturedPropertiesPage"));
+const PropertyMediaPage = lazy(() => import("@/features/agent-dashboard/PropertyMediaPage"));
 const NotFoundPage = lazy(() => import("@/features/public/NotFoundPage"));
 
 function LoadingFallback() {
@@ -97,7 +101,7 @@ const router = createBrowserRouter([
       {
         path: "listings/new",
         element: (
-          <ProtectedRoute allowedRoles={[UserRole.PropertyManager, UserRole.ContentEditor, UserRole.SuperAdmin]}>
+          <ProtectedRoute allowedRoles={[UserRole.PropertyManager, UserRole.SuperAdmin]}>
             <AddListingPage />
           </ProtectedRoute>
         ),
@@ -110,8 +114,62 @@ const router = createBrowserRouter([
           </ProtectedRoute>
         ),
       },
-      { path: "leads", element: <LeadsManagementPage /> },
-      { path: "analytics", element: <AnalyticsDashboardPage /> },
+      {
+        path: "leads",
+        element: (
+          <ProtectedRoute allowedRoles={[UserRole.PropertyManager, UserRole.SupportAgent, UserRole.Analyst, UserRole.SuperAdmin]}>
+            <LeadsManagementPage />
+          </ProtectedRoute>
+        ),
+      },
+      {
+        path: "analytics",
+        element: (
+          <ProtectedRoute allowedRoles={[UserRole.Analyst, UserRole.SuperAdmin]}>
+            <AnalyticsDashboardPage />
+          </ProtectedRoute>
+        ),
+      },
+      {
+        path: "featured-properties",
+        element: (
+          <ProtectedRoute allowedRoles={[UserRole.PropertyManager, UserRole.ContentEditor, UserRole.SuperAdmin]}>
+            <FeaturedPropertiesPage />
+          </ProtectedRoute>
+        ),
+      },
+      {
+        path: "property-media",
+        element: (
+          <ProtectedRoute allowedRoles={[UserRole.PropertyManager, UserRole.ContentEditor, UserRole.SuperAdmin]}>
+            <PropertyMediaPage />
+          </ProtectedRoute>
+        ),
+      },
+      {
+        path: "users",
+        element: (
+          <ProtectedRoute requiredRole="SuperAdmin">
+            <TeamManagementPage />
+          </ProtectedRoute>
+        ),
+      },
+      {
+        path: "roles-permissions",
+        element: (
+          <ProtectedRoute requiredRole="SuperAdmin">
+            <RolesPermissionsPage />
+          </ProtectedRoute>
+        ),
+      },
+      {
+        path: "audit-logs",
+        element: (
+          <ProtectedRoute requiredRole="SuperAdmin">
+            <AuditLogsPage />
+          </ProtectedRoute>
+        ),
+      },
       {
         path: "team",
         element: (

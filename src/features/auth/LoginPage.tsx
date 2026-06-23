@@ -10,6 +10,8 @@ import { setAuth } from "@/store/authSlice";
 import { login } from "@/services/auth.service";
 import { setRefreshToken } from "@/services/auth-session";
 import { useApiError } from "@/hooks/use-api-error";
+import { UserRole } from "@/constants/api-enums";
+import { resolveWorkspaceRoleFromToken } from "@/utils/auth-role";
 import { slideUp } from "@/utils/motion";
 import { Typography } from "@/components/ui/Typography";
 
@@ -31,7 +33,7 @@ export function LoginPage() {
 
   const redirectTo = useMemo(() => {
     const state = location.state as { from?: { pathname?: string } } | undefined;
-    return state?.from?.pathname ?? "/dashboard";
+    return state?.from?.pathname ?? "/agent";
   }, [location.state]);
 
   const {
@@ -66,7 +68,12 @@ export function LoginPage() {
       const tokens = await login(values);
       setRefreshToken(tokens.refreshToken);
       dispatch(setAuth({ user: null, accessToken: tokens.accessToken }));
-      navigate(redirectTo, { replace: true });
+      const resolvedRole = resolveWorkspaceRoleFromToken(tokens.accessToken);
+      const internalDefaultRoute =
+        resolvedRole && Object.values(UserRole).includes(resolvedRole as UserRole)
+          ? "/agent"
+          : "/dashboard";
+      navigate(redirectTo ?? internalDefaultRoute, { replace: true });
     } catch (error) {
       setSubmissionError(error);
     }

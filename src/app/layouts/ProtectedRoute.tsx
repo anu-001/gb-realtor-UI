@@ -1,8 +1,10 @@
 import type { ReactNode } from "react";
-import { Navigate, Outlet, useLocation } from "react-router-dom";
+import { Link, Navigate, Outlet, useLocation } from "react-router-dom";
 import { useAppSelector } from "@/store/hooks";
 import { UserRole } from "@/constants/api-enums";
+import { EmptyState } from "@/components/feedback/EmptyState";
 import { resolveAgentRole } from "@/utils/agent-access";
+import { resolveWorkspaceRole } from "@/utils/auth-role";
 
 type ProtectedRouteProps = {
   children?: ReactNode;
@@ -24,7 +26,7 @@ function LoadingState() {
 export function ProtectedRoute({ children, requiredRole, allowedRoles }: ProtectedRouteProps) {
   const location = useLocation();
   const auth = useAppSelector((state) => state.auth);
-  const resolvedRole = resolveAgentRole(auth.user?.role ?? auth.user?.roles?.[0]?.code ?? null);
+  const resolvedRole = resolveWorkspaceRole(auth.user, auth.accessToken) ?? resolveAgentRole(auth.user?.role ?? auth.user?.roles?.[0]?.code ?? null);
 
   if (auth.isInitializing) {
     return <LoadingState />;
@@ -35,11 +37,43 @@ export function ProtectedRoute({ children, requiredRole, allowedRoles }: Protect
   }
 
   if (requiredRole && resolvedRole !== requiredRole) {
-    return <Navigate to="/agent" replace />;
+    return (
+      <div className="app-container py-10">
+        <EmptyState
+          heading="Access denied"
+          message="You do not have permission to view this page."
+          action={
+            <Link
+              to="/agent"
+              replace
+              className="inline-flex h-11 items-center justify-center rounded-input bg-[var(--color-accent)] px-4 text-sm font-medium text-white"
+            >
+              Go to workspace
+            </Link>
+          }
+        />
+      </div>
+    );
   }
 
   if (allowedRoles && allowedRoles.length > 0 && (!resolvedRole || !allowedRoles.includes(resolvedRole as UserRole))) {
-    return <Navigate to="/agent" replace />;
+    return (
+      <div className="app-container py-10">
+        <EmptyState
+          heading="Access denied"
+          message="You do not have permission to view this page."
+          action={
+            <Link
+              to="/agent"
+              replace
+              className="inline-flex h-11 items-center justify-center rounded-input bg-[var(--color-accent)] px-4 text-sm font-medium text-white"
+            >
+              Go to workspace
+            </Link>
+          }
+        />
+      </div>
+    );
   }
 
   return children ?? <Outlet />;

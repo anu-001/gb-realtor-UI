@@ -20,6 +20,7 @@ type LeadDetailDrawerProps = {
   lead: Lead | null;
   open: boolean;
   onClose: () => void;
+  readOnly?: boolean;
 };
 
 const noteSchema = z.object({
@@ -55,7 +56,7 @@ function getAssigneeLabel(assignee: Lead["assignee"], fallback = "Agent"): strin
   return typeof fullName === "string" && fullName.length > 0 ? fullName : fallback;
 }
 
-export function LeadDetailDrawer({ lead, open, onClose }: LeadDetailDrawerProps) {
+export function LeadDetailDrawer({ lead, open, onClose, readOnly = false }: LeadDetailDrawerProps) {
   const [notes, setNotes] = useState<LeadNote[]>([]);
   const [assigneeId, setAssigneeId] = useState("");
   const [status, setStatus] = useState("new");
@@ -65,7 +66,7 @@ export function LeadDetailDrawer({ lead, open, onClose }: LeadDetailDrawerProps)
   const usersQuery = useQuery({
     queryKey: ["internal-users"],
     queryFn: () => listUsers({ limit: 100 }),
-    enabled: open,
+    enabled: open && !readOnly,
     staleTime: 120_000,
   });
 
@@ -196,44 +197,53 @@ export function LeadDetailDrawer({ lead, open, onClose }: LeadDetailDrawerProps)
             </div>
           </section>
 
-          <section className="grid gap-3 rounded-card border border-[var(--color-border)] bg-[var(--color-surface)] p-4 md:grid-cols-2">
-            <label className="space-y-2">
-              <span className="text-small font-semibold uppercase tracking-[0.18em] text-[var(--color-text-secondary)]">Status</span>
-              <select
-                value={status}
-                onChange={(event) => {
-                  const next = event.target.value;
-                  setStatus(next);
-                  void statusMutation.mutateAsync(next);
-                }}
-                className="h-11 w-full rounded-input border border-[var(--color-border)] bg-[var(--color-surface)] px-4 text-sm outline-none transition focus-visible:border-[var(--color-accent)]"
-              >
-                {["new", "contacted", "qualified", "converted", "closed", "spam"].map((item) => (
-                  <option key={item} value={item}>
-                    {item}
-                  </option>
-                ))}
-              </select>
-            </label>
-            <label className="space-y-2">
-              <span className="text-small font-semibold uppercase tracking-[0.18em] text-[var(--color-text-secondary)]">Assignee</span>
-              <select
-                value={assigneeId}
-                onChange={(event) => {
-                  setAssigneeId(event.target.value);
-                  void assignmentMutation.mutateAsync(event.target.value);
-                }}
-                className="h-11 w-full rounded-input border border-[var(--color-border)] bg-[var(--color-surface)] px-4 text-sm outline-none transition focus-visible:border-[var(--color-accent)]"
-              >
-                <option value="">Unassigned</option>
-                {(usersQuery.data?.data ?? []).map((user) => (
-                  <option key={user.id} value={user.id}>
-                    {user.fullName}
-                  </option>
-                ))}
-              </select>
-            </label>
-          </section>
+          {readOnly ? (
+            <section className="rounded-card border border-[var(--color-border)] bg-[var(--color-surface)] p-4">
+              <p className="text-sm font-medium text-[var(--color-text-primary)]">Read only access</p>
+              <p className="mt-1 text-caption text-[var(--color-text-secondary)]">
+                This role can review lead details but cannot change assignment, status, or notes.
+              </p>
+            </section>
+          ) : (
+            <section className="grid gap-3 rounded-card border border-[var(--color-border)] bg-[var(--color-surface)] p-4 md:grid-cols-2">
+              <label className="space-y-2">
+                <span className="text-small font-semibold uppercase tracking-[0.18em] text-[var(--color-text-secondary)]">Status</span>
+                <select
+                  value={status}
+                  onChange={(event) => {
+                    const next = event.target.value;
+                    setStatus(next);
+                    void statusMutation.mutateAsync(next);
+                  }}
+                  className="h-11 w-full rounded-input border border-[var(--color-border)] bg-[var(--color-surface)] px-4 text-sm outline-none transition focus-visible:border-[var(--color-accent)]"
+                >
+                  {["new", "contacted", "qualified", "converted", "closed", "spam"].map((item) => (
+                    <option key={item} value={item}>
+                      {item}
+                    </option>
+                  ))}
+                </select>
+              </label>
+              <label className="space-y-2">
+                <span className="text-small font-semibold uppercase tracking-[0.18em] text-[var(--color-text-secondary)]">Assignee</span>
+                <select
+                  value={assigneeId}
+                  onChange={(event) => {
+                    setAssigneeId(event.target.value);
+                    void assignmentMutation.mutateAsync(event.target.value);
+                  }}
+                  className="h-11 w-full rounded-input border border-[var(--color-border)] bg-[var(--color-surface)] px-4 text-sm outline-none transition focus-visible:border-[var(--color-accent)]"
+                >
+                  <option value="">Unassigned</option>
+                  {(usersQuery.data?.data ?? []).map((user) => (
+                    <option key={user.id} value={user.id}>
+                      {user.fullName}
+                    </option>
+                  ))}
+                </select>
+              </label>
+            </section>
+          )}
 
           <section className="space-y-3">
             <div className="flex items-center justify-between">
@@ -260,46 +270,48 @@ export function LeadDetailDrawer({ lead, open, onClose }: LeadDetailDrawerProps)
             </div>
           </section>
 
-          <section className="space-y-3 rounded-card border border-[var(--color-border)] bg-[var(--color-surface)] p-4">
-            <RichTextEditorField
-              name="note"
-              control={control}
-              label="Add Note"
-              placeholder="Add internal notes about this lead. Include call outcomes, preferences discussed, follow-up actions..."
-              minHeight={160}
-              maxCharacters={2000}
-              showAlignment={false}
-              toolbarVariant="editorial"
-              rules={{ required: "Note cannot be empty" }}
-            />
-            <div className="flex items-center justify-end gap-3">
-              <button
-                type="button"
-                onClick={onClose}
-                className="inline-flex h-11 items-center justify-center rounded-input border border-[var(--color-border)] px-4 text-sm font-medium text-[var(--color-text-primary)]"
-              >
-                Cancel
-              </button>
-              <button
-                type="button"
-                disabled={isSubmitting || isSaving || noteMutation.isPending}
-                onClick={handleSubmit(async (values) => {
-                  if (!lead) return;
-                  setIsSaving(true);
-                  try {
-                    const created = await noteMutation.mutateAsync(values.note);
-                    setNotes((current) => [created, ...current]);
-                    reset({ note: "" });
-                  } finally {
-                    setIsSaving(false);
-                  }
-                })}
-                className="inline-flex h-11 items-center justify-center rounded-input bg-[var(--color-accent)] px-4 text-sm font-medium text-white transition hover:bg-[var(--color-accent-hover)] disabled:cursor-not-allowed disabled:opacity-60"
-              >
-                {isSubmitting || isSaving || noteMutation.isPending ? "Saving..." : "Save Note"}
-              </button>
-            </div>
-          </section>
+          {!readOnly ? (
+            <section className="space-y-3 rounded-card border border-[var(--color-border)] bg-[var(--color-surface)] p-4">
+              <RichTextEditorField
+                name="note"
+                control={control}
+                label="Add Note"
+                placeholder="Add internal notes about this lead. Include call outcomes, preferences discussed, follow-up actions..."
+                minHeight={160}
+                maxCharacters={2000}
+                showAlignment={false}
+                toolbarVariant="editorial"
+                rules={{ required: "Note cannot be empty" }}
+              />
+              <div className="flex items-center justify-end gap-3">
+                <button
+                  type="button"
+                  onClick={onClose}
+                  className="inline-flex h-11 items-center justify-center rounded-input border border-[var(--color-border)] px-4 text-sm font-medium text-[var(--color-text-primary)]"
+                >
+                  Cancel
+                </button>
+                <button
+                  type="button"
+                  disabled={isSubmitting || isSaving || noteMutation.isPending}
+                  onClick={handleSubmit(async (values) => {
+                    if (!lead) return;
+                    setIsSaving(true);
+                    try {
+                      const created = await noteMutation.mutateAsync(values.note);
+                      setNotes((current) => [created, ...current]);
+                      reset({ note: "" });
+                    } finally {
+                      setIsSaving(false);
+                    }
+                  })}
+                  className="inline-flex h-11 items-center justify-center rounded-input bg-[var(--color-accent)] px-4 text-sm font-medium text-white transition hover:bg-[var(--color-accent-hover)] disabled:cursor-not-allowed disabled:opacity-60"
+                >
+                  {isSubmitting || isSaving || noteMutation.isPending ? "Saving..." : "Save Note"}
+                </button>
+              </div>
+            </section>
+          ) : null}
         </div>
       </motion.aside>
     </div>

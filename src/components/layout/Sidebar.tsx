@@ -6,8 +6,10 @@ import {
   Bell,
   Building2,
   ChevronRight,
+  ImagePlus,
   LayoutDashboard,
   LogOut,
+  ScrollText,
   Users,
 } from "lucide-react";
 import { useAppDispatch, useAppSelector } from "@/store";
@@ -17,6 +19,7 @@ import { UserRole } from "@/constants/api-enums";
 import { cn } from "@/utils/cn";
 import { BrandMark } from "@/components/layout/BrandMark";
 import { resolveAgentRole } from "@/utils/agent-access";
+import { resolveWorkspaceRole } from "@/utils/auth-role";
 
 type NavItem = {
   label: string;
@@ -27,11 +30,15 @@ type NavItem = {
 };
 
 const navigation: NavItem[] = [
-  { label: "Overview", to: "/agent", icon: LayoutDashboard, exact: true },
-  { label: "Listings", to: "/agent/listings", icon: Building2, roles: [UserRole.PropertyManager, UserRole.ContentEditor, UserRole.SuperAdmin] },
-  { label: "Leads", to: "/agent/leads", icon: Bell, roles: [UserRole.SupportAgent, UserRole.PropertyManager, UserRole.SuperAdmin] },
+  { label: "Dashboard", to: "/agent", icon: LayoutDashboard, exact: true, roles: [UserRole.SuperAdmin, UserRole.PropertyManager, UserRole.Analyst] },
+  { label: "Properties", to: "/agent/listings", icon: Building2, roles: [UserRole.SupportAgent, UserRole.PropertyManager, UserRole.ContentEditor, UserRole.Analyst, UserRole.SuperAdmin] },
+  { label: "Leads", to: "/agent/leads", icon: Bell, roles: [UserRole.SupportAgent, UserRole.PropertyManager, UserRole.Analyst, UserRole.SuperAdmin] },
   { label: "Analytics", to: "/agent/analytics", icon: BarChart3, roles: [UserRole.Analyst, UserRole.SuperAdmin] },
-  { label: "Team", to: "/agent/team", icon: Users, roles: [UserRole.SuperAdmin] },
+  { label: "Featured Properties", to: "/agent/featured-properties", icon: Building2, roles: [UserRole.PropertyManager, UserRole.ContentEditor, UserRole.SuperAdmin] },
+  { label: "Property Media", to: "/agent/property-media", icon: ImagePlus, roles: [UserRole.PropertyManager, UserRole.ContentEditor, UserRole.SuperAdmin] },
+  { label: "Users", to: "/agent/users", icon: Users, roles: [UserRole.SuperAdmin] },
+  { label: "Roles & Permissions", to: "/agent/roles-permissions", icon: ScrollText, roles: [UserRole.SuperAdmin] },
+  { label: "Audit Logs", to: "/agent/audit-logs", icon: ScrollText, roles: [UserRole.SuperAdmin] },
 ];
 
 function getInitials(name?: string | null): string {
@@ -49,7 +56,11 @@ export function Sidebar() {
   const navigate = useNavigate();
   const sidebarOpen = useAppSelector((state) => state.ui.sidebarOpen);
   const user = useAppSelector((state) => state.auth.user);
-  const role = resolveAgentRole(user?.role ?? user?.roles?.[0]?.code ?? UserRole.PropertyManager) ?? UserRole.PropertyManager;
+  const accessToken = useAppSelector((state) => state.auth.accessToken);
+  const role =
+    resolveWorkspaceRole(user, accessToken) ??
+    resolveAgentRole(user?.role ?? user?.roles?.[0]?.code ?? UserRole.PropertyManager) ??
+    UserRole.PropertyManager;
 
   const items = useMemo(
     () => navigation.filter((item) => !item.roles || item.roles.includes(role as UserRole)),
