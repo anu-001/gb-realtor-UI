@@ -46,9 +46,9 @@ export default function AuditLogsPage() {
       <section className="rounded-[32px] border border-[var(--color-border)] bg-[var(--color-surface)] p-6 shadow-card">
         <div className="space-y-2">
           <p className="text-small font-semibold uppercase tracking-[0.2em] text-[var(--color-text-secondary)]">Audit logs</p>
-          <h1 className="font-display text-h2 text-[var(--color-text-primary)]">Track every important change.</h1>
-          <p className="max-w-2xl text-body text-[var(--color-text-secondary)]">
-            Review administrative actions with filters, pagination, and a calm, high-clarity table layout.
+            <h1 className="font-display text-h2 text-[var(--color-text-primary)]">Track key changes.</h1>
+            <p className="max-w-2xl text-body text-[var(--color-text-secondary)]">
+            Review admin actions with filters and pagination.
           </p>
         </div>
       </section>
@@ -85,7 +85,7 @@ export default function AuditLogsPage() {
             ))}
           </div>
         ) : rows.length === 0 ? (
-          <EmptyState heading="No audit activity" message="Actions will appear here as users make changes in the system." />
+          <EmptyState heading="Nothing yet" message="Audit entries will appear here." />
         ) : (
           <div className="overflow-x-auto">
             <table className="min-w-full divide-y divide-[var(--color-border)]">

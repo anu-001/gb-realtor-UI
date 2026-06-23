@@ -455,7 +455,7 @@ export default function ListingsManagementPage() {
               {featuredQuery.isLoading ? (
                 <SkeletonLoader height="200px" />
               ) : (featuredQuery.data ?? []).length === 0 ? (
-                <EmptyState heading="No featured properties" message="Feature a listing to highlight it on the homepage." />
+                <EmptyState heading="No featured listings" message="Feature a property to surface it on the homepage." />
               ) : (
                 (featuredQuery.data ?? []).map((item) => (
                   <div key={item.id} className="rounded-[18px] border border-[var(--color-border)] p-4">

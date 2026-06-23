@@ -234,7 +234,7 @@ export default function AgentOverviewPage() {
     return (
       <EmptyState
         heading="Overview unavailable"
-        message="We could not load the dashboard summary right now."
+        message="Retry in a moment."
         action={
           <button
             type="button"
@@ -261,9 +261,9 @@ export default function AgentOverviewPage() {
         <div className="flex flex-col gap-4 lg:flex-row lg:items-end lg:justify-between">
           <div className="space-y-3">
             <p className="text-small font-semibold uppercase tracking-[0.2em] text-[var(--color-text-secondary)]">Property manager dashboard</p>
-            <h1 className="font-display text-h2 text-[var(--color-text-primary)]">Quiet, premium control for your inventory.</h1>
+            <h1 className="font-display text-h2 text-[var(--color-text-primary)]">Control, without clutter.</h1>
             <p className="max-w-2xl text-body text-[var(--color-text-secondary)]">
-              Monitor listings, respond to leads, and keep the pipeline moving without the clutter of a generic admin view.
+              Track inventory, leads, and featured listings in one view.
             </p>
           </div>
           <div className="flex flex-wrap gap-3">
@@ -273,7 +273,7 @@ export default function AgentOverviewPage() {
                 className="inline-flex h-11 items-center gap-2 rounded-full bg-[var(--color-accent)] px-4 text-sm font-medium text-white transition hover:bg-[var(--color-accent-hover)]"
               >
                 <Plus className="h-4 w-4" />
-                Create property
+                New listing
               </Link>
             ) : null}
             {canViewLeadQueue ? (
@@ -300,10 +300,8 @@ export default function AgentOverviewPage() {
         <section className="space-y-4 rounded-card border border-[var(--color-border)] bg-[var(--color-surface)] p-6 shadow-card">
           <div className="flex items-center justify-between gap-4">
             <div>
-              <h2 className="font-display text-h4 text-[var(--color-text-primary)]">Resources</h2>
-              <p className="text-caption text-[var(--color-text-secondary)]">
-                Shortcuts to the areas the team uses most.
-              </p>
+              <h2 className="font-display text-h4 text-[var(--color-text-primary)]">Shortcuts</h2>
+              <p className="text-caption text-[var(--color-text-secondary)]">Quick links to the core workspace.</p>
             </div>
             <span className="rounded-full border border-[var(--color-border)] px-3 py-1 text-caption text-[var(--color-text-secondary)]">
               Workspace links
@@ -339,11 +337,11 @@ export default function AgentOverviewPage() {
           <div className="flex items-center justify-between">
             <div>
               <h2 className="font-display text-h4 text-[var(--color-text-primary)]">Recent activity</h2>
-              <p className="text-caption text-[var(--color-text-secondary)]">The latest system actions from the backend summary.</p>
+              <p className="text-caption text-[var(--color-text-secondary)]">Latest system actions.</p>
             </div>
           </div>
           {activityEntries.length === 0 ? (
-            <EmptyState heading="No activity yet" message="Recent system events will show up here as they happen." />
+            <EmptyState heading="Nothing yet" message="Recent activity will appear here." />
           ) : (
             <ul className="grid gap-3 md:grid-cols-2">
               {activityEntries.slice(0, 6).map((item) => (
@@ -361,10 +359,10 @@ export default function AgentOverviewPage() {
         <section className="space-y-4 rounded-card border border-[var(--color-border)] bg-[var(--color-surface)] p-6 shadow-card" aria-busy={dashboardQuery.isFetching}>
           <div>
             <h2 className="font-display text-h4 text-[var(--color-text-primary)]">Featured performance</h2>
-            <p className="text-caption text-[var(--color-text-secondary)]">Featured surfaces and engagement totals.</p>
+            <p className="text-caption text-[var(--color-text-secondary)]">Featured reach and engagement.</p>
           </div>
           {featuredEntries.length === 0 ? (
-            <EmptyState heading="No featured insights" message="Feature metrics will appear when there are active featured listings." />
+            <EmptyState heading="No featured data" message="Metrics appear once listings are featured." />
           ) : (
             <div className="grid gap-3 sm:grid-cols-2">
               {featuredEntries.slice(0, 4).map((item) => (
@@ -381,7 +379,7 @@ export default function AgentOverviewPage() {
           <div className="flex items-center justify-between gap-4">
             <div>
               <h2 className="font-display text-h4 text-[var(--color-text-primary)]">Audit trail</h2>
-              <p className="text-caption text-[var(--color-text-secondary)]">The most recent admin actions from the users endpoint.</p>
+              <p className="text-caption text-[var(--color-text-secondary)]">Recent admin actions.</p>
             </div>
             <span className="rounded-full border border-[var(--color-border)] px-3 py-1 text-caption text-[var(--color-text-secondary)]">
               Live feed
@@ -394,7 +392,7 @@ export default function AgentOverviewPage() {
               ))}
             </div>
           ) : auditEntries.length === 0 ? (
-            <EmptyState heading="No audit activity" message="Recent administrative actions will appear here." />
+            <EmptyState heading="Nothing yet" message="Audit entries will appear here." />
           ) : (
             <div className="space-y-3">
               {auditEntries.map((entry, index) => (

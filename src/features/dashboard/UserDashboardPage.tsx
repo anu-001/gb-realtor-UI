@@ -6,25 +6,25 @@ import { cn } from "@/utils/cn";
 const shortcuts = [
   {
     label: "Saved listings",
-    description: "Open homes you have bookmarked and keep track of them in one place.",
+    description: "Homes you’ve saved.",
     to: "/dashboard/saved",
     icon: Heart,
   },
   {
     label: "Saved searches",
-    description: "Review the searches you want to revisit without rebuilding filters.",
+    description: "Searches you can revisit.",
     to: "/dashboard/searches",
     icon: Search,
   },
   {
     label: "Property alerts",
-    description: "Manage alerts so new matches reach you as soon as they appear.",
+    description: "Fresh matches, on time.",
     to: "/dashboard/alerts",
     icon: Bell,
   },
   {
     label: "Profile settings",
-    description: "Keep your contact details and account preferences up to date.",
+    description: "Keep your details current.",
     to: "/dashboard/profile",
     icon: User,
   },
@@ -48,7 +48,7 @@ export default function UserDashboardPage() {
             <p className="text-small font-semibold uppercase tracking-[0.2em] text-[var(--color-text-secondary)]">Dashboard</p>
             <h1 className="font-display text-h2 text-[var(--color-text-primary)]">Welcome back, {firstName}.</h1>
             <p className="max-w-2xl text-body text-[var(--color-text-secondary)]">
-              Keep your search, saved homes, and account preferences organized from one calm workspace.
+              Your search, saved homes, and account settings. All in one place.
             </p>
           </div>
 
@@ -102,15 +102,15 @@ export default function UserDashboardPage() {
         <div className="rounded-card border border-[var(--color-border)] bg-[var(--color-surface)] p-6 shadow-card">
           <h2 className="font-display text-h4 text-[var(--color-text-primary)]">What you can do next</h2>
           <p className="mt-2 max-w-2xl text-body text-[var(--color-text-secondary)]">
-            Continue your search, save promising homes, and keep your account ready for the next enquiry.
+            Keep moving. Save homes, refine your search, and stay ready for the next enquiry.
           </p>
 
           <div className="mt-5 grid gap-3 sm:grid-cols-2">
             {[
-              "Open the listings page and continue browsing.",
-              "Save a property before it slips away.",
-              "Set an alert for the area you care about.",
-              "Update your profile so enquiries reach you quickly.",
+              "Continue browsing from the listings page.",
+              "Save a property before you lose it.",
+              "Set an alert for your area.",
+              "Keep your profile current.",
             ].map((item) => (
               <div key={item} className="rounded-[18px] border border-[var(--color-border)] px-4 py-3 text-sm text-[var(--color-text-primary)]">
                 {item}

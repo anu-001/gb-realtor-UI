@@ -126,9 +126,9 @@ export default function AnalyticsDashboardPage() {
         <div className="flex flex-col gap-4 lg:flex-row lg:items-end lg:justify-between">
           <div className="space-y-2">
             <p className="text-small font-semibold uppercase tracking-[0.2em] text-[var(--color-text-secondary)]">Analytics</p>
-            <h1 className="font-display text-h2 text-[var(--color-text-primary)]">Signals that feel clear, not crowded.</h1>
+            <h1 className="font-display text-h2 text-[var(--color-text-primary)]">Performance, at a glance.</h1>
             <p className="max-w-2xl text-body text-[var(--color-text-secondary)]">
-              A calmer way to scan growth, performance, and activity without bouncing between multiple tabs.
+              Scan growth, performance, and activity in one place.
             </p>
           </div>
           <label className="space-y-2">

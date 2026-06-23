@@ -67,9 +67,9 @@ export default function LeadsManagementPage() {
       <section className="rounded-[32px] border border-[var(--color-border)] bg-[var(--color-surface)] p-6 shadow-card">
         <div className="space-y-2">
           <p className="text-small font-semibold uppercase tracking-[0.2em] text-[var(--color-text-secondary)]">Lead inbox</p>
-          <h1 className="font-display text-h2 text-[var(--color-text-primary)]">Manage conversations with clarity.</h1>
+          <h1 className="font-display text-h2 text-[var(--color-text-primary)]">Track enquiries, cleanly.</h1>
           <p className="max-w-2xl text-body text-[var(--color-text-secondary)]">
-            Track inquiries, assign owners, and keep follow-ups moving in a calm, readable workspace.
+            Assign owners and keep follow-ups moving.
           </p>
         </div>
       </section>

@@ -58,7 +58,7 @@ export class ErrorBoundary extends Component<ErrorBoundaryProps, ErrorBoundarySt
           <div className="max-w-md">
             <AlertTriangle className="mx-auto h-10 w-10 text-[var(--color-danger)]" aria-hidden="true" />
             <h2 className="mt-4 font-display text-h4 text-[var(--color-text-primary)]">
-              {this.props.title ?? "We could not load this content"}
+              {this.props.title ?? "Couldn’t load content"}
             </h2>
             <p className="mt-2 text-body text-[var(--color-text-secondary)]">
               {this.props.message ?? "Something went wrong while loading this section."}

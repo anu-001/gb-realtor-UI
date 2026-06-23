@@ -69,14 +69,14 @@ export default function TeamManagementPage() {
       <section className="rounded-[32px] border border-[var(--color-border)] bg-[var(--color-surface)] p-6 shadow-card">
         <div className="space-y-2">
           <p className="text-small font-semibold uppercase tracking-[0.2em] text-[var(--color-text-secondary)]">Users</p>
-          <h1 className="font-display text-h2 text-[var(--color-text-primary)]">Manage people and access with care.</h1>
+          <h1 className="font-display text-h2 text-[var(--color-text-primary)]">Users and access.</h1>
           <p className="max-w-2xl text-body text-[var(--color-text-secondary)]">
-            Invite employees, adjust roles, and deactivate accounts without losing the clarity of the interface.
+            Invite people, adjust roles, and deactivate accounts.
           </p>
         </div>
       </section>
 
-      <StatCard label="Team members" value={String(total)} icon={Users} description="Active user records in the system." />
+      <StatCard label="Team members" value={String(total)} icon={Users} description="Active users." />
 
       <section className="grid gap-6 xl:grid-cols-[minmax(0,1.2fr)_minmax(0,0.8fr)]">
         <div className="overflow-hidden rounded-card border border-[var(--color-border)] bg-[var(--color-surface)] shadow-card">
@@ -138,7 +138,7 @@ export default function TeamManagementPage() {
         <section className="space-y-4 rounded-card border border-[var(--color-border)] bg-[var(--color-surface)] p-5 shadow-card">
           <div>
             <h2 className="font-display text-h4 text-[var(--color-text-primary)]">Invite employee</h2>
-            <p className="text-caption text-[var(--color-text-secondary)]">Create a new account and assign the starting role.</p>
+            <p className="text-caption text-[var(--color-text-secondary)]">Create an account and assign a role.</p>
           </div>
           <label className="block space-y-2">
             <span className="text-sm font-medium text-[var(--color-text-primary)]">Name</span>
@@ -179,7 +179,7 @@ export default function TeamManagementPage() {
             className="inline-flex h-11 items-center justify-center gap-2 rounded-input bg-[var(--color-accent)] px-4 text-sm font-medium text-white transition hover:bg-[var(--color-accent-hover)]"
           >
             <UserPlus className="h-4 w-4" />
-            {createMutation.isPending ? "Inviting..." : "Invite employee"}
+            {createMutation.isPending ? "Inviting..." : "Invite user"}
           </button>
         </section>
       </section>

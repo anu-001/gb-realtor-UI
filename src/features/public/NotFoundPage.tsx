@@ -5,7 +5,7 @@ export default function NotFoundPage() {
   return (
     <PlaceholderPage
       title="Page not found"
-      description="We could not find the page you were looking for."
+      description="This page does not exist."
       action={
         <Link className="text-sm font-semibold text-[var(--color-accent)]" to="/">
           Back to home

@@ -54,8 +54,8 @@ describe("HomePage", () => {
 
     renderHome();
 
-    expect(await screen.findByRole("heading", { name: /find a refined home without the clutter\./i })).toBeInTheDocument();
-    expect(await screen.findByText("Browse what is available now")).toBeInTheDocument();
+    expect(await screen.findByRole("heading", { name: /find the right property, faster\./i })).toBeInTheDocument();
+    expect(await screen.findByText("Live listings")).toBeInTheDocument();
     expect(screen.getByRole("link", { name: /view details for modern family home/i })).toBeInTheDocument();
     expect(screen.getByRole("link", { name: /request a property/i })).toBeInTheDocument();
     expect(screen.getByRole("button", { name: /view results/i })).toBeInTheDocument();

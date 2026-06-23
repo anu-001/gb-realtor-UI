@@ -113,7 +113,7 @@ export function RequestPropertyForm({
   propertyTitle,
   preferredLocation,
   headline = "Request a Property",
-  subheading = "Tell us what you need and we’ll prepare a thoughtful, human follow-up within 24 hours.",
+  subheading = "Share the brief. We’ll send a sharp follow-up within 24 hours.",
   submitLabel = "Request Property",
   source = "website",
   className,
@@ -458,7 +458,7 @@ export function RequestPropertyForm({
                   name="inquiryNotes"
                   control={control}
                   label="Notes"
-                  placeholder="Tell us what you need, e.g. 3-bedroom apartment in Lekki, gated estate, budget under 150m."
+              placeholder="Example: 3-bedroom apartment in Lekki, gated estate, budget under 150m."
                   minHeight={140}
                   maxCharacters={1000}
                   toolbarVariant="editorial"

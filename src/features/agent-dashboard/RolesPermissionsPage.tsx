@@ -32,7 +32,7 @@ export default function RolesPermissionsPage() {
     return (
       <EmptyState
         heading="Roles unavailable"
-        message="We could not load the role catalog right now."
+        message="Try again in a moment."
         action={
           <button
             type="button"
@@ -52,9 +52,9 @@ export default function RolesPermissionsPage() {
         <div className="flex flex-col gap-4 lg:flex-row lg:items-end lg:justify-between">
           <div className="space-y-2">
             <p className="text-small font-semibold uppercase tracking-[0.2em] text-[var(--color-text-secondary)]">Roles & permissions</p>
-            <h1 className="font-display text-h2 text-[var(--color-text-primary)]">Keep access precise and easy to scan.</h1>
+            <h1 className="font-display text-h2 text-[var(--color-text-primary)]">Roles and permissions.</h1>
             <p className="max-w-2xl text-body text-[var(--color-text-secondary)]">
-              Review the backend role catalog and the permissions attached to each internal role.
+              Review the role catalog and each permission set.
             </p>
           </div>
           <Link
@@ -83,7 +83,7 @@ export default function RolesPermissionsPage() {
             <p className="mt-3 text-caption text-[var(--color-text-secondary)]">
               {typeof (role.description as unknown) === "string" && String(role.description).trim().length > 0
                 ? String(role.description)
-                : "No description available."}
+                : "No description."}
             </p>
 
             <div className="mt-4 space-y-2">

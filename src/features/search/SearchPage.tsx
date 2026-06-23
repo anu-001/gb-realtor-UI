@@ -57,8 +57,8 @@ function SearchResultsPanel() {
         <SearchResultsSkeleton count={Math.min(filters.pageSize, 12)} />
       ) : data.length === 0 ? (
         <EmptyState
-          heading="No properties match your current filters"
-          message="Try broadening your search criteria. You can also request a property if you can’t find the right fit."
+          heading="No matches yet"
+          message="Widen the filters or request a property."
           illustration={<SearchResultsIllustration />}
           action={
             <button
@@ -159,8 +159,8 @@ function SearchShell() {
         <QueryErrorResetBoundary>
           {({ reset }) => (
             <ErrorBoundary
-              title="We could not load properties right now"
-              message="We hit a temporary issue fetching listings. Please retry in a moment."
+              title="Couldn’t load listings"
+              message="Try again in a moment."
               onRetry={reset}
             >
               <SearchResultsPanel />

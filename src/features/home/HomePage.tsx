@@ -148,10 +148,10 @@ export default function HomePage() {
             <div className="max-w-2xl space-y-6">
               <div className="space-y-4">
                 <h1 className="font-display text-[clamp(2.8rem,7vw,5rem)] font-bold leading-[0.96] tracking-[-0.04em]">
-                  Find a refined home without the clutter.
+                  Find the right property, faster.
                 </h1>
                 <p className="max-w-xl text-body-lg text-white/72">
-                  Search verified properties across Nigeria, browse live listings instantly, and open a lead when you are ready to enquire.
+                  Search verified homes across Nigeria and move straight to enquiry when something fits.
                 </p>
               </div>
               <div className="flex flex-wrap gap-3">
@@ -174,9 +174,7 @@ export default function HomePage() {
             <div className="rounded-[28px] border border-white/12 bg-white/92 p-4 text-[var(--color-text-primary)] shadow-modal backdrop-blur-xl md:p-5">
               <div className="flex items-center justify-between gap-3 border-b border-[var(--color-border)] pb-4">
                 <div>
-                  <p className="text-small font-semibold uppercase tracking-[0.18em] text-[var(--color-text-secondary)]">
-                    Search live
-                  </p>
+                  <p className="text-small font-semibold uppercase tracking-[0.18em] text-[var(--color-text-secondary)]">Search</p>
                 </div>
                 <button
                   type="button"
@@ -310,7 +308,7 @@ export default function HomePage() {
             <p className="text-small font-semibold uppercase tracking-[0.2em] text-[var(--color-text-secondary)]">
               Live listings
             </p>
-            <h2 className="mt-2 font-display text-h2 text-[var(--color-text-primary)]">Browse what is available now</h2>
+            <h2 className="mt-2 font-display text-h2 text-[var(--color-text-primary)]">Live listings</h2>
           </div>
           <div className="rounded-full border border-[var(--color-border)] bg-[var(--color-surface)] px-4 py-2 text-sm font-medium text-[var(--color-text-secondary)] shadow-card">
             <span aria-live="polite">{totalListings} properties found</span>
@@ -326,8 +324,8 @@ export default function HomePage() {
         ) : listingsQuery.error ? (
           <EmptyState
             icon={Filter}
-            heading="We could not load properties right now"
-            message="The live feed is temporarily unavailable. Retry in a moment or open the full search page."
+            heading="Couldn’t load listings"
+            message="Try again in a moment or open search."
             action={
               <button
                 type="button"
@@ -348,8 +346,8 @@ export default function HomePage() {
           />
       ) : properties.length === 0 ? (
         <EmptyState
-          heading="No properties match this search"
-          message="Try broadening your search criteria, or request a property if you need something specific."
+          heading="No matches yet"
+          message="Broaden the filters or request a property."
           action={
             <button
               type="button"

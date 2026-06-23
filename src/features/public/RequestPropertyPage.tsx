@@ -10,17 +10,17 @@ export default function RequestPropertyPage() {
           Request a Property
         </p>
         <h1 className="font-display text-h1 text-[var(--color-text-primary)]">
-          Tell us what you need.
+          Tell us what you’re after.
         </h1>
         <p className="max-w-xl text-body-lg text-[var(--color-text-secondary)]">
-          Share the essentials and we’ll get back to you with a concise, relevant response.
+          Share the brief. We’ll handle the search.
         </p>
       </div>
 
       <RequestPropertyForm
         compact
         headline="Request a Property"
-        subheading="A short brief helps us match you with better options, faster."
+        subheading="A clear brief gets a sharper match."
         submitLabel="Send Request"
       />
     </motion.div>
