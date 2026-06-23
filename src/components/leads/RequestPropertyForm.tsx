@@ -342,7 +342,7 @@ export function RequestPropertyForm({
                       id={fieldIds.fullName}
                       autoComplete="name"
                       placeholder="Jane Doe"
-                      className="h-12 w-full rounded-input border border-[var(--color-border)] bg-[var(--color-surface)] px-4 text-body text-[var(--color-text-primary)] outline-none transition focus:border-[var(--color-accent)] focus:ring-2 focus:ring-[color-mix(in_srgb,var(--color-accent)_15%,transparent)]"
+                      className="h-12 w-full rounded-input border border-[var(--color-border)] bg-[var(--color-surface)] px-4 text-body text-[var(--color-text-primary)] outline-none transition focus-visible:border-[var(--color-accent)]"
                       aria-invalid={Boolean(errors.fullName)}
                       aria-describedby={errors.fullName ? `${fieldIds.fullName}-error` : undefined}
                       {...register("fullName")}
@@ -359,7 +359,7 @@ export function RequestPropertyForm({
                       autoComplete="tel"
                       inputMode="tel"
                       placeholder="+2348012345678"
-                      className="h-12 w-full rounded-input border border-[var(--color-border)] bg-[var(--color-surface)] px-4 text-body text-[var(--color-text-primary)] outline-none transition focus:border-[var(--color-accent)] focus:ring-2 focus:ring-[color-mix(in_srgb,var(--color-accent)_15%,transparent)]"
+                      className="h-12 w-full rounded-input border border-[var(--color-border)] bg-[var(--color-surface)] px-4 text-body text-[var(--color-text-primary)] outline-none transition focus-visible:border-[var(--color-accent)]"
                       aria-invalid={Boolean(errors.phoneNumber)}
                       aria-describedby={errors.phoneNumber ? `${fieldIds.phoneNumber}-error` : undefined}
                       {...register("phoneNumber")}
@@ -374,7 +374,7 @@ export function RequestPropertyForm({
                       type="email"
                       autoComplete="email"
                       placeholder="jane@example.com"
-                      className="h-12 w-full rounded-input border border-[var(--color-border)] bg-[var(--color-surface)] px-4 text-body text-[var(--color-text-primary)] outline-none transition focus:border-[var(--color-accent)] focus:ring-2 focus:ring-[color-mix(in_srgb,var(--color-accent)_15%,transparent)]"
+                      className="h-12 w-full rounded-input border border-[var(--color-border)] bg-[var(--color-surface)] px-4 text-body text-[var(--color-text-primary)] outline-none transition focus-visible:border-[var(--color-accent)]"
                       aria-invalid={Boolean(errors.email)}
                       aria-describedby={errors.email ? `${fieldIds.email}-error` : undefined}
                       {...register("email")}
@@ -386,7 +386,7 @@ export function RequestPropertyForm({
                     htmlFor={fieldIds.preferredLocation}
                     error={errors.preferredLocation?.message}
                   >
-                    <div className="flex h-12 items-center gap-2 rounded-input border border-[var(--color-border)] bg-[var(--color-surface)] px-4 transition focus-within:border-[var(--color-accent)] focus-within:ring-2 focus-within:ring-[color-mix(in_srgb,var(--color-accent)_15%,transparent)]">
+                    <div className="flex h-12 items-center gap-2 rounded-input border border-[var(--color-border)] bg-[var(--color-surface)] px-4 transition focus-within:border-[var(--color-accent)]">
                       <MapPin className="h-4 w-4 text-[var(--color-text-secondary)]" />
                       <input
                         id={fieldIds.preferredLocation}
@@ -413,7 +413,7 @@ export function RequestPropertyForm({
                     htmlFor={fieldIds.budgetKobo}
                     error={errors.budgetKobo?.message}
                   >
-                    <div className="flex h-12 items-center gap-2 rounded-input border border-[var(--color-border)] bg-[var(--color-surface)] px-4 transition focus-within:border-[var(--color-accent)] focus-within:ring-2 focus-within:ring-[color-mix(in_srgb,var(--color-accent)_15%,transparent)]">
+                    <div className="flex h-12 items-center gap-2 rounded-input border border-[var(--color-border)] bg-[var(--color-surface)] px-4 transition focus-within:border-[var(--color-accent)]">
                       <span className="text-sm font-medium text-[var(--color-text-secondary)]">₦</span>
                       <input
                         id={fieldIds.budgetKobo}
@@ -445,7 +445,7 @@ export function RequestPropertyForm({
                       id={fieldIds.propertyInterest}
                       autoComplete="off"
                       placeholder="3-bedroom apartment"
-                      className="h-12 w-full rounded-input border border-[var(--color-border)] bg-[var(--color-surface)] px-4 text-body text-[var(--color-text-primary)] outline-none transition focus:border-[var(--color-accent)] focus:ring-2 focus:ring-[color-mix(in_srgb,var(--color-accent)_15%,transparent)]"
+                      className="h-12 w-full rounded-input border border-[var(--color-border)] bg-[var(--color-surface)] px-4 text-body text-[var(--color-text-primary)] outline-none transition focus-visible:border-[var(--color-accent)]"
                       aria-invalid={Boolean(errors.propertyInterest)}
                       aria-describedby={errors.propertyInterest ? `${fieldIds.propertyInterest}-error` : undefined}
                       {...register("propertyInterest")}

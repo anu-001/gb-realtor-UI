@@ -207,7 +207,7 @@ export function RichTextEditor({
         className={cn(
           "rounded-input border bg-[var(--color-surface)]",
           error ? "border-[var(--color-danger)]" : "border-[var(--color-border)]",
-          !disabled && "focus-within:border-[var(--color-accent)] focus-within:ring-2 focus-within:ring-[color-mix(in_srgb,var(--color-accent)_15%,transparent)]",
+          !disabled && "focus-within:border-[var(--color-accent)]",
           disabled && "cursor-not-allowed",
         )}
       >
@@ -400,7 +400,7 @@ export function RichTextEditor({
           id={id}
           aria-label={label ?? placeholder}
           aria-describedby={describedBy}
-          className={cn("tiptap-content px-4 py-4 outline-none", disabled && "cursor-not-allowed")}
+          className={cn("tiptap-content px-4 py-4 outline-none focus:outline-none", disabled && "cursor-not-allowed")}
           style={{ minHeight }}
         />
       </div>

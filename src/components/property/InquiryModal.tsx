@@ -167,7 +167,7 @@ export function InquiryModal({
                     id={fieldIds.fullName}
                     aria-invalid={Boolean(errors.fullName)}
                     aria-describedby={errors.fullName ? `${fieldIds.fullName}-error` : undefined}
-                    className="h-11 w-full rounded-input border border-[var(--color-border)] bg-[var(--color-surface)] px-4 text-body text-[var(--color-text-primary)] outline-none transition focus:border-[var(--color-accent)] focus:ring-2 focus:ring-[color-mix(in_srgb,var(--color-accent)_15%,transparent)]"
+                    className="h-11 w-full rounded-input border border-[var(--color-border)] bg-[var(--color-surface)] px-4 text-body text-[var(--color-text-primary)] outline-none transition focus-visible:border-[var(--color-accent)]"
                     {...register("fullName")}
                   />
                   {errors.fullName?.message ? (
@@ -185,7 +185,7 @@ export function InquiryModal({
                     type="email"
                     aria-invalid={Boolean(errors.email)}
                     aria-describedby={errors.email ? `${fieldIds.email}-error` : undefined}
-                    className="h-11 w-full rounded-input border border-[var(--color-border)] bg-[var(--color-surface)] px-4 text-body text-[var(--color-text-primary)] outline-none transition focus:border-[var(--color-accent)] focus:ring-2 focus:ring-[color-mix(in_srgb,var(--color-accent)_15%,transparent)]"
+                    className="h-11 w-full rounded-input border border-[var(--color-border)] bg-[var(--color-surface)] px-4 text-body text-[var(--color-text-primary)] outline-none transition focus-visible:border-[var(--color-accent)]"
                     {...register("email")}
                   />
                   {errors.email?.message ? (
@@ -205,7 +205,7 @@ export function InquiryModal({
                   required
                   aria-invalid={Boolean(errors.phoneNumber)}
                   aria-describedby={errors.phoneNumber ? `${fieldIds.phoneNumber}-error` : undefined}
-                  className="h-11 w-full rounded-input border border-[var(--color-border)] bg-[var(--color-surface)] px-4 text-body text-[var(--color-text-primary)] outline-none transition focus:border-[var(--color-accent)] focus:ring-2 focus:ring-[color-mix(in_srgb,var(--color-accent)_15%,transparent)]"
+                  className="h-11 w-full rounded-input border border-[var(--color-border)] bg-[var(--color-surface)] px-4 text-body text-[var(--color-text-primary)] outline-none transition focus-visible:border-[var(--color-accent)]"
                   {...register("phoneNumber")}
                 />
                 {errors.phoneNumber?.message ? (
