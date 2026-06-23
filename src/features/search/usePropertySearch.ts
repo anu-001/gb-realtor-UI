@@ -8,7 +8,6 @@ import { PropertyType } from "@/constants/api-enums";
 const listingTypeSchema = z.enum(["sale", "rent"]);
 const sortSchema = z.enum(["newest", "oldest", "price_asc", "price_desc", "featured_first"]);
 const propertyTypeSchema = z.enum([PropertyType.House, PropertyType.Apartment, PropertyType.Land, PropertyType.Commercial, PropertyType.Villa]);
-const queryPropertyTypeSchema = z.enum(["house", "apartment", "land", "commercial", "villa"]);
 
 const optionalTrimmedString = z.preprocess((value) => {
   if (typeof value !== "string") return undefined;
@@ -123,7 +122,7 @@ function parseSearchParams(searchParams: URLSearchParams): PropertySearchState {
 }
 
 function toPublicListingsQuery(filters: PropertySearchState): PublicListingsQuery {
-  const typeMap: Record<z.infer<typeof propertyTypeSchema>, z.infer<typeof queryPropertyTypeSchema>> = {
+  const typeMap: Record<z.infer<typeof propertyTypeSchema>, PublicListingsQuery["type"]> = {
     [PropertyType.House]: "house",
     [PropertyType.Apartment]: "apartment",
     [PropertyType.Land]: "land",

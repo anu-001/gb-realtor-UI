@@ -160,7 +160,6 @@ export function RichTextEditor({
     .filter(Boolean)
     .join(" ") || undefined;
   const isFull = toolbarVariant === "full";
-  const isEditorial = toolbarVariant === "editorial";
   const showInlineStyles = toolbarVariant !== "minimal";
 
   const submitLink = () => {

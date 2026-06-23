@@ -1,12 +1,16 @@
 import { useEffect, useMemo, useState } from "react";
+import { Link } from "react-router-dom";
+import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
-import { X } from "lucide-react";
+import { ArrowRight, X } from "lucide-react";
 import { motion } from "framer-motion";
 import { RichTextEditorField } from "@/components/ui/RichTextEditorField";
 import { RichTextContent } from "@/components/data-display/RichTextContent";
-import { addLeadNote } from "@/services/leads.service";
+import { StatusBadge } from "@/components/property/StatusBadge";
+import { addLeadNote, assignLead, updateLeadStatus } from "@/services/leads.service";
+import { listUsers } from "@/services/users.service";
 import type { Lead, LeadNote } from "@/types/lead";
 import { htmlTextLength } from "@/utils/html-text-length";
 import { drawerAnimation } from "@/utils/motion";
@@ -39,17 +43,43 @@ function asText(value: unknown): string | null {
   return typeof value === "string" && value.trim().length > 0 ? value : null;
 }
 
+function getAssigneeId(assignee: Lead["assignee"]): string {
+  if (!assignee || typeof assignee !== "object") return "";
+  const id = (assignee as { id?: string }).id;
+  return typeof id === "string" ? id : "";
+}
+
+function getAssigneeLabel(assignee: Lead["assignee"], fallback = "Agent"): string {
+  if (!assignee || typeof assignee !== "object") return fallback;
+  const fullName = (assignee as { fullName?: string }).fullName;
+  return typeof fullName === "string" && fullName.length > 0 ? fullName : fallback;
+}
+
 export function LeadDetailDrawer({ lead, open, onClose }: LeadDetailDrawerProps) {
   const [notes, setNotes] = useState<LeadNote[]>([]);
+  const [assigneeId, setAssigneeId] = useState("");
+  const [status, setStatus] = useState("new");
   const [isSaving, setIsSaving] = useState(false);
+  const queryClient = useQueryClient();
+
+  const usersQuery = useQuery({
+    queryKey: ["internal-users"],
+    queryFn: () => listUsers({ limit: 100 }),
+    enabled: open,
+    staleTime: 120_000,
+  });
 
   useEffect(() => {
     if (!lead) {
       setNotes([]);
+      setAssigneeId("");
+      setStatus("new");
       return;
     }
 
     setNotes([...(lead.notes ?? [])].sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime()));
+    setAssigneeId(getAssigneeId(lead.assignee));
+    setStatus(lead.status ?? "new");
   }, [lead]);
 
   const {
@@ -63,7 +93,34 @@ export function LeadDetailDrawer({ lead, open, onClose }: LeadDetailDrawerProps)
     mode: "onChange",
   });
 
-  const authorLabel = useMemo(() => lead?.assignee?.fullName ?? "Agent", [lead?.assignee?.fullName]);
+  const authorLabel = useMemo(() => getAssigneeLabel(lead?.assignee), [lead?.assignee]);
+
+  const statusMutation = useMutation({
+    mutationFn: (nextStatus: string) => {
+      if (!lead) throw new Error("Missing lead");
+      return updateLeadStatus(lead.id, { status: nextStatus as never });
+    },
+    onSuccess: async () => {
+      await queryClient.invalidateQueries({ queryKey: ["agent-leads"] });
+    },
+  });
+
+  const assignmentMutation = useMutation({
+    mutationFn: (nextAssigneeId: string) => {
+      if (!lead) throw new Error("Missing lead");
+      return assignLead(lead.id, { assigneeId: nextAssigneeId });
+    },
+    onSuccess: async () => {
+      await queryClient.invalidateQueries({ queryKey: ["agent-leads"] });
+    },
+  });
+
+  const noteMutation = useMutation({
+    mutationFn: async (note: string) => {
+      if (!lead) throw new Error("Missing lead");
+      return addLeadNote(lead.id, { note });
+    },
+  });
 
   useEffect(() => {
     const onKeyDown = (event: KeyboardEvent) => {
@@ -126,7 +183,56 @@ export function LeadDetailDrawer({ lead, open, onClose }: LeadDetailDrawerProps)
               {asText(lead.preferredLocation) ? (
                 <p className="text-caption text-[var(--color-text-secondary)]">{asText(lead.preferredLocation)}</p>
               ) : null}
+              {lead.propertyId ? (
+                <Link to={`/properties/${lead.propertyId}`} className="inline-flex items-center gap-2 text-sm font-medium text-[var(--color-accent)]">
+                  View linked property
+                  <ArrowRight className="h-4 w-4" />
+                </Link>
+              ) : null}
             </div>
+            <div className="flex flex-wrap gap-2">
+              <StatusBadge status={lead.status} />
+              {lead.source ? <StatusBadge status={String(lead.source)} /> : null}
+            </div>
+          </section>
+
+          <section className="grid gap-3 rounded-card border border-[var(--color-border)] bg-[var(--color-surface)] p-4 md:grid-cols-2">
+            <label className="space-y-2">
+              <span className="text-small font-semibold uppercase tracking-[0.18em] text-[var(--color-text-secondary)]">Status</span>
+              <select
+                value={status}
+                onChange={(event) => {
+                  const next = event.target.value;
+                  setStatus(next);
+                  void statusMutation.mutateAsync(next);
+                }}
+                className="h-11 w-full rounded-input border border-[var(--color-border)] bg-[var(--color-surface)] px-4 text-sm outline-none transition focus-visible:border-[var(--color-accent)]"
+              >
+                {["new", "contacted", "qualified", "converted", "closed", "spam"].map((item) => (
+                  <option key={item} value={item}>
+                    {item}
+                  </option>
+                ))}
+              </select>
+            </label>
+            <label className="space-y-2">
+              <span className="text-small font-semibold uppercase tracking-[0.18em] text-[var(--color-text-secondary)]">Assignee</span>
+              <select
+                value={assigneeId}
+                onChange={(event) => {
+                  setAssigneeId(event.target.value);
+                  void assignmentMutation.mutateAsync(event.target.value);
+                }}
+                className="h-11 w-full rounded-input border border-[var(--color-border)] bg-[var(--color-surface)] px-4 text-sm outline-none transition focus-visible:border-[var(--color-accent)]"
+              >
+                <option value="">Unassigned</option>
+                {(usersQuery.data?.data ?? []).map((user) => (
+                  <option key={user.id} value={user.id}>
+                    {user.fullName}
+                  </option>
+                ))}
+              </select>
+            </label>
           </section>
 
           <section className="space-y-3">
@@ -141,15 +247,10 @@ export function LeadDetailDrawer({ lead, open, onClose }: LeadDetailDrawerProps)
                 notes.map((note, index) => (
                   <article
                     key={note.id}
-                    className={cn(
-                      "space-y-3",
-                      index !== notes.length - 1 && "border-b border-[var(--color-border)] pb-4",
-                    )}
+                    className={cn("space-y-3", index !== notes.length - 1 && "border-b border-[var(--color-border)] pb-4")}
                   >
                     <div className="flex items-center justify-between gap-4">
-                      <p className="text-caption font-medium text-[var(--color-text-primary)]">
-                        {(note as LeadNote & { authorName?: string }).authorName ?? authorLabel}
-                      </p>
+                      <p className="text-caption font-medium text-[var(--color-text-primary)]">{(note as LeadNote & { authorName?: string }).authorName ?? authorLabel}</p>
                       <p className="text-caption text-[var(--color-text-secondary)]">{formatTimestamp(note.createdAt)}</p>
                     </div>
                     <RichTextContent html={(note as LeadNote & { content?: string }).content ?? note.note} />
@@ -159,7 +260,7 @@ export function LeadDetailDrawer({ lead, open, onClose }: LeadDetailDrawerProps)
             </div>
           </section>
 
-          <section className="space-y-3">
+          <section className="space-y-3 rounded-card border border-[var(--color-border)] bg-[var(--color-surface)] p-4">
             <RichTextEditorField
               name="note"
               control={control}
@@ -168,6 +269,7 @@ export function LeadDetailDrawer({ lead, open, onClose }: LeadDetailDrawerProps)
               minHeight={160}
               maxCharacters={2000}
               showAlignment={false}
+              toolbarVariant="editorial"
               rules={{ required: "Note cannot be empty" }}
             />
             <div className="flex items-center justify-end gap-3">
@@ -180,12 +282,12 @@ export function LeadDetailDrawer({ lead, open, onClose }: LeadDetailDrawerProps)
               </button>
               <button
                 type="button"
-                disabled={isSubmitting || isSaving}
+                disabled={isSubmitting || isSaving || noteMutation.isPending}
                 onClick={handleSubmit(async (values) => {
                   if (!lead) return;
                   setIsSaving(true);
                   try {
-                    const created = await addLeadNote(lead.id, { note: values.note });
+                    const created = await noteMutation.mutateAsync(values.note);
                     setNotes((current) => [created, ...current]);
                     reset({ note: "" });
                   } finally {
@@ -194,7 +296,7 @@ export function LeadDetailDrawer({ lead, open, onClose }: LeadDetailDrawerProps)
                 })}
                 className="inline-flex h-11 items-center justify-center rounded-input bg-[var(--color-accent)] px-4 text-sm font-medium text-white transition hover:bg-[var(--color-accent-hover)] disabled:cursor-not-allowed disabled:opacity-60"
               >
-                {isSubmitting || isSaving ? "Saving..." : "Save Note"}
+                {isSubmitting || isSaving || noteMutation.isPending ? "Saving..." : "Save Note"}
               </button>
             </div>
           </section>

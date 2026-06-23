@@ -31,7 +31,7 @@ type ViteEnv = {
 
 const rawFetch = globalThis.fetch.bind(globalThis);
 const viteBaseUrl = (import.meta as ImportMeta & { env?: ViteEnv }).env?.VITE_API_BASE_URL ?? "";
-const fallbackBaseUrl = globalThis.location?.origin ?? "";
+const fallbackBaseUrl = "https://gb-est-api-production-5a53612aa0b9.herokuapp.com/api/v1";
 const baseUrl = viteBaseUrl || fallbackBaseUrl;
 
 const publicRouteMatchers: RegExp[] = [

@@ -63,68 +63,70 @@ function mapSearchFiltersToSpecQuery(filters?: PublicListingsQuery): Record<stri
 
 export async function listProperties(
   filters?: PropertyFilters,
-): Promise<components["schemas"]["PaginatedPropertiesResponseDto"]> {
+): Promise<{ data: Property[]; meta: components["schemas"]["PropertyPaginationMetaDto"] }> {
   const response = await unwrapApiResponse(
     privateClient.GET("/api/v1/properties", {
       params: { query: filters as never },
     }),
   );
-  return response as components["schemas"]["PaginatedPropertiesResponseDto"];
+  const typed = response as components["schemas"]["PaginatedPropertiesResponseDto"];
+  return {
+    data: (typed.data ?? []) as Property[],
+    meta: typed.meta,
+  };
 }
 
 export async function createProperty(payload: CreatePropertyPayload): Promise<Property> {
-  return unwrapApiResponse(privateClient.POST("/api/v1/properties", { body: payload }));
+  return (await unwrapApiResponse(privateClient.POST("/api/v1/properties", { body: payload }))) as unknown as Property;
 }
 
-export async function getPropertyById(id: string): Promise<components["schemas"]["PublicPropertyResponseDto"]> {
-  return unwrapApiResponse(
-    privateClient.GET("/api/v1/properties/{id}", { params: { path: { id } } }),
-  ) as Promise<components["schemas"]["PublicPropertyResponseDto"]>;
+export async function getPropertyById(id: string): Promise<Property> {
+  return (await unwrapApiResponse(privateClient.GET("/api/v1/properties/{id}", { params: { path: { id } } }))) as unknown as Property;
 }
 
 export async function updateProperty(id: string, payload: UpdatePropertyPayload): Promise<Property> {
-  return unwrapApiResponse(privateClient.PATCH("/api/v1/properties/{id}", { params: { path: { id } }, body: payload }));
+  return (await unwrapApiResponse(privateClient.PATCH("/api/v1/properties/{id}", { params: { path: { id } }, body: payload }))) as unknown as Property;
 }
 
 export async function submitPropertyForReview(
   id: string,
   payload?: { reason?: string },
 ): Promise<Property> {
-  return unwrapApiResponse(
+  return (await unwrapApiResponse(
     privateClient.POST("/api/v1/properties/{id}/submit-review", {
       params: { path: { id } },
       body: payload ?? {},
     }),
-  );
+  )) as unknown as Property;
 }
 
 export async function approveProperty(id: string): Promise<Property> {
-  return unwrapApiResponse(privateClient.POST("/api/v1/properties/{id}/approve", { params: { path: { id } } }));
+  return (await unwrapApiResponse(privateClient.POST("/api/v1/properties/{id}/approve", { params: { path: { id } } }))) as unknown as Property;
 }
 
 export async function publishProperty(id: string, payload?: { reason?: string }): Promise<Property> {
-  return unwrapApiResponse(
+  return (await unwrapApiResponse(
     privateClient.POST("/api/v1/properties/{id}/publish", {
       params: { path: { id } },
       body: payload ?? {},
     }),
-  );
+  )) as unknown as Property;
 }
 
 export async function archiveProperty(id: string, payload?: { reason?: string }): Promise<Property> {
-  return unwrapApiResponse(
+  return (await unwrapApiResponse(
     privateClient.POST("/api/v1/properties/{id}/archive", {
       params: { path: { id } },
       body: payload ?? {},
     }),
-  );
+  )) as unknown as Property;
 }
 
 export async function getPublicListings(filters?: PublicListingsQuery): Promise<PublicListingsResponse> {
   const response = await unwrapApiResponse(
-    (publicClient.GET as any)("/api/v1/public/properties/discovery", {
+    publicClient.GET("/api/v1/public/properties/discovery" as never, {
       params: { query: mapSearchFiltersToSpecQuery(filters) },
-    }),
+    } as never),
   );
   const typed = response as components["schemas"]["PaginatedPublicPropertiesResponseDto"] & {
     meta?: Partial<PublicListingsMeta> & { limit?: number };
@@ -153,7 +155,7 @@ export async function discoverProperties(
 
 export async function getPublicPropertyById(id: string): Promise<components["schemas"]["PublicPropertyResponseDto"]> {
   return unwrapApiResponse(
-    (publicClient.GET as any)("/api/v1/public/properties/{id}", { params: { path: { id } } }),
+    publicClient.GET("/api/v1/public/properties/{id}" as never, { params: { path: { id } } } as never),
   ) as Promise<components["schemas"]["PublicPropertyResponseDto"]>;
 }
 
