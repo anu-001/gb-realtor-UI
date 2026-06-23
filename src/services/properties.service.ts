@@ -81,9 +81,9 @@ export async function createProperty(payload: CreatePropertyPayload): Promise<Pr
 }
 
 export async function getPropertyById(id: string): Promise<components["schemas"]["PublicPropertyResponseDto"]> {
-  return unwrapApiResponse(publicClient.GET("/api/v1/properties/{id}", { params: { path: { id } } })) as Promise<
-    components["schemas"]["PublicPropertyResponseDto"]
-  >;
+  return unwrapApiResponse(
+    privateClient.GET("/api/v1/properties/{id}", { params: { path: { id } } }),
+  ) as Promise<components["schemas"]["PublicPropertyResponseDto"]>;
 }
 
 export async function updateProperty(id: string, payload: UpdatePropertyPayload): Promise<Property> {
@@ -126,8 +126,8 @@ export async function archiveProperty(id: string, payload?: { reason?: string })
 
 export async function getPublicListings(filters?: PublicListingsQuery): Promise<PublicListingsResponse> {
   const response = await unwrapApiResponse(
-    publicClient.GET("/api/v1/properties/discovery", {
-      params: { query: mapSearchFiltersToSpecQuery(filters) as never },
+    (publicClient.GET as any)("/api/v1/public/properties/discovery", {
+      params: { query: mapSearchFiltersToSpecQuery(filters) },
     }),
   );
   const typed = response as components["schemas"]["PaginatedPublicPropertiesResponseDto"] & {
@@ -156,9 +156,9 @@ export async function discoverProperties(
 }
 
 export async function getPublicPropertyById(id: string): Promise<components["schemas"]["PublicPropertyResponseDto"]> {
-  return unwrapApiResponse(publicClient.GET("/api/v1/properties/{id}", { params: { path: { id } } })) as Promise<
-    components["schemas"]["PublicPropertyResponseDto"]
-  >;
+  return unwrapApiResponse(
+    (publicClient.GET as any)("/api/v1/public/properties/{id}", { params: { path: { id } } }),
+  ) as Promise<components["schemas"]["PublicPropertyResponseDto"]>;
 }
 
 export async function getFeaturedProperties(): Promise<components["schemas"]["FeaturedPropertyResponseDto"][]> {

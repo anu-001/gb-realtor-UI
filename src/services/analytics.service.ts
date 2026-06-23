@@ -1,4 +1,4 @@
-import { apiClient } from "./api-client";
+import { apiClient, publicClient } from "./api-client";
 import { unwrapApiResponse } from "./_request";
 
 export async function getAnalyticsSummary(
@@ -18,9 +18,9 @@ export async function getInfrastructure(): Promise<import("../types/api.generate
 }
 
 export async function getHealth(): Promise<import("../types/api.generated").components["schemas"]["HealthResponseDto"]> {
-  return unwrapApiResponse(apiClient.GET("/health"));
+  return unwrapApiResponse(publicClient.GET("/health"));
 }
 
 export async function getReadiness(): Promise<import("../types/api.generated").components["schemas"]["ReadinessResponseDto"]> {
-  return unwrapApiResponse(apiClient.GET("/health/ready"));
+  return unwrapApiResponse(publicClient.GET("/health/ready"));
 }

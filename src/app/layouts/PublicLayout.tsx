@@ -1,5 +1,5 @@
 import type { ReactNode } from "react";
-import { Outlet } from "react-router-dom";
+import { Link, Outlet } from "react-router-dom";
 import { motion } from "framer-motion";
 import { pageTransition } from "@/utils/motion";
 import { TopNav } from "@/components/layout/TopNav";
@@ -15,9 +15,28 @@ export function PublicLayout({ children }: PublicLayoutProps) {
       <motion.main id="main-content" {...pageTransition} className="app-container py-8">
         {children ?? <Outlet />}
       </motion.main>
-      <footer className="border-t border-[var(--color-border)] py-6">
-        <div className="app-container text-sm text-[var(--color-text-secondary)]">
-          GB &amp; Associates Estate Surveyor
+      <footer className="border-t border-[var(--color-border)] bg-[color-mix(in_srgb,var(--color-surface)_85%,var(--color-bg))] py-8">
+        <div className="app-container flex flex-col gap-6 md:flex-row md:items-center md:justify-between">
+          <div className="space-y-2">
+            <p className="font-display text-h4 text-[var(--color-text-primary)]">Need help finding the right property?</p>
+            <p className="max-w-xl text-body text-[var(--color-text-secondary)]">
+              Browse listings, save favorites, or request a property brief from the team.
+            </p>
+          </div>
+          <div className="flex flex-wrap items-center gap-3 text-sm font-medium">
+            <Link to="/search" className="text-[var(--color-text-secondary)] transition hover:text-[var(--color-text-primary)]">
+              Listings
+            </Link>
+            <Link to="/#featured" className="text-[var(--color-text-secondary)] transition hover:text-[var(--color-text-primary)]">
+              Featured
+            </Link>
+            <Link to="/#lead-cta" className="text-[var(--color-text-secondary)] transition hover:text-[var(--color-text-primary)]">
+              Request property
+            </Link>
+            <Link to="/#contact" className="text-[var(--color-text-secondary)] transition hover:text-[var(--color-text-primary)]">
+              Contact
+            </Link>
+          </div>
         </div>
       </footer>
     </div>

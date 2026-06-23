@@ -35,12 +35,14 @@ const fallbackBaseUrl = globalThis.location?.origin ?? "";
 const baseUrl = viteBaseUrl || fallbackBaseUrl;
 
 const publicRouteMatchers: RegExp[] = [
-  /^\/api(?:\/v1)?\/properties\/(?:discovery|public)(?:\/[^/?#]+)?(?:\/?)?$/,
-  /^\/api(?:\/v1)?\/leads(?:\/?)?$/,
-  /^\/api(?:\/v1)?\/health(?:\/?)?$/,
-  /^\/health(?:\/?)?$/,
-  /^\/api(?:\/v1)?\/auth\/login(?:\/?)?$/,
-  /^\/api(?:\/v1)?\/auth\/refresh(?:\/?)?$/,
+  /^\/health(?:\/ready)?(?:\/?)?$/,
+  /^\/api\/v1\/health(?:\/ready)?(?:\/?)?$/,
+  /^\/api\/v1\/featured-properties(?:\/[^/?#]+)?(?:\/?)?$/,
+  /^\/api\/v1\/public\/properties\/discovery(?:\/?)?$/,
+  /^\/api\/v1\/public\/properties\/[^/?#]+(?:\/?)?$/,
+  /^\/api\/v1\/public\/leads(?:\/?)?$/,
+  /^\/api\/v1\/auth\/login(?:\/?)?$/,
+  /^\/api\/v1\/auth\/refresh(?:\/?)?$/,
 ];
 
 let config: ApiClientConfig = {};

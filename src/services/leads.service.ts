@@ -10,7 +10,7 @@ import { privateClient, publicClient } from "./api-client";
 import { unwrapApiResponse } from "./_request";
 
 export async function captureLead(payload: CreateLeadPayload): Promise<Lead> {
-  return unwrapApiResponse(publicClient.POST("/api/v1/leads", { body: payload }));
+  return unwrapApiResponse((publicClient.POST as any)("/api/v1/public/leads", { body: payload }));
 }
 
 export const createPublicLead = captureLead;
