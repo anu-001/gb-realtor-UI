@@ -2,6 +2,7 @@ import { useQuery } from "@tanstack/react-query";
 import { Link } from "react-router-dom";
 import { ArrowRight, Bell, BookOpen, Building2, Compass, FolderOpen, LayoutDashboard, Plus, Users } from "lucide-react";
 import { getAnalyticsDashboard } from "@/services/analytics.service";
+import { listAuditLogs } from "@/services/users.service";
 import { StatCard } from "@/components/data-display/StatCard";
 import { SkeletonLoader } from "@/components/feedback/SkeletonLoader";
 import { EmptyState } from "@/components/feedback/EmptyState";
@@ -55,6 +56,41 @@ function getPerformanceRows(value: unknown): Array<{ label: string; value: strin
   });
 }
 
+function getAuditAction(entry: unknown): string {
+  const record = asRecord(entry);
+  return (
+    (typeof record.action === "string" && record.action) ||
+    (typeof record.event === "string" && record.event) ||
+    "Activity"
+  );
+}
+
+function getAuditTimestamp(entry: unknown): string {
+  const record = asRecord(entry);
+  const value =
+    (typeof record.createdAt === "string" && record.createdAt) ||
+    (typeof record.timestamp === "string" && record.timestamp) ||
+    null;
+  return value ? new Date(value).toLocaleString() : "Recent";
+}
+
+function getAuditActor(entry: unknown): string {
+  const record = asRecord(entry);
+  const actor = asRecord(record.actor ?? record.user ?? record.owner);
+  return (
+    (typeof actor.fullName === "string" && actor.fullName) ||
+    (typeof actor.name === "string" && actor.name) ||
+    "System"
+  );
+}
+
+function getAuditTarget(entry: unknown): string | null {
+  const record = asRecord(entry);
+  const target = asRecord(record.target);
+  const candidate = typeof target.name === "string" ? target.name : typeof target.title === "string" ? target.title : null;
+  return candidate;
+}
+
 export default function AgentOverviewPage() {
   const role = resolveAgentRole(useAppSelector((state) => state.auth.user?.role ?? state.auth.user?.roles?.[0]?.code ?? "PropertyManager")) ?? "PropertyManager";
   const dashboardQuery = useQuery({
@@ -64,9 +100,17 @@ export default function AgentOverviewPage() {
     retry: 1,
   });
 
+  const auditQuery = useQuery({
+    queryKey: ["agent-audit-logs"],
+    queryFn: () => listAuditLogs({ limit: 5 }),
+    staleTime: 120_000,
+    retry: 1,
+  });
+
   const summary = dashboardQuery.data;
   const activityEntries = getActionRows(summary?.internalActivityLogs);
   const featuredEntries = getPerformanceRows(summary?.featuredPropertyPerformance);
+  const auditEntries = auditQuery.data?.data ?? [];
   const canCreate = canCreateListing(role);
   const canViewLeadQueue = canViewLeads(role);
   const canSeeAnalytics = canViewAnalytics(role);
@@ -189,45 +233,45 @@ export default function AgentOverviewPage() {
         ))}
       </div>
 
-      <section className="space-y-4 rounded-card border border-[var(--color-border)] bg-[var(--color-surface)] p-6 shadow-card">
-        <div className="flex items-center justify-between gap-4">
-          <div>
-            <h2 className="font-display text-h4 text-[var(--color-text-primary)]">Resources</h2>
-            <p className="text-caption text-[var(--color-text-secondary)]">
-              Quick access to the core admin surfaces, arranged for fast navigation.
-            </p>
-          </div>
-          <span className="rounded-full border border-[var(--color-border)] px-3 py-1 text-caption text-[var(--color-text-secondary)]">
-            Workspace links
-          </span>
-        </div>
-
-        <div className="grid gap-3 md:grid-cols-2 xl:grid-cols-3">
-          {resources.map((resource) => {
-            const Icon = resource.icon;
-            return (
-              <Link
-                key={resource.to}
-                to={resource.to}
-                className="group flex min-h-28 flex-col justify-between rounded-[20px] border border-[var(--color-border)] bg-[color-mix(in_srgb,var(--color-surface)_96%,white)] p-4 transition hover:-translate-y-0.5 hover:border-[color-mix(in_srgb,var(--color-accent)_35%,var(--color-border))] hover:bg-[var(--color-surface-raised)]"
-              >
-                <div className="flex items-start justify-between gap-4">
-                  <div className="flex h-11 w-11 items-center justify-center rounded-full border border-[var(--color-border)] bg-[var(--color-surface)] text-[var(--color-accent)] transition group-hover:bg-[color-mix(in_srgb,var(--color-accent)_8%,white)]">
-                    <Icon className="h-4 w-4" aria-hidden="true" />
-                  </div>
-                  <ArrowRight className="h-4 w-4 text-[var(--color-text-secondary)] transition group-hover:translate-x-0.5 group-hover:text-[var(--color-accent)]" />
-                </div>
-                <div className="mt-4 space-y-1">
-                  <p className="font-medium text-[var(--color-text-primary)]">{resource.label}</p>
-                  <p className="text-caption text-[var(--color-text-secondary)]">{resource.description}</p>
-                </div>
-              </Link>
-            );
-          })}
-        </div>
-      </section>
-
       <div className="grid gap-6 xl:grid-cols-[minmax(0,1.2fr)_minmax(0,0.8fr)]">
+        <section className="space-y-4 rounded-card border border-[var(--color-border)] bg-[var(--color-surface)] p-6 shadow-card">
+          <div className="flex items-center justify-between gap-4">
+            <div>
+              <h2 className="font-display text-h4 text-[var(--color-text-primary)]">Resources</h2>
+              <p className="text-caption text-[var(--color-text-secondary)]">
+                Shortcuts to the areas the team uses most.
+              </p>
+            </div>
+            <span className="rounded-full border border-[var(--color-border)] px-3 py-1 text-caption text-[var(--color-text-secondary)]">
+              Workspace links
+            </span>
+          </div>
+
+          <div className="grid gap-3 md:grid-cols-2">
+            {resources.map((resource) => {
+              const Icon = resource.icon;
+              return (
+                <Link
+                  key={resource.to}
+                  to={resource.to}
+                  className="group flex min-h-28 flex-col justify-between rounded-[20px] border border-[var(--color-border)] bg-[color-mix(in_srgb,var(--color-surface)_96%,white)] p-4 transition hover:-translate-y-0.5 hover:border-[color-mix(in_srgb,var(--color-accent)_35%,var(--color-border))] hover:bg-[var(--color-surface-raised)]"
+                >
+                  <div className="flex items-start justify-between gap-4">
+                    <div className="flex h-11 w-11 items-center justify-center rounded-full border border-[var(--color-border)] bg-[var(--color-surface)] text-[var(--color-accent)] transition group-hover:bg-[color-mix(in_srgb,var(--color-accent)_8%,white)]">
+                      <Icon className="h-4 w-4" aria-hidden="true" />
+                    </div>
+                    <ArrowRight className="h-4 w-4 text-[var(--color-text-secondary)] transition group-hover:translate-x-0.5 group-hover:text-[var(--color-accent)]" />
+                  </div>
+                  <div className="mt-4 space-y-1">
+                    <p className="font-medium text-[var(--color-text-primary)]">{resource.label}</p>
+                    <p className="text-caption text-[var(--color-text-secondary)]">{resource.description}</p>
+                  </div>
+                </Link>
+              );
+            })}
+          </div>
+        </section>
+
         <section className="space-y-4 rounded-card border border-[var(--color-border)] bg-[var(--color-surface)] p-6 shadow-card" aria-busy={dashboardQuery.isFetching}>
           <div className="flex items-center justify-between">
             <div>
@@ -248,7 +292,9 @@ export default function AgentOverviewPage() {
             </ul>
           )}
         </section>
+      </div>
 
+      <div className="grid gap-6 xl:grid-cols-[minmax(0,1.2fr)_minmax(0,0.8fr)]">
         <section className="space-y-4 rounded-card border border-[var(--color-border)] bg-[var(--color-surface)] p-6 shadow-card" aria-busy={dashboardQuery.isFetching}>
           <div>
             <h2 className="font-display text-h4 text-[var(--color-text-primary)]">Featured performance</h2>
@@ -262,6 +308,42 @@ export default function AgentOverviewPage() {
                 <div key={item.label} className="rounded-[16px] border border-[var(--color-border)] px-4 py-3">
                   <p className="text-caption text-[var(--color-text-secondary)]">{item.label}</p>
                   <p className="mt-2 font-display text-h4 text-[var(--color-text-primary)]">{item.value}</p>
+                </div>
+              ))}
+            </div>
+          )}
+        </section>
+
+        <section className="space-y-4 rounded-card border border-[var(--color-border)] bg-[var(--color-surface)] p-6 shadow-card">
+          <div className="flex items-center justify-between gap-4">
+            <div>
+              <h2 className="font-display text-h4 text-[var(--color-text-primary)]">Audit trail</h2>
+              <p className="text-caption text-[var(--color-text-secondary)]">The most recent admin actions from the users endpoint.</p>
+            </div>
+            <span className="rounded-full border border-[var(--color-border)] px-3 py-1 text-caption text-[var(--color-text-secondary)]">
+              Live feed
+            </span>
+          </div>
+          {auditQuery.isLoading ? (
+            <div className="space-y-3">
+              {Array.from({ length: 4 }).map((_, index) => (
+                <SkeletonLoader key={index} height="64px" />
+              ))}
+            </div>
+          ) : auditEntries.length === 0 ? (
+            <EmptyState heading="No audit activity" message="Recent administrative actions will appear here." />
+          ) : (
+            <div className="space-y-3">
+              {auditEntries.map((entry, index) => (
+                <div key={typeof (entry as { id?: string }).id === "string" ? (entry as { id?: string }).id : `${getAuditAction(entry)}-${index}`} className="rounded-[18px] border border-[var(--color-border)] px-4 py-3">
+                  <div className="flex items-center justify-between gap-4">
+                    <p className="font-medium text-[var(--color-text-primary)]">{getAuditAction(entry)}</p>
+                    <span className="text-caption text-[var(--color-text-secondary)]">{getAuditTimestamp(entry)}</span>
+                  </div>
+                  <p className="mt-1 text-caption text-[var(--color-text-secondary)]">
+                    {getAuditActor(entry)}
+                    {getAuditTarget(entry) ? ` • ${getAuditTarget(entry)}` : ""}
+                  </p>
                 </div>
               ))}
             </div>

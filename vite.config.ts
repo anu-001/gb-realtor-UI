@@ -17,6 +17,24 @@ export default defineConfig({
   ],
   build: {
     sourcemap: false,
+    rollupOptions: {
+      output: {
+        manualChunks(id) {
+          if (id.includes("node_modules")) {
+            if (id.includes("@tiptap")) return "vendor-tiptap";
+            if (id.includes("recharts")) return "vendor-recharts";
+            if (id.includes("mapbox-gl")) return "vendor-mapbox";
+            if (id.includes("@reduxjs/toolkit") || id.includes("react-redux")) return "vendor-redux";
+            if (id.includes("@tanstack/react-query") || id.includes("@tanstack/react-table") || id.includes("@tanstack/react-virtual")) {
+              return "vendor-tanstack";
+            }
+            if (id.includes("react-router-dom")) return "vendor-router";
+            if (id.includes("dompurify")) return "vendor-dompurify";
+          }
+          return undefined;
+        },
+      },
+    },
   },
   resolve: {
     alias: {

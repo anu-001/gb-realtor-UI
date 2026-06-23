@@ -1,11 +1,11 @@
-import { useState } from "react";
+import { Suspense, lazy, useState } from "react";
 import { Bath, Bed, Heart, Share2, Maximize2 } from "lucide-react";
 import { Link } from "react-router-dom";
 import { motion } from "framer-motion";
 import type { components } from "@/types/api.generated";
 import { StatusBadge } from "./StatusBadge";
 import { cn } from "@/utils/cn";
-import { InquiryModal } from "./InquiryModal";
+const InquiryModal = lazy(() => import("./InquiryModal").then((module) => ({ default: module.InquiryModal })));
 
 type PropertyCardProps = {
   property: components["schemas"]["PublicPropertyResponseDto"];
@@ -170,13 +170,15 @@ export function PropertyCard({ property, showEnquiry = false, variant = "grid", 
         ) : null}
       </div>
       {showEnquiry ? (
-        <InquiryModal
-          open={inquiryOpen}
-          onOpenChange={setInquiryOpen}
-          propertyId={property.id}
-          propertyTitle={property.title}
-          preferredLocation={`${property.area}, ${property.city}`}
-        />
+        <Suspense fallback={null}>
+          <InquiryModal
+            open={inquiryOpen}
+            onOpenChange={setInquiryOpen}
+            propertyId={property.id}
+            propertyTitle={property.title}
+            preferredLocation={`${property.area}, ${property.city}`}
+          />
+        </Suspense>
       ) : null}
     </motion.article>
   );
