@@ -3,7 +3,7 @@ import { AnimatePresence, motion } from "framer-motion";
 import { z } from "zod";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { ArrowRight, CheckCircle2, MapPin, Sparkles } from "lucide-react";
+import { ArrowRight, CheckCircle2, MapPin } from "lucide-react";
 import { createPublicLead } from "@/services/leads.service";
 import { RichTextEditorField } from "@/components/ui/RichTextEditorField";
 import { getApiErrorMessage, getFieldErrors, parseApiError } from "@/utils/api-error";
@@ -246,10 +246,7 @@ export function RequestPropertyForm({
     >
       {!compact ? (
         <div className="border-b border-[var(--color-border)] bg-[linear-gradient(180deg,color-mix(in_srgb,var(--color-surface)_96%,white)_0%,var(--color-surface)_100%)] p-6 md:p-8">
-          <div className="inline-flex items-center gap-2 rounded-full border border-[var(--color-border)] bg-[var(--color-surface)] px-3 py-1.5 text-small font-medium text-[var(--color-text-secondary)]">
-            <Sparkles className="h-4 w-4 text-[var(--color-accent)]" />
-            Private request
-          </div>
+          <p className="text-small font-semibold uppercase tracking-[0.2em] text-[var(--color-text-secondary)]">Private request</p>
           <h2 className="mt-5 font-display text-h2 text-[var(--color-text-primary)]">{headline}</h2>
           <p className="mt-3 max-w-2xl text-body-lg text-[var(--color-text-secondary)]">{subheading}</p>
         </div>
@@ -258,10 +255,7 @@ export function RequestPropertyForm({
       <div className={cn("p-6 md:p-8", compact && "md:p-10")}>
         {compact ? (
           <div className="mb-6 flex flex-col gap-4 border-b border-[var(--color-border)] pb-6 sm:flex-row sm:items-center sm:justify-between">
-            <div className="inline-flex items-center gap-2 rounded-full border border-[var(--color-border)] bg-[var(--color-surface)] px-3 py-1.5 text-small font-medium text-[var(--color-text-secondary)]">
-              <Sparkles className="h-4 w-4 text-[var(--color-accent)]" />
-              Private request
-            </div>
+            <p className="text-small font-semibold uppercase tracking-[0.2em] text-[var(--color-text-secondary)]">Private request</p>
 
             {hasContext ? (
               <div className="max-w-sm rounded-[24px] border border-[var(--color-border)] bg-[var(--color-surface)] px-4 py-3">
@@ -467,7 +461,7 @@ export function RequestPropertyForm({
                   placeholder="Tell us what you need, e.g. 3-bedroom apartment in Lekki, gated estate, budget under 150m."
                   minHeight={140}
                   maxCharacters={1000}
-                  toolbarVariant="minimal"
+                  toolbarVariant="editorial"
                   required
                   rules={{ required: "Tell us a little about what you need" }}
                 />

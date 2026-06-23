@@ -34,7 +34,7 @@ export interface RichTextEditorProps {
   placeholder?: string;
   minHeight?: number;
   maxCharacters?: number;
-  toolbarVariant?: "full" | "minimal";
+  toolbarVariant?: "full" | "minimal" | "editorial";
   showAlignment?: boolean;
   disabled?: boolean;
   error?: string;
@@ -56,10 +56,11 @@ function ToolbarButton({ active, disabled, onClick, label, children }: ToolbarBu
     <button
       type="button"
       aria-label={label}
+      aria-pressed={active}
       disabled={disabled}
       onClick={onClick}
       className={cn(
-        "inline-flex h-8 w-8 items-center justify-center rounded-sm text-[var(--color-text-secondary)] transition",
+        "inline-flex h-9 w-9 items-center justify-center rounded-md text-[var(--color-text-secondary)] transition",
         "hover:bg-[var(--color-surface-raised)] hover:text-[var(--color-text-primary)]",
         active && "bg-[var(--color-accent-subtle)] text-[var(--color-accent)]",
         disabled && "cursor-not-allowed opacity-50 hover:bg-transparent hover:text-[var(--color-text-secondary)]",
@@ -158,6 +159,9 @@ export function RichTextEditor({
   const describedBy = [helperText ? helperTextId : undefined, error ? errorId : undefined]
     .filter(Boolean)
     .join(" ") || undefined;
+  const isFull = toolbarVariant === "full";
+  const isEditorial = toolbarVariant === "editorial";
+  const showInlineStyles = toolbarVariant !== "minimal";
 
   const submitLink = () => {
     if (!editor) return;
@@ -228,7 +232,7 @@ export function RichTextEditor({
             >
               <Italic className="h-4 w-4" />
             </ToolbarButton>
-            {toolbarVariant === "full" ? (
+            {showInlineStyles ? (
               <>
                 <ToolbarButton
                   label="Underline"
@@ -250,10 +254,9 @@ export function RichTextEditor({
             ) : null}
           </div>
 
-          {toolbarVariant === "full" ? (
+          {isFull ? (
             <>
               <ToolbarDivider />
-
               <div className="flex items-center gap-1">
                 <ToolbarButton
                   label="H2"
@@ -280,9 +283,12 @@ export function RichTextEditor({
                   <span className="text-small font-semibold">P</span>
                 </ToolbarButton>
               </div>
+            </>
+          ) : null}
 
+          {toolbarVariant !== "minimal" ? (
+            <>
               <ToolbarDivider />
-
               <div className="flex items-center gap-1">
                 <ToolbarButton
                   label="Bullet list"
@@ -301,41 +307,44 @@ export function RichTextEditor({
                   <ListOrdered className="h-4 w-4" />
                 </ToolbarButton>
               </div>
+            </>
+          ) : null}
 
-              {showAlignment ? (
-                <>
-                  <ToolbarDivider />
-                  <div className="flex items-center gap-1">
-                    <ToolbarButton
-                      label="Align left"
-                      active={editor.isActive({ textAlign: "left" })}
-                      disabled={disabled}
-                      onClick={() => editor.chain().focus().setTextAlign("left").run()}
-                    >
-                      <AlignLeft className="h-4 w-4" />
-                    </ToolbarButton>
-                    <ToolbarButton
-                      label="Align center"
-                      active={editor.isActive({ textAlign: "center" })}
-                      disabled={disabled}
-                      onClick={() => editor.chain().focus().setTextAlign("center").run()}
-                    >
-                      <AlignCenter className="h-4 w-4" />
-                    </ToolbarButton>
-                    <ToolbarButton
-                      label="Align right"
-                      active={editor.isActive({ textAlign: "right" })}
-                      disabled={disabled}
-                      onClick={() => editor.chain().focus().setTextAlign("right").run()}
-                    >
-                      <AlignRight className="h-4 w-4" />
-                    </ToolbarButton>
-                  </div>
-                </>
-              ) : null}
-
+          {showAlignment && isFull ? (
+            <>
               <ToolbarDivider />
+              <div className="flex items-center gap-1">
+                <ToolbarButton
+                  label="Align left"
+                  active={editor.isActive({ textAlign: "left" })}
+                  disabled={disabled}
+                  onClick={() => editor.chain().focus().setTextAlign("left").run()}
+                >
+                  <AlignLeft className="h-4 w-4" />
+                </ToolbarButton>
+                <ToolbarButton
+                  label="Align center"
+                  active={editor.isActive({ textAlign: "center" })}
+                  disabled={disabled}
+                  onClick={() => editor.chain().focus().setTextAlign("center").run()}
+                >
+                  <AlignCenter className="h-4 w-4" />
+                </ToolbarButton>
+                <ToolbarButton
+                  label="Align right"
+                  active={editor.isActive({ textAlign: "right" })}
+                  disabled={disabled}
+                  onClick={() => editor.chain().focus().setTextAlign("right").run()}
+                >
+                  <AlignRight className="h-4 w-4" />
+                </ToolbarButton>
+              </div>
+            </>
+          ) : null}
 
+          {toolbarVariant !== "minimal" ? (
+            <>
+              <ToolbarDivider />
               <div className="relative flex items-center gap-1">
                 <ToolbarButton
                   label="Link"
@@ -386,15 +395,12 @@ export function RichTextEditor({
           ) : null}
         </div>
 
-      <EditorContent
-        editor={editor}
-        id={id}
-        aria-label={label ?? placeholder}
-        aria-describedby={describedBy}
-        className={cn(
-          "tiptap-content px-4 py-4 outline-none",
-          disabled && "cursor-not-allowed",
-        )}
+        <EditorContent
+          editor={editor}
+          id={id}
+          aria-label={label ?? placeholder}
+          aria-describedby={describedBy}
+          className={cn("tiptap-content px-4 py-4 outline-none", disabled && "cursor-not-allowed")}
           style={{ minHeight }}
         />
       </div>
@@ -409,7 +415,7 @@ export function RichTextEditor({
           <span />
         )}
 
-        {toolbarVariant === "full" && typeof maxCharacters === "number" ? (
+        {toolbarVariant !== "minimal" && typeof maxCharacters === "number" ? (
           <p className={cn("text-right text-small text-[var(--color-text-muted)]", countWarning && "text-[var(--color-danger)]")}>
             {characterCount} / {maxCharacters} characters
           </p>
