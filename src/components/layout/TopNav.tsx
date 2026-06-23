@@ -2,7 +2,6 @@ import { useState } from "react";
 import { Link } from "react-router-dom";
 import { AnimatePresence, motion } from "framer-motion";
 import { Menu, Sparkles, ArrowRight } from "lucide-react";
-import { Typography } from "@/components/ui/Typography";
 import { cn } from "@/utils/cn";
 
 export function TopNav() {
@@ -15,22 +14,16 @@ export function TopNav() {
           <div className="flex h-10 w-10 items-center justify-center rounded-[14px] border border-[var(--color-border)] bg-[var(--color-surface)] text-[var(--color-accent)] shadow-[0_1px_2px_rgba(15,23,42,0.06)]">
             <Sparkles className="h-4 w-4" />
           </div>
-          <div>
-            <Typography as="p" variant="body" className="font-semibold leading-none">
-              GB &amp; Associates
-            </Typography>
-            <Typography as="p" variant="small" className="text-[var(--color-text-secondary)]">
-              Real estate marketplace
-            </Typography>
-          </div>
+          <span className="font-display text-body font-semibold tracking-[-0.02em] text-[var(--color-text-primary)]">
+            GB &amp; Associates
+          </span>
         </Link>
 
         <nav className="ml-4 hidden items-center gap-1 rounded-full border border-[var(--color-border)] bg-[var(--color-surface)] p-1 lg:flex">
           {[
             ["Listings", "/#listings"],
-            ["Featured", "/#featured"],
-            ["Request a Property", "/#lead-cta"],
-            ["Contact", "/#contact"],
+            ["Search", "/search"],
+            ["Contact", "/#lead-cta"],
           ].map(([label, href]) => (
             <Link
               key={label}
@@ -47,13 +40,13 @@ export function TopNav() {
             to="/search"
             className="inline-flex h-10 items-center justify-center rounded-full border border-[var(--color-border)] bg-[var(--color-surface)] px-4 text-sm font-medium text-[var(--color-text-primary)] transition hover:bg-[var(--color-surface-raised)]"
           >
-            Browse listings
+            Search
           </Link>
           <Link
             to="/#lead-cta"
             className="inline-flex h-10 items-center justify-center gap-2 rounded-full bg-[var(--color-accent)] px-4 text-sm font-medium text-white transition hover:bg-[var(--color-accent-hover)]"
           >
-            Create Lead
+            Request property
             <ArrowRight className="h-4 w-4" />
           </Link>
         </div>
@@ -79,10 +72,9 @@ export function TopNav() {
               <div className="grid gap-1">
                 {[
                   ["Listings", "/#listings"],
-                  ["Featured", "/#featured"],
-                  ["Request a Property", "/#lead-cta"],
-                  ["Contact", "/#contact"],
-                  ["Browse listings", "/search"],
+                  ["Contact", "/#lead-cta"],
+                  ["Search", "/search"],
+                  ["Request property", "/#lead-cta"],
                 ].map(([label, href]) => (
                   <Link
                     key={label}
@@ -90,7 +82,6 @@ export function TopNav() {
                     onClick={() => setOpen(false)}
                     className={cn(
                       "rounded-input px-3 py-3 text-sm font-medium text-[var(--color-text-primary)] transition hover:bg-[var(--color-surface-raised)]",
-                      label === "Browse listings" && "border border-[var(--color-border)]",
                     )}
                   >
                     {label}

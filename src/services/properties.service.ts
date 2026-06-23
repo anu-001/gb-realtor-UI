@@ -45,11 +45,7 @@ function mapSearchFiltersToSpecQuery(filters?: PublicListingsQuery): Record<stri
   return {
     ...(filters.q ? { q: filters.q } : {}),
     ...(filters.location ? { location: filters.location } : {}),
-    ...(filters.type ? { propertyType: filters.type } : {}),
     ...(filters.listingType ? { listingType: filters.listingType } : {}),
-    ...(filters.status ? { status: filters.status } : {}),
-    ...(filters.state ? { state: filters.state } : {}),
-    ...(filters.city ? { city: filters.city } : {}),
     ...(filters.minPrice !== undefined ? { minPriceKobo: String(filters.minPrice) } : {}),
     ...(filters.maxPrice !== undefined ? { maxPriceKobo: String(filters.maxPrice) } : {}),
     ...(filters.beds !== undefined ? { bedrooms: filters.beds } : {}),

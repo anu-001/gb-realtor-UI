@@ -16,7 +16,7 @@ import { htmlTextLength } from "@/utils/html-text-length";
 const leadSchema = z.object({
   fullName: z.string().min(1, "Full name is required"),
   email: z.string().min(1, "Email is required").email("Enter a valid email address"),
-  phoneNumber: z.string().optional(),
+  phoneNumber: z.string().min(1, "Phone number is required"),
   message: z.string().max(500).optional(),
 });
 
@@ -121,7 +121,7 @@ function LeadForm({ propertyId, preferredLocation }: { propertyId: string; prefe
           propertyId,
           fullName: values.fullName,
           email: values.email,
-          phoneNumber: values.phoneNumber ?? "",
+          phoneNumber: values.phoneNumber.trim(),
           message: values.message,
           preferredLocation,
           source: "website-form",
@@ -142,7 +142,8 @@ function LeadForm({ propertyId, preferredLocation }: { propertyId: string; prefe
       </div>
       <div>
         <label className="mb-2 block text-sm font-medium">Phone</label>
-        <input className="h-11 w-full rounded-input border border-[var(--color-border)] px-4" {...register("phoneNumber")} />
+        <input required className="h-11 w-full rounded-input border border-[var(--color-border)] px-4" {...register("phoneNumber")} />
+        {errors.phoneNumber?.message ? <p className="mt-1 text-caption text-[var(--color-danger)]">{errors.phoneNumber.message}</p> : null}
       </div>
       <div>
         <label className="mb-2 block text-sm font-medium">Message</label>

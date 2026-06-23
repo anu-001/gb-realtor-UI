@@ -12,7 +12,7 @@ import { cn } from "@/utils/cn";
 const inquirySchema = z.object({
   fullName: z.string().min(1, "Full name is required"),
   email: z.string().min(1, "Email is required").email("Enter a valid email address"),
-  phoneNumber: z.string().optional(),
+  phoneNumber: z.string().min(1, "Phone number is required"),
   inquiryNotes: z
     .string()
     .refine((html) => htmlTextLength(html) > 0, "Inquiry notes are required")
@@ -109,7 +109,7 @@ export function InquiryModal({
                     propertyId,
                     fullName: values.fullName,
                     email: values.email,
-                    phoneNumber: values.phoneNumber ?? "",
+                    phoneNumber: values.phoneNumber.trim(),
                     inquiryNotes: values.inquiryNotes,
                     preferredLocation,
                     source: "website-form",
@@ -147,16 +147,18 @@ export function InquiryModal({
                 </div>
               </div>
 
-              <div>
-                <label htmlFor="inquiry-phone-number" className="mb-2 block text-sm font-medium text-[var(--color-text-primary)]">
-                  Phone number
-                </label>
-                <input
-                  id="inquiry-phone-number"
-                  className="h-11 w-full rounded-input border border-[var(--color-border)] bg-[var(--color-surface)] px-4 text-body text-[var(--color-text-primary)] outline-none focus:border-[var(--color-accent)]"
-                  {...register("phoneNumber")}
-                />
-              </div>
+                <div>
+                  <label htmlFor="inquiry-phone-number" className="mb-2 block text-sm font-medium text-[var(--color-text-primary)]">
+                    Phone number
+                  </label>
+                  <input
+                    id="inquiry-phone-number"
+                    required
+                    className="h-11 w-full rounded-input border border-[var(--color-border)] bg-[var(--color-surface)] px-4 text-body text-[var(--color-text-primary)] outline-none focus:border-[var(--color-accent)]"
+                    {...register("phoneNumber")}
+                  />
+                  {errors.phoneNumber?.message ? <p className="mt-1 text-caption text-[var(--color-danger)]">{errors.phoneNumber.message}</p> : null}
+                </div>
 
               <RichTextEditorField
                 name="inquiryNotes"
