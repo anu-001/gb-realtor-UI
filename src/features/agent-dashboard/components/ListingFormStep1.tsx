@@ -73,7 +73,7 @@ export function ListingFormStep1({
           <input
             id="listing-title"
             {...register("title")}
-            className="h-12 w-full rounded-input border border-[var(--color-border)] bg-white px-4 text-body outline-none transition focus:border-[var(--color-accent)] focus:ring-2 focus:ring-[color-mix(in_srgb,var(--color-accent)_15%,transparent)]"
+            className="h-12 w-full rounded-input border border-[var(--color-border)] bg-white px-4 text-body outline-none transition focus-visible:border-[var(--color-accent)]"
             placeholder="e.g. Modern 3-bedroom apartment in Lekki"
           />
           {errors.title?.message ? <p className="text-caption text-[var(--color-danger)]">{errors.title.message}</p> : null}

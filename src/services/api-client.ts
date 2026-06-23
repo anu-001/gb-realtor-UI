@@ -31,16 +31,18 @@ type ViteEnv = {
 
 const rawFetch = globalThis.fetch.bind(globalThis);
 const viteBaseUrl = (import.meta as ImportMeta & { env?: ViteEnv }).env?.VITE_API_BASE_URL ?? "";
-const fallbackBaseUrl = globalThis.location?.origin ?? "";
+const fallbackBaseUrl = "https://gb-est-api-production-5a53612aa0b9.herokuapp.com/api/v1";
 const baseUrl = viteBaseUrl || fallbackBaseUrl;
 
 const publicRouteMatchers: RegExp[] = [
-  /^\/api(?:\/v1)?\/properties\/(?:discovery|public)(?:\/[^/?#]+)?(?:\/?)?$/,
-  /^\/api(?:\/v1)?\/leads(?:\/?)?$/,
-  /^\/api(?:\/v1)?\/health(?:\/?)?$/,
-  /^\/health(?:\/?)?$/,
-  /^\/api(?:\/v1)?\/auth\/login(?:\/?)?$/,
-  /^\/api(?:\/v1)?\/auth\/refresh(?:\/?)?$/,
+  /^\/health(?:\/ready)?(?:\/?)?$/,
+  /^\/api\/v1\/health(?:\/ready)?(?:\/?)?$/,
+  /^\/api\/v1\/featured-properties(?:\/[^/?#]+)?(?:\/?)?$/,
+  /^\/api\/v1\/public\/properties\/discovery(?:\/?)?$/,
+  /^\/api\/v1\/public\/properties\/[^/?#]+(?:\/?)?$/,
+  /^\/api\/v1\/public\/leads(?:\/?)?$/,
+  /^\/api\/v1\/auth\/login(?:\/?)?$/,
+  /^\/api\/v1\/auth\/refresh(?:\/?)?$/,
 ];
 
 let config: ApiClientConfig = {};
@@ -151,6 +153,39 @@ export function isPublicRoute(url: string): boolean {
 async function fetchWithAuth(input: RequestInfo | URL, init?: RequestInit): Promise<Response> {
   const request = new Request(input, init);
   const auth = getAuthSnapshot();
+  const refreshToken = getRefreshToken();
+
+  if (!isPublicRoute(request.url) && !auth.accessToken) {
+    if (refreshToken) {
+      const refreshed = await refreshAccessToken();
+      if (!refreshed?.accessToken) {
+        redirectToLogin();
+        return new Response(JSON.stringify({ statusCode: 401, message: "Session expired, please log in again." }), {
+          status: 401,
+          headers: { "Content-Type": "application/json" },
+        });
+      }
+      const refreshedRequest = appendAuthorizationHeader(request, refreshed.accessToken);
+      const refreshedResponse = await rawFetch(refreshedRequest);
+
+      if (refreshedResponse.status === 429) {
+        notifyRateLimit();
+      } else if (refreshedResponse.status === 500) {
+        notifyServerError();
+      }
+
+      if (refreshedResponse.status !== 401) {
+        return refreshedResponse;
+      }
+    } else {
+      redirectToLogin();
+      return new Response(JSON.stringify({ statusCode: 401, message: "Session expired, please log in again." }), {
+        status: 401,
+        headers: { "Content-Type": "application/json" },
+      });
+    }
+  }
+
   const authenticatedRequest = appendAuthorizationHeader(request, auth.accessToken);
 
   const response = await rawFetch(authenticatedRequest);

@@ -6,17 +6,20 @@ import { unwrapApiResponse } from "./_request";
 export interface PublicListingsQuery {
   q?: string;
   location?: string;
-  type?: "house" | "apartment" | "land" | "commercial" | "villa";
-  listingType?: "sale" | "rent";
-  status?: "draft" | "pending_review" | "published" | "archived";
   state?: string;
   city?: string;
+  type?: "house" | "apartment" | "land" | "commercial" | "villa";
+  listingType?: "sale" | "rent" | "short_let";
+  status?: "draft" | "pending_review" | "published" | "archived";
+  propertyType?: "sale" | "rent" | "short_let";
+  minPriceKobo?: string | number;
+  maxPriceKobo?: string | number;
   minPrice?: string | number;
   maxPrice?: string | number;
   beds?: number;
-  baths?: number;
-  minSqft?: string | number;
-  maxSqft?: string | number;
+  bathrooms?: number;
+  minSizeSqm?: string | number;
+  maxSizeSqm?: string | number;
   featured?: boolean;
   openHouse?: boolean;
   newConstruction?: boolean;
@@ -42,20 +45,24 @@ function mapSearchFiltersToSpecQuery(filters?: PublicListingsQuery): Record<stri
     return {};
   }
 
+  const minPriceKobo = filters.minPriceKobo ?? filters.minPrice;
+  const maxPriceKobo = filters.maxPriceKobo ?? filters.maxPrice;
+
   return {
     ...(filters.q ? { q: filters.q } : {}),
     ...(filters.location ? { location: filters.location } : {}),
-    ...(filters.type ? { propertyType: filters.type } : {}),
-    ...(filters.listingType ? { listingType: filters.listingType } : {}),
-    ...(filters.status ? { status: filters.status } : {}),
     ...(filters.state ? { state: filters.state } : {}),
     ...(filters.city ? { city: filters.city } : {}),
-    ...(filters.minPrice !== undefined ? { minPriceKobo: String(filters.minPrice) } : {}),
-    ...(filters.maxPrice !== undefined ? { maxPriceKobo: String(filters.maxPrice) } : {}),
+    ...(filters.type ? { type: filters.type } : {}),
+    ...(filters.propertyType ? { propertyType: filters.propertyType } : {}),
+    ...(filters.listingType ? { listingType: filters.listingType } : {}),
+    ...(filters.status ? { status: filters.status } : {}),
+    ...(minPriceKobo !== undefined ? { minPriceKobo: String(minPriceKobo) } : {}),
+    ...(maxPriceKobo !== undefined ? { maxPriceKobo: String(maxPriceKobo) } : {}),
     ...(filters.beds !== undefined ? { bedrooms: filters.beds } : {}),
-    ...(filters.baths !== undefined ? { bathrooms: filters.baths } : {}),
-    ...(filters.minSqft !== undefined ? { minSizeSqm: String(filters.minSqft) } : {}),
-    ...(filters.maxSqft !== undefined ? { maxSizeSqm: String(filters.maxSqft) } : {}),
+    ...(filters.bathrooms !== undefined ? { bathrooms: filters.bathrooms } : {}),
+    ...(filters.minSizeSqm !== undefined ? { minSizeSqm: String(filters.minSizeSqm) } : {}),
+    ...(filters.maxSizeSqm !== undefined ? { maxSizeSqm: String(filters.maxSizeSqm) } : {}),
     ...(filters.featured !== undefined ? { featured: filters.featured } : {}),
     ...(filters.openHouse !== undefined ? { openHouse: filters.openHouse } : {}),
     ...(filters.newConstruction !== undefined ? { newConstruction: filters.newConstruction } : {}),
@@ -67,68 +74,70 @@ function mapSearchFiltersToSpecQuery(filters?: PublicListingsQuery): Record<stri
 
 export async function listProperties(
   filters?: PropertyFilters,
-): Promise<components["schemas"]["PaginatedPropertiesResponseDto"]> {
+): Promise<{ data: Property[]; meta: components["schemas"]["PropertyPaginationMetaDto"] }> {
   const response = await unwrapApiResponse(
     privateClient.GET("/api/v1/properties", {
       params: { query: filters as never },
     }),
   );
-  return response as components["schemas"]["PaginatedPropertiesResponseDto"];
+  const typed = response as components["schemas"]["PaginatedPropertiesResponseDto"];
+  return {
+    data: (typed.data ?? []) as Property[],
+    meta: typed.meta,
+  };
 }
 
 export async function createProperty(payload: CreatePropertyPayload): Promise<Property> {
-  return unwrapApiResponse(privateClient.POST("/api/v1/properties", { body: payload }));
+  return (await unwrapApiResponse(privateClient.POST("/api/v1/properties", { body: payload }))) as unknown as Property;
 }
 
-export async function getPropertyById(id: string): Promise<components["schemas"]["PublicPropertyResponseDto"]> {
-  return unwrapApiResponse(publicClient.GET("/api/v1/properties/{id}", { params: { path: { id } } })) as Promise<
-    components["schemas"]["PublicPropertyResponseDto"]
-  >;
+export async function getPropertyById(id: string): Promise<Property> {
+  return (await unwrapApiResponse(privateClient.GET("/api/v1/properties/{id}", { params: { path: { id } } }))) as unknown as Property;
 }
 
 export async function updateProperty(id: string, payload: UpdatePropertyPayload): Promise<Property> {
-  return unwrapApiResponse(privateClient.PATCH("/api/v1/properties/{id}", { params: { path: { id } }, body: payload }));
+  return (await unwrapApiResponse(privateClient.PATCH("/api/v1/properties/{id}", { params: { path: { id } }, body: payload }))) as unknown as Property;
 }
 
 export async function submitPropertyForReview(
   id: string,
   payload?: { reason?: string },
 ): Promise<Property> {
-  return unwrapApiResponse(
+  return (await unwrapApiResponse(
     privateClient.POST("/api/v1/properties/{id}/submit-review", {
       params: { path: { id } },
       body: payload ?? {},
     }),
-  );
+  )) as unknown as Property;
 }
 
 export async function approveProperty(id: string): Promise<Property> {
-  return unwrapApiResponse(privateClient.POST("/api/v1/properties/{id}/approve", { params: { path: { id } } }));
+  return (await unwrapApiResponse(privateClient.POST("/api/v1/properties/{id}/approve", { params: { path: { id } } }))) as unknown as Property;
 }
 
 export async function publishProperty(id: string, payload?: { reason?: string }): Promise<Property> {
-  return unwrapApiResponse(
+  return (await unwrapApiResponse(
     privateClient.POST("/api/v1/properties/{id}/publish", {
       params: { path: { id } },
       body: payload ?? {},
     }),
-  );
+  )) as unknown as Property;
 }
 
 export async function archiveProperty(id: string, payload?: { reason?: string }): Promise<Property> {
-  return unwrapApiResponse(
+  return (await unwrapApiResponse(
     privateClient.POST("/api/v1/properties/{id}/archive", {
       params: { path: { id } },
       body: payload ?? {},
     }),
-  );
+  )) as unknown as Property;
 }
 
 export async function getPublicListings(filters?: PublicListingsQuery): Promise<PublicListingsResponse> {
   const response = await unwrapApiResponse(
-    publicClient.GET("/api/v1/properties/discovery", {
-      params: { query: mapSearchFiltersToSpecQuery(filters) as never },
-    }),
+    publicClient.GET("/api/v1/public/properties/discovery" as never, {
+      params: { query: mapSearchFiltersToSpecQuery(filters) },
+    } as never),
   );
   const typed = response as components["schemas"]["PaginatedPublicPropertiesResponseDto"] & {
     meta?: Partial<PublicListingsMeta> & { limit?: number };
@@ -156,9 +165,9 @@ export async function discoverProperties(
 }
 
 export async function getPublicPropertyById(id: string): Promise<components["schemas"]["PublicPropertyResponseDto"]> {
-  return unwrapApiResponse(publicClient.GET("/api/v1/properties/{id}", { params: { path: { id } } })) as Promise<
-    components["schemas"]["PublicPropertyResponseDto"]
-  >;
+  return unwrapApiResponse(
+    publicClient.GET("/api/v1/public/properties/{id}" as never, { params: { path: { id } } } as never),
+  ) as Promise<components["schemas"]["PublicPropertyResponseDto"]>;
 }
 
 export async function getFeaturedProperties(): Promise<components["schemas"]["FeaturedPropertyResponseDto"][]> {

@@ -1,10 +1,13 @@
 import type { ReactNode } from "react";
 import { Navigate, Outlet, useLocation } from "react-router-dom";
 import { useAppSelector } from "@/store/hooks";
+import { UserRole } from "@/constants/api-enums";
+import { resolveAgentRole } from "@/utils/agent-access";
 
 type ProtectedRouteProps = {
   children?: ReactNode;
   requiredRole?: string;
+  allowedRoles?: UserRole[];
 };
 
 function LoadingState() {
@@ -18,10 +21,10 @@ function LoadingState() {
   );
 }
 
-export function ProtectedRoute({ children, requiredRole }: ProtectedRouteProps) {
+export function ProtectedRoute({ children, requiredRole, allowedRoles }: ProtectedRouteProps) {
   const location = useLocation();
   const auth = useAppSelector((state) => state.auth);
-  const resolvedRole = auth.user?.role ?? auth.user?.roles?.[0]?.code ?? null;
+  const resolvedRole = resolveAgentRole(auth.user?.role ?? auth.user?.roles?.[0]?.code ?? null);
 
   if (auth.isInitializing) {
     return <LoadingState />;
@@ -32,6 +35,10 @@ export function ProtectedRoute({ children, requiredRole }: ProtectedRouteProps) 
   }
 
   if (requiredRole && resolvedRole !== requiredRole) {
+    return <Navigate to="/agent" replace />;
+  }
+
+  if (allowedRoles && allowedRoles.length > 0 && (!resolvedRole || !allowedRoles.includes(resolvedRole as UserRole))) {
     return <Navigate to="/agent" replace />;
   }
 

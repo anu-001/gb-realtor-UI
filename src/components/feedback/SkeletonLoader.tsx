@@ -16,7 +16,7 @@ export function SkeletonLoader({
   return (
     <div
       aria-hidden="true"
-      className={cn("animate-pulse bg-[color-mix(in_srgb,var(--color-border)_60%,white)]", className)}
+      className={cn("skeleton-surface", className)}
       style={{ width, height, borderRadius }}
     />
   );

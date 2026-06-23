@@ -26,11 +26,50 @@ function normalizeAuthUser(user: AuthUser | null): AuthUser | null {
   };
 }
 
+function decodeBase64Url(value: string): string {
+  const normalized = value.replace(/-/g, "+").replace(/_/g, "/");
+  const padded = normalized + "=".repeat((4 - (normalized.length % 4)) % 4);
+  return globalThis.atob(padded);
+}
+
+function userFromToken(accessToken: string | null): AuthUser | null {
+  if (!accessToken) return null;
+
+  try {
+    const payloadPart = accessToken.split(".")[1];
+    if (!payloadPart) return null;
+    const payload = JSON.parse(decodeBase64Url(payloadPart)) as Record<string, unknown>;
+    const roles = Array.isArray(payload.roles) ? (payload.roles as AuthUser["roles"]) : undefined;
+    const role = typeof payload.role === "string" ? payload.role : roles?.[0]?.code;
+
+    const id = typeof payload.sub === "string" ? payload.sub : typeof payload.id === "string" ? payload.id : "";
+    const email = typeof payload.email === "string" ? payload.email : "";
+    const fullName =
+      typeof payload.fullName === "string"
+        ? payload.fullName
+        : typeof payload.name === "string"
+          ? payload.name
+          : email || "Signed in user";
+
+    return normalizeAuthUser({
+      id,
+      email,
+      fullName,
+      isActive: true,
+      roles,
+      role,
+    });
+  } catch {
+    return null;
+  }
+}
+
 function applyAuth(tokens: AuthTokens, user: AuthUser | null = null): AuthState {
   setRefreshToken(tokens.refreshToken);
+  const resolvedUser = normalizeAuthUser(user) ?? userFromToken(tokens.accessToken);
 
   return {
-    user: normalizeAuthUser(user),
+    user: resolvedUser,
     accessToken: tokens.accessToken,
     isAuthenticated: true,
     isInitializing: false,
@@ -71,7 +110,7 @@ const authSlice = createSlice({
   initialState,
   reducers: {
     setAuth(state, action: PayloadAction<{ user: AuthUser | null; accessToken: string | null }>) {
-      state.user = normalizeAuthUser(action.payload.user);
+      state.user = normalizeAuthUser(action.payload.user) ?? userFromToken(action.payload.accessToken);
       state.accessToken = action.payload.accessToken;
       state.isAuthenticated = Boolean(action.payload.accessToken);
       state.isInitializing = false;

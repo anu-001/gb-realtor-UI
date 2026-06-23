@@ -184,3 +184,25 @@ body {
   grid-template-columns: repeat(12, minmax(0, 1fr));
   gap: 1rem;
 }
+
+@keyframes skeleton-pulse {
+  0%,
+  100% {
+    opacity: 0.72;
+  }
+
+  50% {
+    opacity: 1;
+  }
+}
+
+.skeleton-surface {
+  position: relative;
+  overflow: hidden;
+  background: color-mix(in srgb, var(--color-border) 55%, white);
+  animation: skeleton-pulse 1.4s ease-in-out infinite;
+}
+
+[data-theme="dark"] .skeleton-surface {
+  background: color-mix(in srgb, var(--color-border) 70%, var(--color-surface));
+}

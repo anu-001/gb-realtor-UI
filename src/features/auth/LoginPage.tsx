@@ -105,7 +105,7 @@ export function LoginPage() {
             id="email"
             type="email"
             autoComplete="email"
-            className="h-12 w-full rounded-input border border-[var(--color-border)] bg-white px-4 text-body outline-none transition focus:border-[var(--color-accent)] focus:ring-2 focus:ring-[var(--color-accent)]/20"
+            className="h-12 w-full rounded-input border border-[var(--color-border)] bg-white px-4 text-body outline-none transition focus-visible:border-[var(--color-accent)]"
             {...register("email")}
           />
           {errors.email?.message ? <p className="mt-2 text-caption text-[var(--color-danger)]">{errors.email.message}</p> : null}
@@ -120,7 +120,7 @@ export function LoginPage() {
               id="password"
               type={showPassword ? "text" : "password"}
               autoComplete="current-password"
-              className="h-12 w-full rounded-input border border-[var(--color-border)] bg-white px-4 pr-12 text-body outline-none transition focus:border-[var(--color-accent)] focus:ring-2 focus:ring-[var(--color-accent)]/20"
+              className="h-12 w-full rounded-input border border-[var(--color-border)] bg-white px-4 pr-12 text-body outline-none transition focus-visible:border-[var(--color-accent)]"
               {...register("password")}
             />
             <button

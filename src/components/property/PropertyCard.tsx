@@ -39,8 +39,29 @@ function toLabel(value: unknown): string {
 
 export function PropertyCard({ property, showEnquiry = false, variant = "grid", className }: PropertyCardProps) {
   const [favorite, setFavorite] = useState(false);
+  const [shareLabel, setShareLabel] = useState("Share property");
   const [inquiryOpen, setInquiryOpen] = useState(false);
   const image = property.thumbnails?.[0];
+  const propertyUrl = `/properties/${property.id}`;
+
+  const shareProperty = async () => {
+    const url = new URL(propertyUrl, window.location.origin).toString();
+
+    if (typeof window.navigator.share === "function") {
+      await window.navigator.share({
+        title: property.title,
+        text: property.title,
+        url,
+      });
+      return;
+    }
+
+    if (window.navigator.clipboard?.writeText) {
+      await window.navigator.clipboard.writeText(url);
+      setShareLabel("Link copied");
+      window.setTimeout(() => setShareLabel("Share property"), 2000);
+    }
+  };
 
   return (
     <motion.article
@@ -52,8 +73,11 @@ export function PropertyCard({ property, showEnquiry = false, variant = "grid", 
         className,
       )}
     >
-      <Link to={`/properties/${property.id}`} className={cn("block", variant === "list" ? "md:w-[40%]" : "w-full")}>
+      <div className={cn("block", variant === "list" ? "md:w-[40%]" : "w-full")}>
         <div className="group relative aspect-[4/3] overflow-hidden bg-[var(--color-border)]">
+          <Link to={propertyUrl} aria-label={`View details for ${property.title}`} className="absolute inset-0 focus:outline-none focus-visible:ring-2 focus-visible:ring-[var(--color-accent)]">
+            <span className="sr-only">{property.title}</span>
+          </Link>
           <img
             src={image?.url ?? "https://images.unsplash.com/photo-1512917774080-9991f1c4c750?auto=format&fit=crop&w=1200&q=80"}
             alt={typeof image?.altText === "string" ? image.altText : property.title}
@@ -61,13 +85,14 @@ export function PropertyCard({ property, showEnquiry = false, variant = "grid", 
             loading="lazy"
             decoding="async"
           />
-          <div className="absolute left-3 top-3">
+          <div className="absolute left-3 top-3 z-10">
             <StatusBadge status={property.listingType} />
           </div>
-          <div className="absolute right-3 top-3 flex gap-2">
+          <div className="absolute right-3 top-3 z-10 flex gap-2">
             <button
               type="button"
               aria-label="Favorite property"
+              aria-pressed={favorite}
               onClick={(event) => {
                 event.preventDefault();
                 setFavorite((value) => !value);
@@ -81,14 +106,18 @@ export function PropertyCard({ property, showEnquiry = false, variant = "grid", 
             </button>
             <button
               type="button"
-              aria-label="Share property"
+              aria-label={shareLabel}
+              onClick={(event) => {
+                event.preventDefault();
+                void shareProperty();
+              }}
               className="inline-flex h-10 w-10 items-center justify-center rounded-full border border-white/60 bg-white/90 text-[var(--color-text-primary)] shadow-sm backdrop-blur"
             >
               <Share2 className="h-4 w-4" />
             </button>
           </div>
         </div>
-      </Link>
+      </div>
       <div className="flex min-w-0 flex-1 flex-col gap-4 p-4">
         <div>
           <div className="flex items-start justify-between gap-3">
@@ -126,12 +155,13 @@ export function PropertyCard({ property, showEnquiry = false, variant = "grid", 
             <button
               type="button"
               onClick={() => setInquiryOpen(true)}
+              aria-label={`Inquire about ${property.title}`}
               className="inline-flex h-11 flex-1 items-center justify-center rounded-input bg-[var(--color-accent)] px-4 text-sm font-medium text-white transition hover:bg-[var(--color-accent-hover)]"
             >
               Enquire
             </button>
             <Link
-              to={`/properties/${property.id}`}
+              to={propertyUrl}
               className="inline-flex h-11 items-center justify-center rounded-input border border-[var(--color-border)] px-4 text-sm font-medium text-[var(--color-text-primary)]"
             >
               View

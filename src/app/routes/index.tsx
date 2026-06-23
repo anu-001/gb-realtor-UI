@@ -7,11 +7,13 @@ import { AuthLayout } from "@/app/layouts/AuthLayout";
 import { DashboardLayout } from "@/app/layouts/DashboardLayout";
 import { AgentLayout } from "@/app/layouts/AgentLayout";
 import { ProtectedRoute } from "@/app/layouts/ProtectedRoute";
+import { UserRole } from "@/constants/api-enums";
 import { pageTransition } from "@/utils/motion";
 
 const HomePage = lazy(() => import("@/features/home/HomePage"));
 const SearchPage = lazy(() => import("@/features/search/SearchPage"));
 const PropertyDetailPage = lazy(() => import("@/features/public/PropertyDetailPage"));
+const RequestPropertyPage = lazy(() => import("@/features/public/RequestPropertyPage"));
 const LoginPage = lazy(() => import("@/features/auth/LoginPage").then((module) => ({ default: module.LoginPage })));
 const ForgotPasswordPage = lazy(() => import("@/features/auth/ForgotPasswordPage"));
 const UserDashboardPage = lazy(() => import("@/features/dashboard/UserDashboardPage"));
@@ -46,6 +48,7 @@ const router = createBrowserRouter([
     children: [
       { index: true, element: <HomePage /> },
       { path: "properties/:id", element: <PropertyDetailPage /> },
+      { path: "request-property", element: <RequestPropertyPage /> },
     ],
   },
   {
@@ -91,8 +94,22 @@ const router = createBrowserRouter([
     children: [
       { index: true, element: <AgentOverviewPage /> },
       { path: "listings", element: <ListingsManagementPage /> },
-      { path: "listings/new", element: <AddListingPage /> },
-      { path: "listings/:id/edit", element: <EditListingPage /> },
+      {
+        path: "listings/new",
+        element: (
+          <ProtectedRoute allowedRoles={[UserRole.PropertyManager, UserRole.ContentEditor, UserRole.SuperAdmin]}>
+            <AddListingPage />
+          </ProtectedRoute>
+        ),
+      },
+      {
+        path: "listings/:id/edit",
+        element: (
+          <ProtectedRoute allowedRoles={[UserRole.PropertyManager, UserRole.ContentEditor, UserRole.SuperAdmin]}>
+            <EditListingPage />
+          </ProtectedRoute>
+        ),
+      },
       { path: "leads", element: <LeadsManagementPage /> },
       { path: "analytics", element: <AnalyticsDashboardPage /> },
       {

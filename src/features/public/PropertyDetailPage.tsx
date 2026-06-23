@@ -1,26 +1,14 @@
 import { useEffect, useRef, useState } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { useParams } from "react-router-dom";
-import { useForm } from "react-hook-form";
-import { z } from "zod";
-import { zodResolver } from "@hookform/resolvers/zod";
 import { motion } from "framer-motion";
 import { getPublicPropertyById } from "@/services/properties.service";
-import { createPublicLead } from "@/services/leads.service";
 import { RichTextContent } from "@/components/data-display/RichTextContent";
+import { RequestPropertyForm } from "@/components/leads/RequestPropertyForm";
 import { StatusBadge } from "@/components/property/StatusBadge";
 import { SkeletonLoader } from "@/components/feedback/SkeletonLoader";
 import NotFoundPage from "@/features/public/NotFoundPage";
 import { htmlTextLength } from "@/utils/html-text-length";
-
-const leadSchema = z.object({
-  fullName: z.string().min(1, "Full name is required"),
-  email: z.string().min(1, "Email is required").email("Enter a valid email address"),
-  phoneNumber: z.string().optional(),
-  message: z.string().max(500).optional(),
-});
-
-type LeadValues = z.infer<typeof leadSchema>;
 const COLLAPSED_DESCRIPTION_HEIGHT = 240;
 
 function PropertyDescription({ description }: { description?: string | null }) {
@@ -99,70 +87,8 @@ function PropertyDescription({ description }: { description?: string | null }) {
   );
 }
 
-function LeadForm({ propertyId, preferredLocation }: { propertyId: string; preferredLocation?: string }) {
-  const [submitted, setSubmitted] = useState(false);
-  const {
-    register,
-    handleSubmit,
-    formState: { errors, isSubmitting },
-  } = useForm<LeadValues>({
-    resolver: zodResolver(leadSchema),
-    defaultValues: { fullName: "", email: "", phoneNumber: "", message: "" },
-  });
-
-  return submitted ? (
-    <div className="rounded-card border border-[var(--color-border)] bg-[var(--color-surface)] p-6">
-      Thank you, we will contact you within 24 hours.
-    </div>
-  ) : (
-    <form
-      onSubmit={handleSubmit(async (values) => {
-        await createPublicLead({
-          propertyId,
-          fullName: values.fullName,
-          email: values.email,
-          phoneNumber: values.phoneNumber ?? "",
-          message: values.message,
-          preferredLocation,
-          source: "website-form",
-        });
-        setSubmitted(true);
-      })}
-      className="space-y-4"
-    >
-      <div>
-        <label className="mb-2 block text-sm font-medium">Full name</label>
-        <input className="h-11 w-full rounded-input border border-[var(--color-border)] px-4" {...register("fullName")} />
-        {errors.fullName?.message ? <p className="mt-1 text-caption text-[var(--color-danger)]">{errors.fullName.message}</p> : null}
-      </div>
-      <div>
-        <label className="mb-2 block text-sm font-medium">Email</label>
-        <input type="email" className="h-11 w-full rounded-input border border-[var(--color-border)] px-4" {...register("email")} />
-        {errors.email?.message ? <p className="mt-1 text-caption text-[var(--color-danger)]">{errors.email.message}</p> : null}
-      </div>
-      <div>
-        <label className="mb-2 block text-sm font-medium">Phone</label>
-        <input className="h-11 w-full rounded-input border border-[var(--color-border)] px-4" {...register("phoneNumber")} />
-      </div>
-      <div>
-        <label className="mb-2 block text-sm font-medium">Message</label>
-        <textarea className="min-h-28 w-full rounded-input border border-[var(--color-border)] px-4 py-3" {...register("message")} />
-        {errors.message?.message ? <p className="mt-1 text-caption text-[var(--color-danger)]">{errors.message.message}</p> : null}
-      </div>
-      <button
-        type="submit"
-        disabled={isSubmitting}
-        className="inline-flex h-11 w-full items-center justify-center rounded-input bg-[var(--color-accent)] px-4 text-sm font-medium text-white disabled:opacity-60"
-      >
-        {isSubmitting ? "Sending..." : "Send Message"}
-      </button>
-    </form>
-  );
-}
-
 export default function PropertyDetailPage() {
   const { id } = useParams();
-  const [tab, setTab] = useState<"viewing" | "message">("viewing");
   const propertyQuery = useQuery({
     queryKey: ["public-property", id],
     queryFn: () => getPublicPropertyById(id ?? ""),
@@ -215,29 +141,14 @@ export default function PropertyDetailPage() {
         </div>
       </div>
       <div className="space-y-4">
-        <div className="rounded-modal border border-[var(--color-border)] bg-[var(--color-surface)] p-6 shadow-modal">
-          <div className="mb-4 grid grid-cols-2 rounded-input border border-[var(--color-border)] p-1">
-            <button
-              type="button"
-              onClick={() => setTab("viewing")}
-              className={`rounded-input px-3 py-2 text-sm ${
-                tab === "viewing" ? "bg-[var(--color-accent)] text-white" : "text-[var(--color-text-secondary)]"
-              }`}
-            >
-              Schedule Viewing
-            </button>
-            <button
-              type="button"
-              onClick={() => setTab("message")}
-              className={`rounded-input px-3 py-2 text-sm ${
-                tab === "message" ? "bg-[var(--color-accent)] text-white" : "text-[var(--color-text-secondary)]"
-              }`}
-            >
-              Send Message
-            </button>
-          </div>
-          <LeadForm propertyId={property.id} preferredLocation={`${property.area}, ${property.city}`} />
-        </div>
+        <RequestPropertyForm
+          propertyId={property.id}
+          propertyTitle={property.title}
+          preferredLocation={`${property.area}, ${property.city}`}
+          headline="Request this property"
+          subheading="Share your details and we’ll respond with next steps within 24 hours."
+          submitLabel="Send request"
+        />
       </div>
     </div>
   );

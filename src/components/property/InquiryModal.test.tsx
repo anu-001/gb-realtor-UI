@@ -54,8 +54,8 @@ describe("InquiryModal", () => {
 
     expect(screen.getByText("Inquire about this property")).toBeInTheDocument();
     expect(lastRichTextEditorFieldProps).toMatchObject({
-      toolbarVariant: "minimal",
-      minHeight: 120,
+      toolbarVariant: "editorial",
+      minHeight: 160,
       maxCharacters: 1000,
     });
   });
