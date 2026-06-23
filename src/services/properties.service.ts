@@ -8,6 +8,9 @@ export interface PublicListingsQuery {
   location?: string;
   type?: "house" | "apartment" | "land" | "commercial" | "villa";
   listingType?: "sale" | "rent";
+  status?: "draft" | "pending_review" | "published" | "archived";
+  state?: string;
+  city?: string;
   minPrice?: string | number;
   maxPrice?: string | number;
   beds?: number;
@@ -44,6 +47,9 @@ function mapSearchFiltersToSpecQuery(filters?: PublicListingsQuery): Record<stri
     ...(filters.location ? { location: filters.location } : {}),
     ...(filters.type ? { propertyType: filters.type } : {}),
     ...(filters.listingType ? { listingType: filters.listingType } : {}),
+    ...(filters.status ? { status: filters.status } : {}),
+    ...(filters.state ? { state: filters.state } : {}),
+    ...(filters.city ? { city: filters.city } : {}),
     ...(filters.minPrice !== undefined ? { minPriceKobo: String(filters.minPrice) } : {}),
     ...(filters.maxPrice !== undefined ? { maxPriceKobo: String(filters.maxPrice) } : {}),
     ...(filters.beds !== undefined ? { bedrooms: filters.beds } : {}),
@@ -51,6 +57,8 @@ function mapSearchFiltersToSpecQuery(filters?: PublicListingsQuery): Record<stri
     ...(filters.minSqft !== undefined ? { minSizeSqm: String(filters.minSqft) } : {}),
     ...(filters.maxSqft !== undefined ? { maxSizeSqm: String(filters.maxSqft) } : {}),
     ...(filters.featured !== undefined ? { featured: filters.featured } : {}),
+    ...(filters.openHouse !== undefined ? { openHouse: filters.openHouse } : {}),
+    ...(filters.newConstruction !== undefined ? { newConstruction: filters.newConstruction } : {}),
     ...(filters.sort ? { sort: filters.sort } : {}),
     ...(filters.page !== undefined ? { page: filters.page } : {}),
     ...(filters.pageSize !== undefined ? { pageSize: filters.pageSize } : {}),
@@ -148,7 +156,9 @@ export async function discoverProperties(
 }
 
 export async function getPublicPropertyById(id: string): Promise<components["schemas"]["PublicPropertyResponseDto"]> {
-  return getPropertyById(id);
+  return unwrapApiResponse(publicClient.GET("/api/v1/properties/{id}", { params: { path: { id } } })) as Promise<
+    components["schemas"]["PublicPropertyResponseDto"]
+  >;
 }
 
 export async function getFeaturedProperties(): Promise<components["schemas"]["FeaturedPropertyResponseDto"][]> {

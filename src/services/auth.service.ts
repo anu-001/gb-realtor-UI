@@ -6,9 +6,11 @@ export async function login(payload: LoginPayload): Promise<AuthTokens> {
   return unwrapApiResponse(publicClient.POST("/api/v1/auth/login", { body: payload }));
 }
 
-export async function refreshTokens(payload: RefreshPayload): Promise<AuthTokens> {
+export async function refresh(payload: RefreshPayload): Promise<AuthTokens> {
   return unwrapApiResponse(publicClient.POST("/api/v1/auth/refresh", { body: payload }));
 }
+
+export const refreshTokens = refresh;
 
 export async function logout(payload: RefreshPayload): Promise<{ success: boolean }> {
   return unwrapApiResponse(privateClient.POST("/api/v1/auth/logout", { body: payload }));

@@ -95,6 +95,8 @@ export function getApiErrorMessage(error: unknown, response?: Response): string 
   return parsed.message || fallbackMessages[parsed.statusCode] || "Unexpected API error.";
 }
 
+export const getErrorMessage = getApiErrorMessage;
+
 export function getApiFieldErrors(error: unknown, response?: Response): FieldErrorMap {
   const parsed = parseApiError(error, response);
   return (parsed.errors ?? []).reduce<FieldErrorMap>((acc, item) => {
@@ -110,6 +112,8 @@ export function getApiFieldErrors(error: unknown, response?: Response): FieldErr
     return acc;
   }, {});
 }
+
+export const getFieldErrors = getApiFieldErrors;
 
 export function isNetworkError(error: unknown): boolean {
   if (error instanceof TypeError) {

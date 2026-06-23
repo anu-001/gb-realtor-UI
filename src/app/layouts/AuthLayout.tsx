@@ -1,6 +1,7 @@
 import type { ReactNode } from "react";
+import { Outlet } from "react-router-dom";
 
-export function AuthLayout({ children }: { children: ReactNode }) {
+export function AuthLayout({ children }: { children?: ReactNode }) {
   return (
     <div className="min-h-screen bg-[var(--color-bg)] px-4 py-10 font-body text-[var(--color-text-primary)]">
       <div className="mx-auto flex min-h-[calc(100vh-5rem)] max-w-[1440px] items-center justify-center">
@@ -10,7 +11,7 @@ export function AuthLayout({ children }: { children: ReactNode }) {
               <span className="font-display text-xl font-semibold text-[var(--color-accent)]">GB</span>
             </div>
           </div>
-          {children}
+          {children ?? <Outlet />}
         </div>
       </div>
     </div>

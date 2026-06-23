@@ -4,7 +4,7 @@ import { useAppSelector } from "@/store/hooks";
 
 type ProtectedRouteProps = {
   children?: ReactNode;
-  roles?: readonly string[];
+  requiredRole?: string;
 };
 
 function LoadingState() {
@@ -18,16 +18,21 @@ function LoadingState() {
   );
 }
 
-export function ProtectedRoute({ children }: ProtectedRouteProps) {
+export function ProtectedRoute({ children, requiredRole }: ProtectedRouteProps) {
   const location = useLocation();
   const auth = useAppSelector((state) => state.auth);
+  const resolvedRole = auth.user?.role ?? auth.user?.roles?.[0]?.code ?? null;
 
-  if (auth.isLoading) {
+  if (auth.isInitializing) {
     return <LoadingState />;
   }
 
   if (!auth.isAuthenticated) {
     return <Navigate to="/login" replace state={{ from: location }} />;
+  }
+
+  if (requiredRole && resolvedRole !== requiredRole) {
+    return <Navigate to="/agent" replace />;
   }
 
   return children ?? <Outlet />;

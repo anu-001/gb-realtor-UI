@@ -41,7 +41,7 @@ export default {
         modal: "0 20px 60px rgba(15,23,42,0.20)",
       },
       colors: {
-        primary: "#2F6BFF",
+        primary: "#6CABDD",
         "primary-hover": "#1E293B",
         accent: "#2563EB",
         "accent-hover": "#1D4ED8",

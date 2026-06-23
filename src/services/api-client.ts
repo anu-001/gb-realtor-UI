@@ -5,7 +5,6 @@ import { getRefreshToken } from "./auth-session";
 
 type AuthSnapshot = {
   accessToken?: string | null;
-  refreshToken?: string | null;
 };
 
 type ToastApi = {
@@ -15,7 +14,6 @@ type ToastApi = {
 
 type ReduxLikeStore<State = unknown> = {
   getState: () => State;
-  dispatch?: (action: unknown) => unknown;
 };
 
 type ApiClientConfig<State = unknown> = {
@@ -32,46 +30,38 @@ type ViteEnv = {
 };
 
 const rawFetch = globalThis.fetch.bind(globalThis);
-const authRefreshPath = "/api/v1/auth/refresh";
-
-let config: ApiClientConfig = {};
-let refreshPromise: Promise<AuthTokens | null> | null = null;
-
 const viteBaseUrl = (import.meta as ImportMeta & { env?: ViteEnv }).env?.VITE_API_BASE_URL ?? "";
 const fallbackBaseUrl = globalThis.location?.origin ?? "";
 const baseUrl = viteBaseUrl || fallbackBaseUrl;
 
+const publicRouteMatchers: RegExp[] = [
+  /^\/api(?:\/v1)?\/properties\/(?:discovery|public)(?:\/[^/?#]+)?(?:\/?)?$/,
+  /^\/api(?:\/v1)?\/leads(?:\/?)?$/,
+  /^\/api(?:\/v1)?\/health(?:\/?)?$/,
+  /^\/health(?:\/?)?$/,
+  /^\/api(?:\/v1)?\/auth\/login(?:\/?)?$/,
+  /^\/api(?:\/v1)?\/auth\/refresh(?:\/?)?$/,
+];
+
+let config: ApiClientConfig = {};
+let refreshPromise: Promise<AuthTokens | null> | null = null;
+
+function normalizeUrl(url: string): URL | null {
+  try {
+    return new URL(url, baseUrl || globalThis.location?.origin || "http://localhost");
+  } catch {
+    return null;
+  }
+}
+
 function getAuthSnapshot(): AuthSnapshot {
   const state = config.store?.getState();
 
-  if (config.selectAuth) {
+  if (state && config.selectAuth) {
     return config.selectAuth(state as never) ?? {};
   }
 
-  const candidate = state as {
-    auth?: AuthSnapshot & { tokens?: AuthSnapshot };
-    session?: AuthSnapshot & { tokens?: AuthSnapshot };
-  };
-
-  const auth = candidate?.auth ?? candidate?.session;
-  if (!auth) {
-    return {};
-  }
-
-  return {
-    accessToken: auth.accessToken ?? auth.tokens?.accessToken ?? null,
-    refreshToken: auth.refreshToken ?? auth.tokens?.refreshToken ?? null,
-  };
-}
-
-function applyBearerToken(request: Request, accessToken?: string | null): Request {
-  const headers = new Headers(request.headers);
-
-  if (accessToken) {
-    headers.set("Authorization", `Bearer ${accessToken}`);
-  }
-
-  return new Request(request, { headers });
+  return {};
 }
 
 function resolveUrl(pathname: string): string {
@@ -82,12 +72,20 @@ function resolveUrl(pathname: string): string {
   return pathname;
 }
 
-function isAuthRefreshRequest(request: Request): boolean {
-  try {
-    return new URL(request.url).pathname === authRefreshPath;
-  } catch {
-    return request.url.endsWith(authRefreshPath);
+function appendAuthorizationHeader(request: Request, accessToken?: string | null): Request {
+  if (!accessToken || isPublicRoute(request.url)) {
+    return request;
   }
+
+  const headers = new Headers(request.headers);
+  headers.set("Authorization", `Bearer ${accessToken}`);
+  return new Request(request, { headers });
+}
+
+function isAuthRefreshRequest(request: Request): boolean {
+  const url = normalizeUrl(request.url);
+  const pathname = url?.pathname ?? request.url;
+  return /\/auth\/refresh\/?$/.test(pathname);
 }
 
 function notifyRateLimit(): void {
@@ -114,8 +112,9 @@ function redirectToLogin(): void {
 async function refreshAccessToken(): Promise<AuthTokens | null> {
   if (!refreshPromise) {
     refreshPromise = (async () => {
-      const refreshUrl = resolveUrl(authRefreshPath);
+      const refreshUrl = resolveUrl("/api/v1/auth/refresh");
       const payload: RefreshPayload = { refreshToken: getRefreshToken() ?? "" };
+
       const response = await rawFetch(refreshUrl, {
         method: "POST",
         headers: {
@@ -144,19 +143,24 @@ async function refreshAccessToken(): Promise<AuthTokens | null> {
   return refreshPromise;
 }
 
-async function fetchWithAuth(input: Request): Promise<Response> {
-  const auth = getAuthSnapshot();
-  const request = applyBearerToken(input, auth.accessToken);
-  const retryRequest = request.clone();
+export function isPublicRoute(url: string): boolean {
+  const pathname = normalizeUrl(url)?.pathname ?? url;
+  return publicRouteMatchers.some((matcher) => matcher.test(pathname));
+}
 
-  const response = await rawFetch(request);
+async function fetchWithAuth(input: RequestInfo | URL, init?: RequestInit): Promise<Response> {
+  const request = new Request(input, init);
+  const auth = getAuthSnapshot();
+  const authenticatedRequest = appendAuthorizationHeader(request, auth.accessToken);
+
+  const response = await rawFetch(authenticatedRequest);
   if (response.status === 429) {
     notifyRateLimit();
   } else if (response.status === 500) {
     notifyServerError();
   }
 
-  if (response.status !== 401 || isAuthRefreshRequest(request)) {
+  if (response.status !== 401 || isAuthRefreshRequest(authenticatedRequest) || isPublicRoute(authenticatedRequest.url)) {
     return response;
   }
 
@@ -166,24 +170,33 @@ async function fetchWithAuth(input: Request): Promise<Response> {
     return response;
   }
 
-  const refreshedRequest = applyBearerToken(retryRequest, tokens.accessToken);
-  const refreshedResponse = await rawFetch(refreshedRequest);
+  const retriedRequest = appendAuthorizationHeader(request, tokens.accessToken);
+  const retriedResponse = await rawFetch(retriedRequest);
 
-  if (refreshedResponse.status === 429) {
+  if (retriedResponse.status === 429) {
     notifyRateLimit();
-  } else if (refreshedResponse.status === 500) {
+  } else if (retriedResponse.status === 500) {
     notifyServerError();
   }
 
-  if (refreshedResponse.status === 401) {
+  if (retriedResponse.status === 401) {
     redirectToLogin();
   }
 
-  return refreshedResponse;
+  return retriedResponse;
 }
 
-async function fetchWithoutAuth(input: Request): Promise<Response> {
-  return rawFetch(input);
+async function fetchWithoutAuth(input: RequestInfo | URL, init?: RequestInit): Promise<Response> {
+  const request = new Request(input, init);
+  const response = await rawFetch(request);
+
+  if (response.status === 429) {
+    notifyRateLimit();
+  } else if (response.status === 500) {
+    notifyServerError();
+  }
+
+  return response;
 }
 
 export function configureApiClient(nextConfig: ApiClientConfig): void {

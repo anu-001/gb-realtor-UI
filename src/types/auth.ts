@@ -1,11 +1,15 @@
 import type { components } from "./api.generated";
-import type { InternalUser } from "./user";
 
 export type AuthTokens = components["schemas"]["TokenPairDto"];
 export type LoginPayload = components["schemas"]["LoginDto"];
 export type RefreshPayload = components["schemas"]["RefreshTokenDto"];
 
-export type AuthUser = Pick<
-  InternalUser,
-  "id" | "email" | "fullName" | "phoneNumber" | "isActive" | "roles"
->;
+export type AuthUser = {
+  id: string;
+  email: string;
+  fullName: string;
+  phoneNumber?: string | null;
+  isActive: boolean;
+  roles?: components["schemas"]["UserRoleDto"][];
+  role?: string;
+};

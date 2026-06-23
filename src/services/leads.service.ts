@@ -13,6 +13,8 @@ export async function captureLead(payload: CreateLeadPayload): Promise<Lead> {
   return unwrapApiResponse(publicClient.POST("/api/v1/leads", { body: payload }));
 }
 
+export const createPublicLead = captureLead;
+
 export async function listLeads(
   filters?: Record<string, unknown>,
 ): Promise<import("../types/api.generated").components["schemas"]["PaginatedLeadsResponseDto"]> {
