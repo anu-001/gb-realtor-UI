@@ -19,6 +19,21 @@ Frontend for the GB & Associates real estate platform.
    npm run dev
    ```
 
+## Netlify Deployment
+
+This app is ready to deploy on Netlify with the following setup:
+
+1. Connect the GitHub repository to Netlify.
+2. Set the build command to `npm run build`.
+3. Set the publish directory to `dist`.
+4. Set the production branch to `ft/ui` if you want Netlify to deploy from that branch.
+5. Add the required environment variables in Netlify:
+   - `VITE_API_BASE_URL`
+   - `VITE_APP_ENV`
+   - `VITE_MAPBOX_TOKEN`
+   - `VITE_API_DOCS_URL`
+6. Keep SPA routing enabled through the Netlify redirect defined in [`netlify.toml`](./netlify.toml).
+
 ## Available Scripts
 
 - `npm run dev` - start the Vite dev server
