@@ -32,6 +32,9 @@ const LeadsManagementPage = lazy(() => import("@/features/agent-dashboard/LeadsM
 const AnalyticsDashboardPage = lazy(() => import("@/features/agent-dashboard/AnalyticsDashboardPage"));
 const TeamManagementPage = lazy(() => import("@/features/agent-dashboard/TeamManagementPage"));
 const AuditLogsPage = lazy(() => import("@/features/agent-dashboard/AuditLogsPage"));
+const RolesPermissionsPage = lazy(() => import("@/features/agent-dashboard/RolesPermissionsPage"));
+const FeaturedPropertiesPage = lazy(() => import("@/features/agent-dashboard/FeaturedPropertiesPage"));
+const PropertyMediaPage = lazy(() => import("@/features/agent-dashboard/PropertyMediaPage"));
 const NotFoundPage = lazy(() => import("@/features/public/NotFoundPage"));
 
 function LoadingFallback() {
@@ -124,6 +127,38 @@ const router = createBrowserRouter([
         element: (
           <ProtectedRoute allowedRoles={[UserRole.Analyst, UserRole.SuperAdmin]}>
             <AnalyticsDashboardPage />
+          </ProtectedRoute>
+        ),
+      },
+      {
+        path: "featured-properties",
+        element: (
+          <ProtectedRoute allowedRoles={[UserRole.PropertyManager, UserRole.ContentEditor, UserRole.SuperAdmin]}>
+            <FeaturedPropertiesPage />
+          </ProtectedRoute>
+        ),
+      },
+      {
+        path: "property-media",
+        element: (
+          <ProtectedRoute allowedRoles={[UserRole.PropertyManager, UserRole.ContentEditor, UserRole.SuperAdmin]}>
+            <PropertyMediaPage />
+          </ProtectedRoute>
+        ),
+      },
+      {
+        path: "users",
+        element: (
+          <ProtectedRoute requiredRole="SuperAdmin">
+            <TeamManagementPage />
+          </ProtectedRoute>
+        ),
+      },
+      {
+        path: "roles-permissions",
+        element: (
+          <ProtectedRoute requiredRole="SuperAdmin">
+            <RolesPermissionsPage />
           </ProtectedRoute>
         ),
       },

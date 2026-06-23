@@ -11,6 +11,7 @@ import { SkeletonLoader } from "@/components/feedback/SkeletonLoader";
 import { PropertyStatus } from "@/constants/api-enums";
 import { useAppSelector } from "@/store";
 import { canArchiveListing, canEditListing, canPublishListing } from "@/utils/agent-access";
+import { resolveWorkspaceRole } from "@/utils/auth-role";
 import type { UpdatePropertyPayload } from "@/types/property";
 import { Building2, CircleCheckBig, Send, Archive } from "lucide-react";
 
@@ -18,7 +19,8 @@ export default function EditListingPage() {
   const { id } = useParams();
   const navigate = useNavigate();
   const queryClient = useQueryClient();
-  const role = useAppSelector((state) => state.auth.user?.role ?? state.auth.user?.roles?.[0]?.code ?? null);
+  const auth = useAppSelector((state) => state.auth);
+  const role = resolveWorkspaceRole(auth.user, auth.accessToken) ?? auth.user?.role ?? auth.user?.roles?.[0]?.code ?? null;
   const allowed = canEditListing(role);
 
   const propertyQuery = useQuery({

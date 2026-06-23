@@ -7,6 +7,9 @@ import { Sidebar } from "@/components/layout/Sidebar";
 import { Typography } from "@/components/ui/Typography";
 import { useAppDispatch, useAppSelector } from "@/store";
 import { setSidebarOpen } from "@/store/slices/uiSlice";
+import { resolveWorkspaceRole } from "@/utils/auth-role";
+import { canCreateListing } from "@/utils/agent-access";
+import { Link } from "react-router-dom";
 
 type AgentLayoutProps = {
   children?: ReactNode;
@@ -16,20 +19,28 @@ export function AgentLayout({ children }: AgentLayoutProps) {
   const dispatch = useAppDispatch();
   const location = useLocation();
   const user = useAppSelector((state) => state.auth.user);
-  const role = user?.role ?? user?.roles?.[0]?.code ?? "PropertyManager";
+  const accessToken = useAppSelector((state) => state.auth.accessToken);
+  const role = resolveWorkspaceRole(user, accessToken) ?? user?.role ?? user?.roles?.[0]?.code ?? "PropertyManager";
+  const canCreate = canCreateListing(role);
   const title =
     location.pathname === "/agent"
       ? "Overview"
       : location.pathname.includes("/listings")
         ? "Properties"
-      : location.pathname.includes("/leads")
-          ? "Leads"
-          : location.pathname.includes("/analytics")
-            ? "Analytics"
-            : location.pathname.includes("/audit-logs")
-              ? "Audit logs"
-          : location.pathname.includes("/team")
-              ? "Team"
+          : location.pathname.includes("/leads")
+            ? "Leads"
+            : location.pathname.includes("/analytics")
+              ? "Analytics"
+              : location.pathname.includes("/featured-properties")
+                ? "Featured properties"
+                : location.pathname.includes("/property-media")
+                  ? "Property media"
+                  : location.pathname.includes("/roles-permissions")
+                    ? "Roles & permissions"
+              : location.pathname.includes("/audit-logs")
+                  ? "Audit logs"
+          : location.pathname.includes("/users") || location.pathname.includes("/team")
+              ? "Users"
               : "Workspace";
 
   return (
@@ -57,12 +68,20 @@ export function AgentLayout({ children }: AgentLayoutProps) {
                   </Typography>
                 </div>
               </div>
-              <div className="flex items-center gap-2">
-                <span className="rounded-full border border-[var(--color-border)] px-3 py-1 text-caption text-[var(--color-text-secondary)]">
-                  {role}
-                </span>
-              </div>
+            <div className="flex items-center gap-2">
+              {canCreate ? (
+                <Link
+                  to="/agent/listings/new"
+                  className="hidden h-10 items-center justify-center rounded-full bg-[var(--color-accent)] px-4 text-sm font-medium text-white transition hover:bg-[var(--color-accent-hover)] md:inline-flex"
+                >
+                  Add listing
+                </Link>
+              ) : null}
+              <span className="rounded-full border border-[var(--color-border)] px-3 py-1 text-caption text-[var(--color-text-secondary)]">
+                {role}
+              </span>
             </div>
+          </div>
           </header>
           <motion.main id="main-content" {...pageTransition} className="app-container flex-1 py-8">
             {children ?? <Outlet />}

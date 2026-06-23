@@ -2,6 +2,7 @@ import { createAsyncThunk, createSlice, type PayloadAction } from "@reduxjs/tool
 import type { AuthTokens, AuthUser, LoginPayload } from "@/types/auth";
 import { login as loginRequest, logout as logoutRequest, refresh as refreshRequest } from "@/services/auth.service";
 import { clearRefreshToken, getRefreshToken, setRefreshToken } from "@/services/auth-session";
+import { resolveWorkspaceRole } from "@/utils/auth-role";
 
 export interface AuthState {
   user: AuthUser | null;
@@ -22,7 +23,7 @@ function normalizeAuthUser(user: AuthUser | null): AuthUser | null {
 
   return {
     ...user,
-    role: user.role ?? user.roles?.[0]?.code ?? "SupportAgent",
+    role: resolveWorkspaceRole(user) ?? user.role ?? user.roles?.[0]?.code ?? undefined,
   };
 }
 
@@ -38,17 +39,20 @@ function userFromToken(accessToken: string | null): AuthUser | null {
   try {
     const payloadPart = accessToken.split(".")[1];
     if (!payloadPart) return null;
-    const payload = JSON.parse(decodeBase64Url(payloadPart)) as Record<string, unknown>;
-    const roles = Array.isArray(payload.roles) ? (payload.roles as AuthUser["roles"]) : undefined;
-    const role = typeof payload.role === "string" ? payload.role : roles?.[0]?.code;
+    const normalizedPayload = JSON.parse(decodeBase64Url(payloadPart)) as Record<string, unknown>;
+    const roles = Array.isArray(normalizedPayload.roles) ? (normalizedPayload.roles as AuthUser["roles"]) : undefined;
+    const role = resolveWorkspaceRole(
+      undefined,
+      accessToken,
+    );
 
-    const id = typeof payload.sub === "string" ? payload.sub : typeof payload.id === "string" ? payload.id : "";
-    const email = typeof payload.email === "string" ? payload.email : "";
+    const id = typeof normalizedPayload.sub === "string" ? normalizedPayload.sub : typeof normalizedPayload.id === "string" ? normalizedPayload.id : "";
+    const email = typeof normalizedPayload.email === "string" ? normalizedPayload.email : "";
     const fullName =
-      typeof payload.fullName === "string"
-        ? payload.fullName
-        : typeof payload.name === "string"
-          ? payload.name
+      typeof normalizedPayload.fullName === "string"
+        ? normalizedPayload.fullName
+        : typeof normalizedPayload.name === "string"
+          ? normalizedPayload.name
           : email || "Signed in user";
 
     return normalizeAuthUser({
@@ -57,7 +61,7 @@ function userFromToken(accessToken: string | null): AuthUser | null {
       fullName,
       isActive: true,
       roles,
-      role,
+      role: role ?? undefined,
     });
   } catch {
     return null;

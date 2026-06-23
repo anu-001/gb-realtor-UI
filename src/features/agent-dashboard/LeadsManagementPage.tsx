@@ -8,6 +8,7 @@ import { SkeletonLoader } from "@/components/feedback/SkeletonLoader";
 import { StatusBadge } from "@/components/property/StatusBadge";
 import { useAppSelector } from "@/store";
 import { canManageLeadActions, canViewLeads, resolveAgentRole } from "@/utils/agent-access";
+import { resolveWorkspaceRole } from "@/utils/auth-role";
 
 type LeadFilters = {
   status: string;
@@ -27,7 +28,8 @@ function useDebouncedValue<T>(value: T, delay = 300): T {
 }
 
 export default function LeadsManagementPage() {
-  const role = resolveAgentRole(useAppSelector((state) => state.auth.user?.role ?? state.auth.user?.roles?.[0]?.code ?? null));
+  const auth = useAppSelector((state) => state.auth);
+  const role = resolveWorkspaceRole(auth.user, auth.accessToken) ?? resolveAgentRole(auth.user?.role ?? auth.user?.roles?.[0]?.code ?? null);
   const canView = canViewLeads(role);
   const canManage = canManageLeadActions(role);
   const [filters, setFilters] = useState<LeadFilters>({ status: "", search: "", assignee: "" });

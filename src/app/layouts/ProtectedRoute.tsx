@@ -4,6 +4,7 @@ import { useAppSelector } from "@/store/hooks";
 import { UserRole } from "@/constants/api-enums";
 import { EmptyState } from "@/components/feedback/EmptyState";
 import { resolveAgentRole } from "@/utils/agent-access";
+import { resolveWorkspaceRole } from "@/utils/auth-role";
 
 type ProtectedRouteProps = {
   children?: ReactNode;
@@ -25,7 +26,7 @@ function LoadingState() {
 export function ProtectedRoute({ children, requiredRole, allowedRoles }: ProtectedRouteProps) {
   const location = useLocation();
   const auth = useAppSelector((state) => state.auth);
-  const resolvedRole = resolveAgentRole(auth.user?.role ?? auth.user?.roles?.[0]?.code ?? null);
+  const resolvedRole = resolveWorkspaceRole(auth.user, auth.accessToken) ?? resolveAgentRole(auth.user?.role ?? auth.user?.roles?.[0]?.code ?? null);
 
   if (auth.isInitializing) {
     return <LoadingState />;

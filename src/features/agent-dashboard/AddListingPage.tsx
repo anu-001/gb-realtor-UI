@@ -5,12 +5,14 @@ import { createProperty } from "@/services/properties.service";
 import { EmptyState } from "@/components/feedback/EmptyState";
 import { useAppSelector } from "@/store";
 import { canCreateListing } from "@/utils/agent-access";
+import { resolveWorkspaceRole } from "@/utils/auth-role";
 import type { CreatePropertyPayload } from "@/types/property";
 
 export default function AddListingPage() {
   const navigate = useNavigate();
   const queryClient = useQueryClient();
-  const role = useAppSelector((state) => state.auth.user?.role ?? state.auth.user?.roles?.[0]?.code ?? null);
+  const auth = useAppSelector((state) => state.auth);
+  const role = resolveWorkspaceRole(auth.user, auth.accessToken) ?? auth.user?.role ?? auth.user?.roles?.[0]?.code ?? null;
   const allowed = canCreateListing(role);
   const mutation = useMutation({
     mutationFn: async (values: Parameters<typeof createProperty>[0]) => createProperty(values),

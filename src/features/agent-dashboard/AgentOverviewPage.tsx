@@ -1,6 +1,20 @@
 import { useQuery } from "@tanstack/react-query";
 import { Link } from "react-router-dom";
-import { ArrowRight, Bell, BookOpen, Building2, Compass, FolderOpen, LayoutDashboard, Plus, ScrollText, Users } from "lucide-react";
+import {
+  ArrowRight,
+  Bell,
+  BookOpen,
+  Building2,
+  Compass,
+  FolderOpen,
+  ImagePlus,
+  LayoutDashboard,
+  Plus,
+  ScrollText,
+  ShieldCheck,
+  Star,
+  Users,
+} from "lucide-react";
 import { getAnalyticsDashboard, getAnalyticsSummary } from "@/services/analytics.service";
 import { listAuditLogs } from "@/services/users.service";
 import { StatCard } from "@/components/data-display/StatCard";
@@ -8,6 +22,7 @@ import { SkeletonLoader } from "@/components/feedback/SkeletonLoader";
 import { EmptyState } from "@/components/feedback/EmptyState";
 import { useAppSelector } from "@/store";
 import { canCreateListing, canManageTeam, canViewAnalytics, canViewDashboard, canViewLeads, resolveAgentRole } from "@/utils/agent-access";
+import { resolveWorkspaceRole } from "@/utils/auth-role";
 
 function asRecord(value: unknown): Record<string, unknown> {
   return value && typeof value === "object" ? (value as Record<string, unknown>) : {};
@@ -92,7 +107,8 @@ function getAuditTarget(entry: unknown): string | null {
 }
 
 export default function AgentOverviewPage() {
-  const role = resolveAgentRole(useAppSelector((state) => state.auth.user?.role ?? state.auth.user?.roles?.[0]?.code ?? "PropertyManager")) ?? "PropertyManager";
+  const auth = useAppSelector((state) => state.auth);
+  const role = resolveWorkspaceRole(auth.user, auth.accessToken) ?? resolveAgentRole(auth.user?.role ?? auth.user?.roles?.[0]?.code ?? "PropertyManager") ?? "PropertyManager";
   const canViewOverview = canViewDashboard(role);
   const dashboardQuery = useQuery({
     queryKey: ["analytics-dashboard", role],
@@ -143,8 +159,15 @@ export default function AgentOverviewPage() {
     {
       label: "Team access",
       description: "Invite collaborators and manage roles for the workspace.",
-      to: "/agent/team",
+      to: "/agent/users",
       icon: Users,
+      visible: canSeeTeam,
+    },
+    {
+      label: "Roles & permissions",
+      description: "Inspect the access catalog that powers the workspace.",
+      to: "/agent/roles-permissions",
+      icon: ShieldCheck,
       visible: canSeeTeam,
     },
     {
@@ -153,6 +176,20 @@ export default function AgentOverviewPage() {
       to: "/agent/audit-logs",
       icon: ScrollText,
       visible: canSeeTeam,
+    },
+    {
+      label: "Featured properties",
+      description: "Manage the listings currently highlighted on the site.",
+      to: "/agent/featured-properties",
+      icon: Star,
+      visible: canSeeAnalytics || canSeeTeam,
+    },
+    {
+      label: "Property media",
+      description: "Upload and organise listing photos with a dedicated view.",
+      to: "/agent/property-media",
+      icon: ImagePlus,
+      visible: canSeeAnalytics || canSeeTeam,
     },
     {
       label: "Public search",

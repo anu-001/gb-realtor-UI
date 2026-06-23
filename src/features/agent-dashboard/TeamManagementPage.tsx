@@ -68,7 +68,7 @@ export default function TeamManagementPage() {
     <div className="space-y-6">
       <section className="rounded-[32px] border border-[var(--color-border)] bg-[var(--color-surface)] p-6 shadow-card">
         <div className="space-y-2">
-          <p className="text-small font-semibold uppercase tracking-[0.2em] text-[var(--color-text-secondary)]">Team</p>
+          <p className="text-small font-semibold uppercase tracking-[0.2em] text-[var(--color-text-secondary)]">Users</p>
           <h1 className="font-display text-h2 text-[var(--color-text-primary)]">Manage people and access with care.</h1>
           <p className="max-w-2xl text-body text-[var(--color-text-secondary)]">
             Invite employees, adjust roles, and deactivate accounts without losing the clarity of the interface.
@@ -81,7 +81,7 @@ export default function TeamManagementPage() {
       <section className="grid gap-6 xl:grid-cols-[minmax(0,1.2fr)_minmax(0,0.8fr)]">
         <div className="overflow-hidden rounded-card border border-[var(--color-border)] bg-[var(--color-surface)] shadow-card">
           <div className="border-b border-[var(--color-border)] px-4 py-4">
-            <h2 className="font-display text-h4 text-[var(--color-text-primary)]">Users</h2>
+          <h2 className="font-display text-h4 text-[var(--color-text-primary)]">Users</h2>
           </div>
           {usersQuery.isLoading ? (
             <div className="space-y-3 p-4">

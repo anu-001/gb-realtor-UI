@@ -12,6 +12,7 @@ import { PropertyStatus } from "@/constants/api-enums";
 import { useAppSelector } from "@/store";
 import { cn } from "@/utils/cn";
 import { canArchiveListing, canCreateListing, canEditListing, canManageFeaturedListing, canPublishListing, canViewProperties, resolveAgentRole } from "@/utils/agent-access";
+import { resolveWorkspaceRole } from "@/utils/auth-role";
 
 type Filters = {
   search: string;
@@ -52,7 +53,8 @@ export default function ListingsManagementPage() {
   const queryClient = useQueryClient();
   const [filters, setFilters] = useState<Filters>(initialFilters);
   const debounced = useDebouncedValue(filters.search, 300);
-  const role = resolveAgentRole(useAppSelector((state) => state.auth.user?.role ?? state.auth.user?.roles?.[0]?.code ?? null)) ?? null;
+  const auth = useAppSelector((state) => state.auth);
+  const role = resolveWorkspaceRole(auth.user, auth.accessToken) ?? resolveAgentRole(auth.user?.role ?? auth.user?.roles?.[0]?.code ?? null) ?? null;
   const canView = canViewProperties(role);
 
   const propertiesQuery = useQuery({
