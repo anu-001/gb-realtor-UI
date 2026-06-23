@@ -12,6 +12,8 @@ export function resolveAgentRole(role?: string | null): string | null {
     admin: UserRole.SuperAdmin,
     administrator: UserRole.SuperAdmin,
     superadmin: UserRole.SuperAdmin,
+    superadministrator: UserRole.SuperAdmin,
+    superuser: UserRole.SuperAdmin,
     manager: UserRole.PropertyManager,
     propertymanager: UserRole.PropertyManager,
     contenteditor: UserRole.ContentEditor,
@@ -23,7 +25,31 @@ export function resolveAgentRole(role?: string | null): string | null {
     agent: UserRole.SupportAgent,
   };
 
-  return aliases[compact] ?? role;
+  if (aliases[compact]) {
+    return aliases[compact];
+  }
+
+  if (compact.includes("super") && compact.includes("admin")) {
+    return UserRole.SuperAdmin;
+  }
+
+  if (compact.includes("property") && compact.includes("manager")) {
+    return UserRole.PropertyManager;
+  }
+
+  if (compact.includes("content") && compact.includes("editor")) {
+    return UserRole.ContentEditor;
+  }
+
+  if (compact.includes("support") && compact.includes("agent")) {
+    return UserRole.SupportAgent;
+  }
+
+  if (compact.includes("analyst") || compact.includes("analytics")) {
+    return UserRole.Analyst;
+  }
+
+  return role;
 }
 
 export function canCreateListing(role?: string | null): boolean {

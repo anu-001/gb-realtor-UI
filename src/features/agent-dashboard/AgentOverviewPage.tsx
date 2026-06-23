@@ -1,12 +1,12 @@
 import { useQuery } from "@tanstack/react-query";
 import { Link } from "react-router-dom";
-import { ArrowRight, Bell, Building2, Plus, Users } from "lucide-react";
+import { ArrowRight, Bell, BookOpen, Building2, Compass, FolderOpen, LayoutDashboard, Plus, Users } from "lucide-react";
 import { getAnalyticsDashboard } from "@/services/analytics.service";
 import { StatCard } from "@/components/data-display/StatCard";
 import { SkeletonLoader } from "@/components/feedback/SkeletonLoader";
 import { EmptyState } from "@/components/feedback/EmptyState";
 import { useAppSelector } from "@/store";
-import { canCreateListing, canViewLeads, resolveAgentRole } from "@/utils/agent-access";
+import { canCreateListing, canManageTeam, canViewAnalytics, canViewLeads, resolveAgentRole } from "@/utils/agent-access";
 
 function asRecord(value: unknown): Record<string, unknown> {
   return value && typeof value === "object" ? (value as Record<string, unknown>) : {};
@@ -69,6 +69,46 @@ export default function AgentOverviewPage() {
   const featuredEntries = getPerformanceRows(summary?.featuredPropertyPerformance);
   const canCreate = canCreateListing(role);
   const canViewLeadQueue = canViewLeads(role);
+  const canSeeAnalytics = canViewAnalytics(role);
+  const canSeeTeam = canManageTeam(role);
+
+  const resources = [
+    {
+      label: "Listings workspace",
+      description: "Create drafts, review assets, and manage publication status.",
+      to: "/agent/listings",
+      icon: FolderOpen,
+      visible: true,
+    },
+    {
+      label: "Lead inbox",
+      description: "Triage enquiries, assign owners, and follow up faster.",
+      to: "/agent/leads",
+      icon: Compass,
+      visible: canViewLeadQueue,
+    },
+    {
+      label: "Performance view",
+      description: "Track activity, conversion, and featured listing performance.",
+      to: "/agent/analytics",
+      icon: LayoutDashboard,
+      visible: canSeeAnalytics,
+    },
+    {
+      label: "Team access",
+      description: "Invite collaborators and manage roles for the workspace.",
+      to: "/agent/team",
+      icon: Users,
+      visible: canSeeTeam,
+    },
+    {
+      label: "Public search",
+      description: "See the visitor-facing catalog exactly as prospects do.",
+      to: "/search",
+      icon: BookOpen,
+      visible: true,
+    },
+  ].filter((resource) => resource.visible);
 
   if (dashboardQuery.isLoading) {
     return (
@@ -148,6 +188,44 @@ export default function AgentOverviewPage() {
           <StatCard key={card.label} {...card} />
         ))}
       </div>
+
+      <section className="space-y-4 rounded-card border border-[var(--color-border)] bg-[var(--color-surface)] p-6 shadow-card">
+        <div className="flex items-center justify-between gap-4">
+          <div>
+            <h2 className="font-display text-h4 text-[var(--color-text-primary)]">Resources</h2>
+            <p className="text-caption text-[var(--color-text-secondary)]">
+              Quick access to the core admin surfaces, arranged for fast navigation.
+            </p>
+          </div>
+          <span className="rounded-full border border-[var(--color-border)] px-3 py-1 text-caption text-[var(--color-text-secondary)]">
+            Workspace links
+          </span>
+        </div>
+
+        <div className="grid gap-3 md:grid-cols-2 xl:grid-cols-3">
+          {resources.map((resource) => {
+            const Icon = resource.icon;
+            return (
+              <Link
+                key={resource.to}
+                to={resource.to}
+                className="group flex min-h-28 flex-col justify-between rounded-[20px] border border-[var(--color-border)] bg-[color-mix(in_srgb,var(--color-surface)_96%,white)] p-4 transition hover:-translate-y-0.5 hover:border-[color-mix(in_srgb,var(--color-accent)_35%,var(--color-border))] hover:bg-[var(--color-surface-raised)]"
+              >
+                <div className="flex items-start justify-between gap-4">
+                  <div className="flex h-11 w-11 items-center justify-center rounded-full border border-[var(--color-border)] bg-[var(--color-surface)] text-[var(--color-accent)] transition group-hover:bg-[color-mix(in_srgb,var(--color-accent)_8%,white)]">
+                    <Icon className="h-4 w-4" aria-hidden="true" />
+                  </div>
+                  <ArrowRight className="h-4 w-4 text-[var(--color-text-secondary)] transition group-hover:translate-x-0.5 group-hover:text-[var(--color-accent)]" />
+                </div>
+                <div className="mt-4 space-y-1">
+                  <p className="font-medium text-[var(--color-text-primary)]">{resource.label}</p>
+                  <p className="text-caption text-[var(--color-text-secondary)]">{resource.description}</p>
+                </div>
+              </Link>
+            );
+          })}
+        </div>
+      </section>
 
       <div className="grid gap-6 xl:grid-cols-[minmax(0,1.2fr)_minmax(0,0.8fr)]">
         <section className="space-y-4 rounded-card border border-[var(--color-border)] bg-[var(--color-surface)] p-6 shadow-card" aria-busy={dashboardQuery.isFetching}>
