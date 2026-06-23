@@ -5,7 +5,6 @@ import { describe, expect, it, vi, beforeEach } from "vitest";
 import HomePage from "./HomePage";
 import * as propertiesService from "@/services/properties.service";
 
-const getFeaturedPropertiesSpy = vi.spyOn(propertiesService, "getFeaturedProperties");
 const getPublicListingsSpy = vi.spyOn(propertiesService, "getPublicListings");
 
 function renderHome() {
@@ -30,29 +29,10 @@ function renderHome() {
 
 describe("HomePage", () => {
   beforeEach(() => {
-    getFeaturedPropertiesSpy.mockReset();
     getPublicListingsSpy.mockReset();
   });
 
-  it("renders the hero, featured rail, and listing grid", async () => {
-    getFeaturedPropertiesSpy.mockResolvedValue([
-      {
-        id: "featured-1",
-        title: "Glass House in Ikoyi",
-        description: "Modern home.",
-        purpose: "sale",
-        status: "published",
-        state: "Lagos",
-        city: "Lagos",
-        area: "Ikoyi",
-        priceKobo: "125000000",
-        bedrooms: 4,
-        bathrooms: 4,
-        createdAt: "2026-06-23T12:00:00.000Z",
-        updatedAt: "2026-06-23T12:00:00.000Z",
-      },
-    ] as never);
-
+  it("renders the hero and live listing grid", async () => {
     getPublicListingsSpy.mockResolvedValue({
       data: [
         {
@@ -74,10 +54,10 @@ describe("HomePage", () => {
 
     renderHome();
 
-    expect(await screen.findByRole("heading", { name: /find the right property, faster\./i })).toBeInTheDocument();
-    expect(await screen.findByText("Featured listings")).toBeInTheDocument();
-    expect(await screen.findByText("Glass House in Ikoyi")).toBeInTheDocument();
-    expect(await screen.findByText("Modern Family Home")).toBeInTheDocument();
-    expect(screen.getByRole("link", { name: /open full search/i })).toBeInTheDocument();
+    expect(await screen.findByRole("heading", { name: /find a refined home without the clutter\./i })).toBeInTheDocument();
+    expect(await screen.findByText("Browse what is available now")).toBeInTheDocument();
+    expect(screen.getByRole("link", { name: /view details for modern family home/i })).toBeInTheDocument();
+    expect(screen.getByRole("link", { name: /request a property/i })).toBeInTheDocument();
+    expect(screen.getByRole("button", { name: /view results/i })).toBeInTheDocument();
   });
 });
