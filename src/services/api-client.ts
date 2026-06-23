@@ -98,6 +98,21 @@ function notifyServerError(): void {
   config.toast?.error("Something went wrong, please try again.");
 }
 
+function handleResponseSideEffects(response: Response): void {
+  if (response.status === 429) {
+    notifyRateLimit();
+  } else if (response.status === 500) {
+    notifyServerError();
+  }
+}
+
+function sessionExpiredResponse(): Response {
+  return new Response(JSON.stringify({ statusCode: 401, message: "Session expired, please log in again." }), {
+    status: 401,
+    headers: { "Content-Type": "application/json" },
+  });
+}
+
 function redirectToLogin(): void {
   config.clearAuth?.();
 
@@ -150,52 +165,40 @@ export function isPublicRoute(url: string): boolean {
   return publicRouteMatchers.some((matcher) => matcher.test(pathname));
 }
 
+async function fetchWithRetry(request: Request, accessToken: string | null | undefined): Promise<Response> {
+  const authenticatedRequest = appendAuthorizationHeader(request, accessToken);
+  const response = await rawFetch(authenticatedRequest);
+  handleResponseSideEffects(response);
+  return response;
+}
+
 async function fetchWithAuth(input: RequestInfo | URL, init?: RequestInit): Promise<Response> {
   const request = new Request(input, init);
   const auth = getAuthSnapshot();
   const refreshToken = getRefreshToken();
+  const requestIsRefresh = isAuthRefreshRequest(request);
 
   if (!isPublicRoute(request.url) && !auth.accessToken) {
     if (refreshToken) {
       const refreshed = await refreshAccessToken();
       if (!refreshed?.accessToken) {
         redirectToLogin();
-        return new Response(JSON.stringify({ statusCode: 401, message: "Session expired, please log in again." }), {
-          status: 401,
-          headers: { "Content-Type": "application/json" },
-        });
+        return sessionExpiredResponse();
       }
-      const refreshedRequest = appendAuthorizationHeader(request, refreshed.accessToken);
-      const refreshedResponse = await rawFetch(refreshedRequest);
-
-      if (refreshedResponse.status === 429) {
-        notifyRateLimit();
-      } else if (refreshedResponse.status === 500) {
-        notifyServerError();
-      }
+      const refreshedResponse = await fetchWithRetry(request, refreshed.accessToken);
 
       if (refreshedResponse.status !== 401) {
         return refreshedResponse;
       }
     } else {
       redirectToLogin();
-      return new Response(JSON.stringify({ statusCode: 401, message: "Session expired, please log in again." }), {
-        status: 401,
-        headers: { "Content-Type": "application/json" },
-      });
+      return sessionExpiredResponse();
     }
   }
 
-  const authenticatedRequest = appendAuthorizationHeader(request, auth.accessToken);
+  const response = await fetchWithRetry(request, auth.accessToken);
 
-  const response = await rawFetch(authenticatedRequest);
-  if (response.status === 429) {
-    notifyRateLimit();
-  } else if (response.status === 500) {
-    notifyServerError();
-  }
-
-  if (response.status !== 401 || isAuthRefreshRequest(authenticatedRequest) || isPublicRoute(authenticatedRequest.url)) {
+  if (response.status !== 401 || requestIsRefresh || isPublicRoute(request.url)) {
     return response;
   }
 
@@ -205,14 +208,7 @@ async function fetchWithAuth(input: RequestInfo | URL, init?: RequestInit): Prom
     return response;
   }
 
-  const retriedRequest = appendAuthorizationHeader(request, tokens.accessToken);
-  const retriedResponse = await rawFetch(retriedRequest);
-
-  if (retriedResponse.status === 429) {
-    notifyRateLimit();
-  } else if (retriedResponse.status === 500) {
-    notifyServerError();
-  }
+  const retriedResponse = await fetchWithRetry(request, tokens.accessToken);
 
   if (retriedResponse.status === 401) {
     redirectToLogin();
@@ -224,12 +220,7 @@ async function fetchWithAuth(input: RequestInfo | URL, init?: RequestInit): Prom
 async function fetchWithoutAuth(input: RequestInfo | URL, init?: RequestInit): Promise<Response> {
   const request = new Request(input, init);
   const response = await rawFetch(request);
-
-  if (response.status === 429) {
-    notifyRateLimit();
-  } else if (response.status === 500) {
-    notifyServerError();
-  }
+  handleResponseSideEffects(response);
 
   return response;
 }

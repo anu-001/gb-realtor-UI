@@ -18,6 +18,15 @@ const initialState: AuthState = {
   isInitializing: true,
 };
 
+function createUnauthenticatedState(): AuthState {
+  return {
+    user: null,
+    accessToken: null,
+    isAuthenticated: false,
+    isInitializing: false,
+  };
+}
+
 function normalizeAuthUser(user: AuthUser | null): AuthUser | null {
   if (!user) return null;
 
@@ -118,15 +127,9 @@ const authSlice = createSlice({
       state.accessToken = action.payload.accessToken;
       state.isAuthenticated = Boolean(action.payload.accessToken);
       state.isInitializing = false;
-      if (action.payload.accessToken) {
-        // access token is kept in memory only
-      }
     },
     clearAuth(state) {
-      state.user = null;
-      state.accessToken = null;
-      state.isAuthenticated = false;
-      state.isInitializing = false;
+      Object.assign(state, createUnauthenticatedState());
       clearRefreshToken();
     },
     setInitializing(state, action: PayloadAction<boolean>) {
@@ -160,22 +163,13 @@ const authSlice = createSlice({
       })
       .addCase(restoreSession.rejected, (state) => {
         clearRefreshToken();
-        state.user = null;
-        state.accessToken = null;
-        state.isAuthenticated = false;
-        state.isInitializing = false;
+        Object.assign(state, createUnauthenticatedState());
       })
       .addCase(logoutUser.fulfilled, (state) => {
-        state.user = null;
-        state.accessToken = null;
-        state.isAuthenticated = false;
-        state.isInitializing = false;
+        Object.assign(state, createUnauthenticatedState());
       })
       .addCase(logoutUser.rejected, (state) => {
-        state.user = null;
-        state.accessToken = null;
-        state.isAuthenticated = false;
-        state.isInitializing = false;
+        Object.assign(state, createUnauthenticatedState());
       });
   },
 });
