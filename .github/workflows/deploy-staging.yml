@@ -1,0 +1,24 @@
+name: Deploy Staging
+
+on:
+  push:
+    branches:
+      - main
+
+jobs:
+  build-and-deploy:
+    runs-on: ubuntu-latest
+    env:
+      VITE_API_BASE_URL: https://api-staging.yourdomain.com
+      VITE_APP_ENV: staging
+      VITE_MAPBOX_TOKEN: ${{ secrets.VITE_MAPBOX_TOKEN_STAGING }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+      - run: npm ci
+      - run: npm run build
+      - name: Deploy to staging
+        run: echo "Deploy staging artifacts here"

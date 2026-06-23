@@ -1,0 +1,120 @@
+.tiptap-content {
+  font-family: var(--font-body);
+  font-size: var(--text-body);
+  color: var(--color-text-primary);
+  line-height: 1.7;
+}
+
+.tiptap-content:focus {
+  outline: none;
+}
+
+.tiptap-content h2 {
+  font-family: var(--font-display);
+  font-size: 24px;
+  font-weight: 600;
+  color: var(--color-text-primary);
+  margin-top: 28px;
+  margin-bottom: 10px;
+  line-height: 1.25;
+}
+
+.tiptap-content h3 {
+  font-family: var(--font-display);
+  font-size: 20px;
+  font-weight: 600;
+  color: var(--color-text-primary);
+  margin-top: 24px;
+  margin-bottom: 8px;
+  line-height: 1.3;
+}
+
+.tiptap-content p {
+  margin-bottom: 14px;
+}
+
+.tiptap-content p:last-child {
+  margin-bottom: 0;
+}
+
+.tiptap-content strong {
+  font-weight: 600;
+  color: var(--color-text-primary);
+}
+
+.tiptap-content em {
+  font-style: italic;
+}
+
+.tiptap-content u {
+  text-decoration: underline;
+  text-underline-offset: 3px;
+}
+
+.tiptap-content s {
+  text-decoration: line-through;
+  color: var(--color-text-muted);
+}
+
+.tiptap-content ul {
+  list-style-type: disc;
+  padding-left: 24px;
+  margin-bottom: 14px;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.tiptap-content ol {
+  list-style-type: decimal;
+  padding-left: 24px;
+  margin-bottom: 14px;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.tiptap-content li {
+  line-height: 1.7;
+}
+
+.tiptap-content a {
+  color: var(--color-accent);
+  text-decoration: none;
+}
+
+.tiptap-content a:hover {
+  text-decoration: underline;
+  text-underline-offset: 3px;
+}
+
+.tiptap-content mark {
+  background: rgba(251, 191, 36, 0.28);
+  border-radius: 2px;
+  padding: 1px 3px;
+}
+
+.tiptap-content blockquote {
+  border-left: 3px solid var(--color-accent);
+  padding-left: 16px;
+  margin: 20px 0;
+  color: var(--color-text-secondary);
+  font-style: italic;
+}
+
+[data-theme="dark"] .tiptap-content mark {
+  background: rgba(251, 191, 36, 0.18);
+  color: var(--color-text-primary);
+}
+
+.tiptap-content > *:first-child {
+  margin-top: 0;
+}
+
+.tiptap-content p.is-editor-empty:first-child::before {
+  color: var(--color-text-muted);
+  content: attr(data-placeholder);
+  float: left;
+  height: 0;
+  pointer-events: none;
+}
