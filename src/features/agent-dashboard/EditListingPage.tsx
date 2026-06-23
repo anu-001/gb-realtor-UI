@@ -9,6 +9,8 @@ import { StatusBadge } from "@/components/property/StatusBadge";
 import { EmptyState } from "@/components/feedback/EmptyState";
 import { SkeletonLoader } from "@/components/feedback/SkeletonLoader";
 import { PropertyStatus } from "@/constants/api-enums";
+import { useAppSelector } from "@/store";
+import { canArchiveListing, canEditListing, canPublishListing } from "@/utils/agent-access";
 import type { UpdatePropertyPayload } from "@/types/property";
 import { Building2, CircleCheckBig, Send, Archive } from "lucide-react";
 
@@ -16,6 +18,8 @@ export default function EditListingPage() {
   const { id } = useParams();
   const navigate = useNavigate();
   const queryClient = useQueryClient();
+  const role = useAppSelector((state) => state.auth.user?.role ?? state.auth.user?.roles?.[0]?.code ?? null);
+  const allowed = canEditListing(role);
 
   const propertyQuery = useQuery({
     queryKey: ["agent-property", id],
@@ -37,7 +41,7 @@ export default function EditListingPage() {
   });
 
   const workflowActions = useMemo(() => {
-    if (!property) return [];
+    if (!property || !allowed) return [];
     const actions = [];
     actions.push({
       label: "Submit for review",
@@ -48,7 +52,7 @@ export default function EditListingPage() {
         await queryClient.invalidateQueries({ queryKey: ["agent-property", id] });
       },
     });
-    if (property.status === PropertyStatus.PendingReview) {
+    if (property.status === PropertyStatus.PendingReview && canPublishListing(role)) {
       actions.push({
         label: "Approve",
         icon: CircleCheckBig,
@@ -68,20 +72,22 @@ export default function EditListingPage() {
         },
       });
     }
-    actions.push({
-      label: "Archive",
-      icon: Archive,
-      handler: async () => {
-        if (!id) return;
-        if (!window.confirm("Archive this listing?")) return;
-        await archiveProperty(id, {});
-        await queryClient.invalidateQueries({ queryKey: ["agent-property", id] });
-        await queryClient.invalidateQueries({ queryKey: ["agent-properties"] });
-        navigate("/agent/listings", { replace: true });
-      },
-    });
+    if (canArchiveListing(role)) {
+      actions.push({
+        label: "Archive",
+        icon: Archive,
+        handler: async () => {
+          if (!id) return;
+          if (!window.confirm("Archive this listing?")) return;
+          await archiveProperty(id, {});
+          await queryClient.invalidateQueries({ queryKey: ["agent-property", id] });
+          await queryClient.invalidateQueries({ queryKey: ["agent-properties"] });
+          navigate("/agent/listings", { replace: true });
+        },
+      });
+    }
     return actions;
-  }, [id, navigate, property, queryClient]);
+  }, [allowed, id, navigate, property, queryClient, role]);
 
   if (propertyQuery.isLoading) {
     return (
@@ -90,6 +96,24 @@ export default function EditListingPage() {
         <SkeletonLoader height="420px" />
         <SkeletonLoader height="320px" />
       </div>
+    );
+  }
+
+  if (!allowed) {
+    return (
+      <EmptyState
+        heading="Access denied"
+        message="Your role does not allow editing listings."
+        action={
+          <button
+            type="button"
+            onClick={() => navigate("/agent/listings", { replace: true })}
+            className="inline-flex h-11 items-center justify-center rounded-input bg-[var(--color-accent)] px-4 text-sm font-medium text-white"
+          >
+            Back to listings
+          </button>
+        }
+      />
     );
   }
 

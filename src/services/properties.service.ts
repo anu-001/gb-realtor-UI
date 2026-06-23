@@ -6,17 +6,20 @@ import { unwrapApiResponse } from "./_request";
 export interface PublicListingsQuery {
   q?: string;
   location?: string;
-  type?: "house" | "apartment" | "land" | "commercial" | "villa";
-  listingType?: "sale" | "rent";
-  status?: "draft" | "pending_review" | "published" | "archived";
   state?: string;
   city?: string;
+  type?: "house" | "apartment" | "land" | "commercial" | "villa";
+  listingType?: "sale" | "rent" | "short_let";
+  status?: "draft" | "pending_review" | "published" | "archived";
+  propertyType?: "sale" | "rent" | "short_let";
+  minPriceKobo?: string | number;
+  maxPriceKobo?: string | number;
   minPrice?: string | number;
   maxPrice?: string | number;
   beds?: number;
-  baths?: number;
-  minSqft?: string | number;
-  maxSqft?: string | number;
+  bathrooms?: number;
+  minSizeSqm?: string | number;
+  maxSizeSqm?: string | number;
   featured?: boolean;
   openHouse?: boolean;
   newConstruction?: boolean;
@@ -42,16 +45,24 @@ function mapSearchFiltersToSpecQuery(filters?: PublicListingsQuery): Record<stri
     return {};
   }
 
+  const minPriceKobo = filters.minPriceKobo ?? filters.minPrice;
+  const maxPriceKobo = filters.maxPriceKobo ?? filters.maxPrice;
+
   return {
     ...(filters.q ? { q: filters.q } : {}),
     ...(filters.location ? { location: filters.location } : {}),
+    ...(filters.state ? { state: filters.state } : {}),
+    ...(filters.city ? { city: filters.city } : {}),
+    ...(filters.type ? { type: filters.type } : {}),
+    ...(filters.propertyType ? { propertyType: filters.propertyType } : {}),
     ...(filters.listingType ? { listingType: filters.listingType } : {}),
-    ...(filters.minPrice !== undefined ? { minPriceKobo: String(filters.minPrice) } : {}),
-    ...(filters.maxPrice !== undefined ? { maxPriceKobo: String(filters.maxPrice) } : {}),
+    ...(filters.status ? { status: filters.status } : {}),
+    ...(minPriceKobo !== undefined ? { minPriceKobo: String(minPriceKobo) } : {}),
+    ...(maxPriceKobo !== undefined ? { maxPriceKobo: String(maxPriceKobo) } : {}),
     ...(filters.beds !== undefined ? { bedrooms: filters.beds } : {}),
-    ...(filters.baths !== undefined ? { bathrooms: filters.baths } : {}),
-    ...(filters.minSqft !== undefined ? { minSizeSqm: String(filters.minSqft) } : {}),
-    ...(filters.maxSqft !== undefined ? { maxSizeSqm: String(filters.maxSqft) } : {}),
+    ...(filters.bathrooms !== undefined ? { bathrooms: filters.bathrooms } : {}),
+    ...(filters.minSizeSqm !== undefined ? { minSizeSqm: String(filters.minSizeSqm) } : {}),
+    ...(filters.maxSizeSqm !== undefined ? { maxSizeSqm: String(filters.maxSizeSqm) } : {}),
     ...(filters.featured !== undefined ? { featured: filters.featured } : {}),
     ...(filters.openHouse !== undefined ? { openHouse: filters.openHouse } : {}),
     ...(filters.newConstruction !== undefined ? { newConstruction: filters.newConstruction } : {}),

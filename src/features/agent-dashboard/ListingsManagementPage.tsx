@@ -9,7 +9,9 @@ import { EmptyState } from "@/components/feedback/EmptyState";
 import { SkeletonLoader } from "@/components/feedback/SkeletonLoader";
 import { StatCard } from "@/components/data-display/StatCard";
 import { PropertyStatus } from "@/constants/api-enums";
+import { useAppSelector } from "@/store";
 import { cn } from "@/utils/cn";
+import { canArchiveListing, canCreateListing, canEditListing, canManageFeaturedListing, canPublishListing } from "@/utils/agent-access";
 
 type Filters = {
   search: string;
@@ -50,6 +52,7 @@ export default function ListingsManagementPage() {
   const queryClient = useQueryClient();
   const [filters, setFilters] = useState<Filters>(initialFilters);
   const debounced = useDebouncedValue(filters.search, 300);
+  const role = useAppSelector((state) => state.auth.user?.role ?? state.auth.user?.roles?.[0]?.code ?? null);
 
   const propertiesQuery = useQuery({
     queryKey: ["agent-properties", { ...filters, search: debounced }],
@@ -76,6 +79,11 @@ export default function ListingsManagementPage() {
   const properties = propertiesQuery.data?.data ?? [];
   const meta = propertiesQuery.data?.meta;
   const featuredIds = useMemo(() => new Set((featuredQuery.data ?? []).map((item) => item.id)), [featuredQuery.data]);
+  const canCreate = canCreateListing(role);
+  const canEdit = canEditListing(role);
+  const canPublish = canPublishListing(role);
+  const canArchive = canArchiveListing(role);
+  const canFeature = canManageFeaturedListing(role);
 
   const refresh = async () => {
     await queryClient.invalidateQueries({ queryKey: ["agent-properties"] });
@@ -140,13 +148,15 @@ export default function ListingsManagementPage() {
             </p>
           </div>
           <div className="flex flex-wrap gap-3">
-            <Link
-              to="/agent/listings/new"
-              className="inline-flex h-11 items-center gap-2 rounded-full bg-[var(--color-accent)] px-4 text-sm font-medium text-white transition hover:bg-[var(--color-accent-hover)]"
-            >
-              <Plus className="h-4 w-4" />
-              Create property
-            </Link>
+            {canCreate ? (
+              <Link
+                to="/agent/listings/new"
+                className="inline-flex h-11 items-center gap-2 rounded-full bg-[var(--color-accent)] px-4 text-sm font-medium text-white transition hover:bg-[var(--color-accent-hover)]"
+              >
+                <Plus className="h-4 w-4" />
+                Create property
+              </Link>
+            ) : null}
             <Link
               to="/agent/leads"
               className="inline-flex h-11 items-center gap-2 rounded-full border border-[var(--color-border)] bg-[var(--color-surface)] px-4 text-sm font-medium text-[var(--color-text-primary)] transition hover:bg-[var(--color-surface-raised)]"
@@ -323,14 +333,16 @@ export default function ListingsManagementPage() {
                             >
                               View
                             </Link>
-                            <Link
-                              to={`/agent/listings/${property.id}/edit`}
-                              className="inline-flex h-9 items-center gap-2 rounded-full border border-[var(--color-border)] px-3 text-sm font-medium text-[var(--color-text-primary)] transition hover:bg-[var(--color-surface-raised)]"
-                            >
-                              <Edit3 className="h-4 w-4" />
-                              Edit
-                            </Link>
-                            {property.status.toLowerCase() === PropertyStatus.Draft.toLowerCase() ? (
+                            {canEdit ? (
+                              <Link
+                                to={`/agent/listings/${property.id}/edit`}
+                                className="inline-flex h-9 items-center gap-2 rounded-full border border-[var(--color-border)] px-3 text-sm font-medium text-[var(--color-text-primary)] transition hover:bg-[var(--color-surface-raised)]"
+                              >
+                                <Edit3 className="h-4 w-4" />
+                                Edit
+                              </Link>
+                            ) : null}
+                            {canEdit && property.status.toLowerCase() === PropertyStatus.Draft.toLowerCase() ? (
                               <button
                                 type="button"
                                 onClick={() => void submitForReviewMutation.mutateAsync(property.id)}
@@ -339,7 +351,7 @@ export default function ListingsManagementPage() {
                                 Submit
                               </button>
                             ) : null}
-                            {property.status.toLowerCase() === PropertyStatus.PendingReview.toLowerCase() ? (
+                            {canPublish && property.status.toLowerCase() === PropertyStatus.PendingReview.toLowerCase() ? (
                               <>
                                 <button
                                   type="button"
@@ -357,32 +369,36 @@ export default function ListingsManagementPage() {
                                 </button>
                               </>
                             ) : null}
-                            <button
-                              type="button"
-                              onClick={() => void handleAction("archive", property.id)}
-                              className="inline-flex h-9 items-center gap-2 rounded-full border border-[var(--color-border)] px-3 text-sm font-medium text-[var(--color-text-primary)] transition hover:bg-[var(--color-surface-raised)]"
-                            >
-                              <Archive className="h-4 w-4" />
-                              Archive
-                            </button>
-                            <button
-                              type="button"
-                              onClick={async () => {
-                                if (featuredIds.has(property.id)) {
-                                  await unfeatureMutation.mutateAsync(property.id);
-                                } else {
-                                  await featureMutation.mutateAsync(property.id);
-                                }
-                              }}
-                              className={cn(
-                                "inline-flex h-9 items-center gap-2 rounded-full px-3 text-sm font-medium transition",
-                                featuredIds.has(property.id)
-                                  ? "border border-[var(--color-border)] bg-[var(--color-surface-raised)] text-[var(--color-text-primary)]"
-                                  : "border border-[var(--color-border)] text-[var(--color-text-primary)] hover:bg-[var(--color-surface-raised)]",
-                              )}
-                            >
-                              {featuredIds.has(property.id) ? "Unfeature" : "Feature"}
-                            </button>
+                            {canArchive ? (
+                              <button
+                                type="button"
+                                onClick={() => void handleAction("archive", property.id)}
+                                className="inline-flex h-9 items-center gap-2 rounded-full border border-[var(--color-border)] px-3 text-sm font-medium text-[var(--color-text-primary)] transition hover:bg-[var(--color-surface-raised)]"
+                              >
+                                <Archive className="h-4 w-4" />
+                                Archive
+                              </button>
+                            ) : null}
+                            {canFeature ? (
+                              <button
+                                type="button"
+                                onClick={async () => {
+                                  if (featuredIds.has(property.id)) {
+                                    await unfeatureMutation.mutateAsync(property.id);
+                                  } else {
+                                    await featureMutation.mutateAsync(property.id);
+                                  }
+                                }}
+                                className={cn(
+                                  "inline-flex h-9 items-center gap-2 rounded-full px-3 text-sm font-medium transition",
+                                  featuredIds.has(property.id)
+                                    ? "border border-[var(--color-border)] bg-[var(--color-surface-raised)] text-[var(--color-text-primary)]"
+                                    : "border border-[var(--color-border)] text-[var(--color-text-primary)] hover:bg-[var(--color-surface-raised)]",
+                                )}
+                              >
+                                {featuredIds.has(property.id) ? "Unfeature" : "Feature"}
+                              </button>
+                            ) : null}
                           </div>
                         </td>
                       </tr>

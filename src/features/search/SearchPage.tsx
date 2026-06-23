@@ -10,10 +10,10 @@ import { SkeletonLoader } from "@/components/feedback/SkeletonLoader";
 import { ErrorBoundary } from "@/components/feedback/ErrorBoundary";
 import { parseSearchParams, usePropertySearch } from "./usePropertySearch";
 
-function SearchResultsSkeleton() {
+function SearchResultsSkeleton({ count = 6 }: { count?: number } = {}) {
   return (
     <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-3">
-      {Array.from({ length: 6 }).map((_, index) => (
+      {Array.from({ length: count }).map((_, index) => (
         <div
           key={index}
           className="rounded-card border border-[var(--color-border)] bg-[var(--color-surface)] p-4 shadow-card"
@@ -38,7 +38,7 @@ function SearchResultsIllustration() {
 }
 
 function SearchResultsPanel() {
-  const { filters, data, meta, isLoading, isFetching, updateFilters, clearFilters, setPage } =
+  const { filters, data, meta, isLoading, isFetching, updateFilters, clearFilters, setPage, setPageSize } =
     usePropertySearch();
   const viewMode = useAppSelector((state) => state.ui.viewMode);
   const isListView = viewMode === "list";
@@ -49,10 +49,12 @@ function SearchResultsPanel() {
         total={meta.total}
         sort={filters.sort}
         onSortChange={(sort) => updateFilters({ sort: sort as typeof filters.sort, resetPage: true })}
+        pageSize={filters.pageSize}
+        onPageSizeChange={(pageSize) => setPageSize(pageSize)}
       />
 
       {isLoading ? (
-        <SearchResultsSkeleton />
+        <SearchResultsSkeleton count={Math.min(filters.pageSize, 12)} />
       ) : data.length === 0 ? (
         <EmptyState
           heading="No properties match your current filters"
@@ -84,28 +86,35 @@ function SearchResultsPanel() {
         </div>
       )}
 
-      <div className="flex items-center justify-between gap-3 rounded-card border border-[var(--color-border)] bg-[var(--color-surface)] px-4 py-3 shadow-card">
-        <button
-          type="button"
-          disabled={meta.page <= 1}
-          onClick={() => setPage(meta.page - 1)}
-          className="rounded-input border border-[var(--color-border)] px-4 py-2 text-sm font-medium text-[var(--color-text-primary)] transition disabled:cursor-not-allowed disabled:opacity-40"
-        >
-          Previous
-        </button>
-        <p className="text-sm text-[var(--color-text-secondary)]" aria-live="polite">
-          Showing {meta.total === 0 ? 0 : (meta.page - 1) * meta.pageSize + 1}-
-          {Math.min(meta.page * meta.pageSize, meta.total)} of {meta.total}
-        </p>
-        <button
-          type="button"
-          disabled={meta.page >= meta.totalPages}
-          onClick={() => setPage(meta.page + 1)}
-          className="rounded-input border border-[var(--color-border)] px-4 py-2 text-sm font-medium text-[var(--color-text-primary)] transition disabled:cursor-not-allowed disabled:opacity-40"
-        >
-          Next
-        </button>
-      </div>
+      {meta.total > 0 ? (
+        <div className="flex flex-col gap-3 rounded-card border border-[var(--color-border)] bg-[var(--color-surface)] px-4 py-3 shadow-card sm:flex-row sm:items-center sm:justify-between">
+          <button
+            type="button"
+            disabled={meta.page <= 1}
+            onClick={() => setPage(meta.page - 1)}
+            className="rounded-input border border-[var(--color-border)] px-4 py-2 text-sm font-medium text-[var(--color-text-primary)] transition disabled:cursor-not-allowed disabled:opacity-40"
+          >
+            Previous
+          </button>
+          <div className="space-y-1 text-center sm:text-left">
+            <p className="text-sm text-[var(--color-text-secondary)]" aria-live="polite">
+              Showing {meta.total === 0 ? 0 : (meta.page - 1) * meta.pageSize + 1}-
+              {Math.min(meta.page * meta.pageSize, meta.total)} of {meta.total}
+            </p>
+            <p className="text-small text-[var(--color-text-secondary)]">
+              Page {meta.page} of {Math.max(1, meta.totalPages)}
+            </p>
+          </div>
+          <button
+            type="button"
+            disabled={meta.page >= meta.totalPages}
+            onClick={() => setPage(meta.page + 1)}
+            className="rounded-input border border-[var(--color-border)] px-4 py-2 text-sm font-medium text-[var(--color-text-primary)] transition disabled:cursor-not-allowed disabled:opacity-40"
+          >
+            Next
+          </button>
+        </div>
+      ) : null}
     </>
   );
 }

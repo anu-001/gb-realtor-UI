@@ -8,7 +8,6 @@ import {
   ChevronRight,
   LayoutDashboard,
   LogOut,
-  Sparkles,
   Users,
 } from "lucide-react";
 import { useAppDispatch, useAppSelector } from "@/store";
@@ -16,6 +15,7 @@ import { logoutUser } from "@/store/authSlice";
 import { closeModal, setSidebarOpen } from "@/store/slices/uiSlice";
 import { UserRole } from "@/constants/api-enums";
 import { cn } from "@/utils/cn";
+import { BrandMark } from "@/components/layout/BrandMark";
 
 type NavItem = {
   label: string;
@@ -34,7 +34,7 @@ const navigation: NavItem[] = [
 ];
 
 function getInitials(name?: string | null): string {
-  if (!name) return "GB";
+  if (!name) return "GA";
   return name
     .split(/\s+/)
     .filter(Boolean)
@@ -65,17 +65,7 @@ export function Sidebar() {
   const sidebarContent = (
     <div className="flex h-full flex-col">
       <div className="flex items-center justify-between border-b border-[var(--color-border)] px-5 py-4">
-        <div className="flex items-center gap-3">
-          <div className="flex h-11 w-11 items-center justify-center rounded-[14px] border border-[var(--color-border)] bg-[var(--color-surface)] shadow-[0_1px_2px_rgba(15,23,42,0.06)]">
-            <Sparkles className="h-4 w-4 text-[var(--color-accent)]" />
-          </div>
-          <div>
-            <p className="font-display text-body font-semibold tracking-[-0.02em] text-[var(--color-text-primary)]">
-              GB Workspace
-            </p>
-            <p className="text-small text-[var(--color-text-secondary)]">Property manager shell</p>
-          </div>
-        </div>
+        <BrandMark compact />
         <button
           type="button"
           className="inline-flex h-10 w-10 items-center justify-center rounded-full border border-[var(--color-border)] text-[var(--color-text-secondary)] lg:hidden"

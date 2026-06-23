@@ -1,5 +1,6 @@
 import type { ReactNode } from "react";
 import { Outlet } from "react-router-dom";
+import { BrandMark } from "@/components/layout/BrandMark";
 
 export function AuthLayout({ children }: { children?: ReactNode }) {
   return (
@@ -7,9 +8,7 @@ export function AuthLayout({ children }: { children?: ReactNode }) {
       <div className="mx-auto flex min-h-[calc(100vh-5rem)] max-w-[1440px] items-center justify-center">
         <div className="w-full max-w-md">
           <div className="mb-8 flex justify-center">
-            <div className="inline-flex h-12 w-12 items-center justify-center rounded-[16px] bg-[var(--color-surface)] shadow-[var(--shadow-card)] ring-1 ring-[var(--color-border)]">
-              <span className="font-display text-xl font-semibold text-[var(--color-accent)]">GB</span>
-            </div>
+            <BrandMark compact />
           </div>
           {children ?? <Outlet />}
         </div>

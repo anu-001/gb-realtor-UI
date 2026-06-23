@@ -6,9 +6,11 @@ type SortToolbarProps = {
   total: number;
   sort: string;
   onSortChange: (value: string) => void;
+  pageSize?: number;
+  onPageSizeChange?: (value: number) => void;
 };
 
-export function SortToolbar({ total, sort, onSortChange }: SortToolbarProps) {
+export function SortToolbar({ total, sort, onSortChange, pageSize, onPageSizeChange }: SortToolbarProps) {
   const dispatch = useAppDispatch();
   const viewMode = useAppSelector((state) => state.ui.viewMode);
   const modes = [
@@ -20,7 +22,7 @@ export function SortToolbar({ total, sort, onSortChange }: SortToolbarProps) {
   return (
     <div className="flex flex-wrap items-center justify-between gap-3 rounded-card border border-[var(--color-border)] bg-[var(--color-surface)] p-4 shadow-card">
       <p className="text-sm text-[var(--color-text-secondary)]">{total} properties found</p>
-      <div className="flex items-center gap-2">
+      <div className="flex flex-wrap items-center gap-2">
         <label className="inline-flex items-center gap-2 text-sm">
           <ArrowUpDown className="h-4 w-4" />
           <select
@@ -35,6 +37,22 @@ export function SortToolbar({ total, sort, onSortChange }: SortToolbarProps) {
             <option value="featured_first">Featured</option>
           </select>
         </label>
+        {onPageSizeChange ? (
+          <label className="inline-flex items-center gap-2 text-sm">
+            <span className="text-[var(--color-text-secondary)]">Per page</span>
+            <select
+              value={pageSize ?? 25}
+              onChange={(event) => onPageSizeChange(Number(event.target.value))}
+              className="h-10 rounded-input border border-[var(--color-border)] px-3"
+            >
+              {[12, 25, 48].map((size) => (
+                <option key={size} value={size}>
+                  {size}
+                </option>
+              ))}
+            </select>
+          </label>
+        ) : null}
         <div className="inline-flex overflow-hidden rounded-input border border-[var(--color-border)]">
           {modes.map(({ mode, Icon }) => (
             <button

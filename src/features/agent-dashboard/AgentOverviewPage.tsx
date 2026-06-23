@@ -6,6 +6,7 @@ import { StatCard } from "@/components/data-display/StatCard";
 import { SkeletonLoader } from "@/components/feedback/SkeletonLoader";
 import { EmptyState } from "@/components/feedback/EmptyState";
 import { useAppSelector } from "@/store";
+import { canCreateListing, canViewLeads } from "@/utils/agent-access";
 
 function asRecord(value: unknown): Record<string, unknown> {
   return value && typeof value === "object" ? (value as Record<string, unknown>) : {};
@@ -66,6 +67,8 @@ export default function AgentOverviewPage() {
   const summary = dashboardQuery.data;
   const activityEntries = getActionRows(summary?.internalActivityLogs);
   const featuredEntries = getPerformanceRows(summary?.featuredPropertyPerformance);
+  const canCreate = canCreateListing(role);
+  const canViewLeadQueue = canViewLeads(role);
 
   if (dashboardQuery.isLoading) {
     return (
@@ -117,20 +120,24 @@ export default function AgentOverviewPage() {
             </p>
           </div>
           <div className="flex flex-wrap gap-3">
-            <Link
-              to="/agent/listings/new"
-              className="inline-flex h-11 items-center gap-2 rounded-full bg-[var(--color-accent)] px-4 text-sm font-medium text-white transition hover:bg-[var(--color-accent-hover)]"
-            >
-              <Plus className="h-4 w-4" />
-              Create property
-            </Link>
-            <Link
-              to="/agent/leads"
-              className="inline-flex h-11 items-center gap-2 rounded-full border border-[var(--color-border)] bg-[var(--color-surface)] px-4 text-sm font-medium text-[var(--color-text-primary)] transition hover:bg-[var(--color-surface-raised)]"
-            >
-              View leads
-              <ArrowRight className="h-4 w-4" />
-            </Link>
+            {canCreate ? (
+              <Link
+                to="/agent/listings/new"
+                className="inline-flex h-11 items-center gap-2 rounded-full bg-[var(--color-accent)] px-4 text-sm font-medium text-white transition hover:bg-[var(--color-accent-hover)]"
+              >
+                <Plus className="h-4 w-4" />
+                Create property
+              </Link>
+            ) : null}
+            {canViewLeadQueue ? (
+              <Link
+                to="/agent/leads"
+                className="inline-flex h-11 items-center gap-2 rounded-full border border-[var(--color-border)] bg-[var(--color-surface)] px-4 text-sm font-medium text-[var(--color-text-primary)] transition hover:bg-[var(--color-surface-raised)]"
+              >
+                View leads
+                <ArrowRight className="h-4 w-4" />
+              </Link>
+            ) : null}
           </div>
         </div>
         <div className="mt-6 inline-flex rounded-full border border-[var(--color-border)] bg-[var(--color-surface)] px-4 py-2 text-small text-[var(--color-text-secondary)]">Role: {role}</div>

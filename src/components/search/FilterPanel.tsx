@@ -5,11 +5,13 @@ import { PropertyType } from "@/constants/api-enums";
 
 export type SearchFilters = {
   location?: string;
+  state?: string;
+  city?: string;
   type?: string;
   listingType?: string;
   beds?: number | "";
-  minPrice?: number | "";
-  maxPrice?: number | "";
+  minPriceKobo?: number | "";
+  maxPriceKobo?: number | "";
 };
 
 type FilterPanelProps = {
@@ -97,8 +99,8 @@ export function FilterPanel({ value, onChange, onClear }: FilterPanelProps) {
         label="Price range"
         min={0}
         max={500000000}
-        value={[Number(merged.minPrice ?? 0), Number(merged.maxPrice ?? 500000000)]}
-        onChange={([minPrice, maxPrice]) => onChange({ ...merged, minPrice, maxPrice })}
+        value={[Number(merged.minPriceKobo ?? 0), Number(merged.maxPriceKobo ?? 500000000)]}
+        onChange={([minPriceKobo, maxPriceKobo]) => onChange({ ...merged, minPriceKobo, maxPriceKobo })}
         formatValue={(value) => new Intl.NumberFormat("en-NG", { style: "currency", currency: "NGN", maximumFractionDigits: 0 }).format(value)}
       />
 

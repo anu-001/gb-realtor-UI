@@ -87,7 +87,19 @@ function ListingSkeleton() {
 
 export default function HomePage() {
   const [filters, setFilters] = useState<HeroFilters>(initialFilters);
+  const [page, setPage] = useState(1);
+  const pageSize = 12;
   const debouncedFilters = useDebouncedValue(filters, 300);
+
+  const updateFilters = (next: Partial<HeroFilters>) => {
+    setFilters((current) => ({ ...current, ...next }));
+    setPage(1);
+  };
+
+  const resetFilters = () => {
+    setFilters(initialFilters);
+    setPage(1);
+  };
 
   const listingsQuery = useQuery({
     queryKey: [
@@ -98,6 +110,7 @@ export default function HomePage() {
       debouncedFilters.minPrice,
       debouncedFilters.maxPrice,
       debouncedFilters.beds,
+      page,
     ],
     queryFn: () =>
       getPublicListings({
@@ -107,7 +120,8 @@ export default function HomePage() {
         minPrice: sanitizeAmount(debouncedFilters.minPrice),
         maxPrice: sanitizeAmount(debouncedFilters.maxPrice),
         beds: debouncedFilters.beds ? Number(debouncedFilters.beds) : undefined,
-        pageSize: 8,
+        page,
+        pageSize,
       }),
     staleTime: 60_000,
     retry: 2,
@@ -166,7 +180,7 @@ export default function HomePage() {
                 </div>
                 <button
                   type="button"
-                  onClick={() => setFilters(initialFilters)}
+                  onClick={resetFilters}
                   className="rounded-full border border-[var(--color-border)] px-3 py-2 text-small font-medium text-[var(--color-text-secondary)] transition hover:bg-[var(--color-surface-raised)] hover:text-[var(--color-text-primary)]"
                 >
                   Clear
@@ -180,7 +194,7 @@ export default function HomePage() {
                       <Search className="h-4 w-4 text-[var(--color-text-secondary)]" />
                       <input
                         value={filters.keyword}
-                        onChange={(event) => setFilters((current) => ({ ...current, keyword: event.target.value }))}
+                        onChange={(event) => updateFilters({ keyword: event.target.value })}
                         placeholder="Search city, title, or feature"
                         className="w-full bg-transparent text-sm outline-none placeholder:text-[var(--color-text-secondary)]"
                       />
@@ -193,7 +207,7 @@ export default function HomePage() {
                     <MapPin className="h-4 w-4 text-[var(--color-text-secondary)]" />
                     <input
                       value={filters.location}
-                      onChange={(event) => setFilters((current) => ({ ...current, location: event.target.value }))}
+                      onChange={(event) => updateFilters({ location: event.target.value })}
                       list="homepage-cities"
                       placeholder="Any city"
                       className="w-full bg-transparent text-sm outline-none placeholder:text-[var(--color-text-secondary)]"
@@ -216,9 +230,7 @@ export default function HomePage() {
                       <button
                         key={item.label}
                         type="button"
-                        onClick={() =>
-                          setFilters((current) => ({ ...current, listingType: item.value as HeroFilters["listingType"] }))
-                        }
+                        onClick={() => updateFilters({ listingType: item.value as HeroFilters["listingType"] })}
                         className={cn(
                           "transition",
                           filters.listingType === item.value
@@ -235,9 +247,7 @@ export default function HomePage() {
                 <FilterField label="Bedrooms">
                   <select
                     value={filters.beds}
-                    onChange={(event) =>
-                      setFilters((current) => ({ ...current, beds: event.target.value as HeroFilters["beds"] }))
-                    }
+                    onChange={(event) => updateFilters({ beds: event.target.value as HeroFilters["beds"] })}
                     className="h-12 w-full rounded-input border border-[var(--color-border)] bg-[var(--color-surface)] px-4 text-sm outline-none"
                   >
                     <option value="">Any</option>
@@ -254,9 +264,7 @@ export default function HomePage() {
                     <span className="text-sm font-medium text-[var(--color-text-secondary)]">₦</span>
                     <input
                       value={filters.minPrice}
-                      onChange={(event) =>
-                        setFilters((current) => ({ ...current, minPrice: event.target.value.replace(/[^\d]/g, "") }))
-                      }
+                      onChange={(event) => updateFilters({ minPrice: event.target.value.replace(/[^\d]/g, "") })}
                       inputMode="numeric"
                       placeholder="Any"
                       className="w-full bg-transparent text-sm outline-none placeholder:text-[var(--color-text-secondary)]"
@@ -269,9 +277,7 @@ export default function HomePage() {
                     <span className="text-sm font-medium text-[var(--color-text-secondary)]">₦</span>
                     <input
                       value={filters.maxPrice}
-                      onChange={(event) =>
-                        setFilters((current) => ({ ...current, maxPrice: event.target.value.replace(/[^\d]/g, "") }))
-                      }
+                      onChange={(event) => updateFilters({ maxPrice: event.target.value.replace(/[^\d]/g, "") })}
                       inputMode="numeric"
                       placeholder="Any"
                       className="w-full bg-transparent text-sm outline-none placeholder:text-[var(--color-text-secondary)]"
@@ -340,17 +346,17 @@ export default function HomePage() {
               </Link>
             }
           />
-        ) : properties.length === 0 ? (
-          <EmptyState
-            heading="No properties match this search"
-            message="Try broadening your search criteria, or request a property if you need something specific."
-            action={
-              <button
-                type="button"
-                onClick={() => setFilters(initialFilters)}
-                className="inline-flex h-11 items-center justify-center rounded-input bg-[var(--color-accent)] px-4 text-sm font-medium text-white transition hover:bg-[var(--color-accent-hover)]"
-              >
-                Clear filters
+      ) : properties.length === 0 ? (
+        <EmptyState
+          heading="No properties match this search"
+          message="Try broadening your search criteria, or request a property if you need something specific."
+          action={
+            <button
+              type="button"
+              onClick={resetFilters}
+              className="inline-flex h-11 items-center justify-center rounded-input bg-[var(--color-accent)] px-4 text-sm font-medium text-white transition hover:bg-[var(--color-accent-hover)]"
+            >
+              Clear filters
               </button>
             }
             secondaryAction={
@@ -363,11 +369,42 @@ export default function HomePage() {
             }
           />
         ) : (
-          <div className="grid gap-5 sm:grid-cols-2 xl:grid-cols-3">
-            {properties.map((property) => (
-              <PropertyCard key={property.id} property={property} showEnquiry />
-            ))}
-          </div>
+          <>
+            <div className="grid gap-5 sm:grid-cols-2 xl:grid-cols-3">
+              {properties.map((property) => (
+                <PropertyCard key={property.id} property={property} showEnquiry />
+              ))}
+            </div>
+
+            <div className="flex flex-col gap-3 rounded-card border border-[var(--color-border)] bg-[var(--color-surface)] px-4 py-4 shadow-card sm:flex-row sm:items-center sm:justify-between">
+              <p className="text-sm text-[var(--color-text-secondary)]" aria-live="polite">
+                Showing {totalListings === 0 ? 0 : (page - 1) * pageSize + 1}-
+                {Math.min(page * pageSize, totalListings)} of {totalListings}
+              </p>
+
+              <div className="flex items-center gap-2">
+                <button
+                  type="button"
+                  disabled={page <= 1}
+                  onClick={() => setPage((current) => Math.max(1, current - 1))}
+                  className="inline-flex h-11 items-center justify-center rounded-input border border-[var(--color-border)] px-4 text-sm font-medium text-[var(--color-text-primary)] transition hover:border-[var(--color-accent)] hover:text-[var(--color-accent)] disabled:cursor-not-allowed disabled:opacity-40"
+                >
+                  Previous
+                </button>
+                <span className="min-w-20 text-center text-sm font-medium text-[var(--color-text-primary)]">
+                  Page {page} of {Math.max(1, listingsQuery.data?.meta.totalPages ?? 1)}
+                </span>
+                <button
+                  type="button"
+                  disabled={page >= (listingsQuery.data?.meta.totalPages ?? 1)}
+                  onClick={() => setPage((current) => current + 1)}
+                  className="inline-flex h-11 items-center justify-center rounded-input border border-[var(--color-border)] px-4 text-sm font-medium text-[var(--color-text-primary)] transition hover:border-[var(--color-accent)] hover:text-[var(--color-accent)] disabled:cursor-not-allowed disabled:opacity-40"
+                >
+                  Next
+                </button>
+              </div>
+            </div>
+          </>
         )}
       </motion.section>
 
