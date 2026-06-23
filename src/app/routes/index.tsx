@@ -12,6 +12,7 @@ import { pageTransition } from "@/utils/motion";
 const HomePage = lazy(() => import("@/features/home/HomePage"));
 const SearchPage = lazy(() => import("@/features/search/SearchPage"));
 const PropertyDetailPage = lazy(() => import("@/features/public/PropertyDetailPage"));
+const RequestPropertyPage = lazy(() => import("@/features/public/RequestPropertyPage"));
 const LoginPage = lazy(() => import("@/features/auth/LoginPage").then((module) => ({ default: module.LoginPage })));
 const ForgotPasswordPage = lazy(() => import("@/features/auth/ForgotPasswordPage"));
 const UserDashboardPage = lazy(() => import("@/features/dashboard/UserDashboardPage"));
@@ -46,6 +47,7 @@ const router = createBrowserRouter([
     children: [
       { index: true, element: <HomePage /> },
       { path: "properties/:id", element: <PropertyDetailPage /> },
+      { path: "request-property", element: <RequestPropertyPage /> },
     ],
   },
   {

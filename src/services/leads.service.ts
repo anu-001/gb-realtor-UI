@@ -5,11 +5,12 @@ import type {
   LeadNote,
   LeadNotePayload,
   LeadStatusPayload,
+  PublicLeadPayload,
 } from "../types/lead";
 import { privateClient, publicClient } from "./api-client";
 import { unwrapApiResponse } from "./_request";
 
-export async function captureLead(payload: CreateLeadPayload): Promise<Lead> {
+export async function captureLead(payload: PublicLeadPayload | CreateLeadPayload): Promise<Lead> {
   return unwrapApiResponse((publicClient.POST as any)("/api/v1/public/leads", { body: payload }));
 }
 

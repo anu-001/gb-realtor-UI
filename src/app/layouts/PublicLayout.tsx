@@ -27,15 +27,15 @@ export function PublicLayout({ children }: PublicLayoutProps) {
             <Link to="/search" className="text-[var(--color-text-secondary)] transition hover:text-[var(--color-text-primary)]">
               Listings
             </Link>
-            <Link to="/#featured" className="text-[var(--color-text-secondary)] transition hover:text-[var(--color-text-primary)]">
-              Featured
-            </Link>
-            <Link to="/#lead-cta" className="text-[var(--color-text-secondary)] transition hover:text-[var(--color-text-primary)]">
+            <Link to="/request-property" className="text-[var(--color-text-secondary)] transition hover:text-[var(--color-text-primary)]">
               Request property
             </Link>
-            <Link to="/#contact" className="text-[var(--color-text-secondary)] transition hover:text-[var(--color-text-primary)]">
+            <a
+              href="mailto:hello@gbrealty.com"
+              className="text-[var(--color-text-secondary)] transition hover:text-[var(--color-text-primary)]"
+            >
               Contact
-            </Link>
+            </a>
           </div>
         </div>
       </footer>

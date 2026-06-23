@@ -69,7 +69,7 @@ function SearchResultsPanel() {
           }
           secondaryAction={
             <a
-              href="/#lead-cta"
+              href="/request-property"
               className="inline-flex h-11 items-center justify-center rounded-input border border-[var(--color-border)] bg-[var(--color-surface)] px-4 text-sm font-medium text-[var(--color-text-primary)] transition hover:border-[var(--color-accent)] hover:text-[var(--color-accent)]"
             >
               Request a Property

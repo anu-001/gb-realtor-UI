@@ -30,6 +30,7 @@ import { cn } from "@/utils/cn";
 export interface RichTextEditorProps {
   value: string;
   onChange: (html: string) => void;
+  id?: string;
   placeholder?: string;
   minHeight?: number;
   maxCharacters?: number;
@@ -38,6 +39,7 @@ export interface RichTextEditorProps {
   disabled?: boolean;
   error?: string;
   label?: string;
+  helperText?: string;
   required?: boolean;
 }
 
@@ -84,6 +86,7 @@ function isUrl(value: string): boolean {
 export function RichTextEditor({
   value,
   onChange,
+  id,
   placeholder = "Write something...",
   minHeight = 200,
   maxCharacters,
@@ -92,6 +95,7 @@ export function RichTextEditor({
   disabled = false,
   error,
   label,
+  helperText,
   required,
 }: RichTextEditorProps) {
   const [linkValue, setLinkValue] = useState("");
@@ -149,6 +153,11 @@ export function RichTextEditor({
   const characterCount = editor?.storage.characterCount.characters() ?? 0;
   const maxCount = maxCharacters ?? 0;
   const countWarning = maxCharacters ? characterCount / maxCount > 0.9 : false;
+  const helperTextId = id ? `${id}-help` : undefined;
+  const errorId = id ? `${id}-error` : undefined;
+  const describedBy = [helperText ? helperTextId : undefined, error ? errorId : undefined]
+    .filter(Boolean)
+    .join(" ") || undefined;
 
   const submitLink = () => {
     if (!editor) return;
@@ -179,10 +188,15 @@ export function RichTextEditor({
   return (
     <div className={cn("space-y-2", disabled && "opacity-60")}>
       {label ? (
-        <label className="block text-sm font-medium text-[var(--color-text-primary)]">
+        <label htmlFor={id} className="block text-sm font-medium text-[var(--color-text-primary)]">
           {label}
           {required ? <span className="ml-1 text-[var(--color-danger)]">*</span> : null}
         </label>
+      ) : null}
+      {helperText ? (
+        <p id={helperTextId} className="text-caption text-[var(--color-text-secondary)]">
+          {helperText}
+        </p>
       ) : null}
 
       <div
@@ -374,7 +388,9 @@ export function RichTextEditor({
 
       <EditorContent
         editor={editor}
+        id={id}
         aria-label={label ?? placeholder}
+        aria-describedby={describedBy}
         className={cn(
           "tiptap-content px-4 py-4 outline-none",
           disabled && "cursor-not-allowed",
@@ -385,7 +401,7 @@ export function RichTextEditor({
 
       <div className="flex items-center justify-between gap-4">
         {error ? (
-          <p className="inline-flex items-center gap-2 text-caption text-[var(--color-danger)]" role="alert">
+          <p id={errorId} className="inline-flex items-center gap-2 text-caption text-[var(--color-danger)]" role="alert">
             <AlertCircle className="h-4 w-4" />
             {error}
           </p>

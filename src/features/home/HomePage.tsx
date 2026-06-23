@@ -166,13 +166,12 @@ export default function HomePage() {
                 >
                   Browse listings
                 </button>
-                <button
-                  type="button"
-                  onClick={() => scrollTo("lead-cta")}
+                <Link
+                  to="/request-property"
                   className="inline-flex h-11 items-center justify-center rounded-full border border-white/14 bg-white/8 px-5 text-sm font-medium text-white transition hover:bg-white/14"
                 >
                   Request a property
-                </button>
+                </Link>
               </div>
             </div>
 
@@ -384,13 +383,12 @@ export default function HomePage() {
               </button>
             }
             secondaryAction={
-              <button
-                type="button"
-                onClick={() => scrollTo("lead-cta")}
+              <Link
+                to="/request-property"
                 className="inline-flex h-11 items-center justify-center rounded-input border border-[var(--color-border)] bg-[var(--color-surface)] px-4 text-sm font-medium text-[var(--color-text-primary)] transition hover:border-[var(--color-accent)] hover:text-[var(--color-accent)]"
               >
                 Request a property
-              </button>
+              </Link>
             }
           />
         ) : (
@@ -430,12 +428,12 @@ export default function HomePage() {
               >
                 Browse listings
               </button>
-              <a
-                href="mailto:hello@gbrealty.com"
+              <Link
+                to="/request-property"
                 className="inline-flex h-11 items-center justify-center rounded-full bg-[var(--color-accent)] px-4 text-sm font-medium text-white transition hover:bg-[var(--color-accent-hover)]"
               >
                 Contact team
-              </a>
+              </Link>
             </div>
           </div>
         </div>

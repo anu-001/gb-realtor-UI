@@ -23,7 +23,7 @@ export function TopNav() {
           {[
             ["Listings", "/#listings"],
             ["Search", "/search"],
-            ["Contact", "/#lead-cta"],
+            ["Contact", "/request-property"],
           ].map(([label, href]) => (
             <Link
               key={label}
@@ -43,7 +43,7 @@ export function TopNav() {
             Search
           </Link>
           <Link
-            to="/#lead-cta"
+            to="/request-property"
             className="inline-flex h-10 items-center justify-center gap-2 rounded-full bg-[var(--color-accent)] px-4 text-sm font-medium text-white transition hover:bg-[var(--color-accent-hover)]"
           >
             Request property
@@ -72,9 +72,9 @@ export function TopNav() {
               <div className="grid gap-1">
                 {[
                   ["Listings", "/#listings"],
-                  ["Contact", "/#lead-cta"],
+                  ["Contact", "/request-property"],
                   ["Search", "/search"],
-                  ["Request property", "/#lead-cta"],
+                  ["Request property", "/request-property"],
                 ].map(([label, href]) => (
                   <Link
                     key={label}
