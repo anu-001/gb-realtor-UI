@@ -1,6 +1,6 @@
 import { QueryCache, QueryClient } from "@tanstack/react-query";
 import { toast } from "sonner";
-import { getErrorMessage } from "@/utils/api-error";
+import { getErrorMessage, parseApiError } from "@/utils/api-error";
 
 let queryClient: QueryClient | null = null;
 
@@ -10,6 +10,10 @@ export function getQueryClient() {
   queryClient = new QueryClient({
     queryCache: new QueryCache({
       onError: (error) => {
+        const parsed = parseApiError(error);
+        if (parsed.statusCode === 401 || parsed.statusCode === 403) {
+          return;
+        }
         toast.error(getErrorMessage(error));
       },
     }),

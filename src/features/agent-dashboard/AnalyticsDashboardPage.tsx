@@ -1,5 +1,6 @@
 import { useMemo, useState } from "react";
 import { useQuery } from "@tanstack/react-query";
+import { Link } from "react-router-dom";
 import {
   Bar,
   BarChart,
@@ -20,6 +21,8 @@ import { getAnalyticsDashboard } from "@/services/analytics.service";
 import { StatCard } from "@/components/data-display/StatCard";
 import { SkeletonLoader } from "@/components/feedback/SkeletonLoader";
 import { EmptyState } from "@/components/feedback/EmptyState";
+import { useAppSelector } from "@/store";
+import { UserRole } from "@/constants/api-enums";
 
 const colors = ["#2563EB", "#6CABDD", "#16A34A", "#F59E0B", "#DC2626"];
 
@@ -31,18 +34,61 @@ function toNumericData(value: unknown) {
 }
 
 export default function AnalyticsDashboardPage() {
+  const auth = useAppSelector((state) => state.auth);
+  const role = auth.user?.role ?? auth.user?.roles?.[0]?.code ?? "PropertyManager";
+  const canViewAnalytics = role === UserRole.Analyst || role === UserRole.SuperAdmin || role === "PropertyManager";
   const [range, setRange] = useState<"7d" | "30d" | "90d" | "custom">("30d");
   const query = useQuery({
     queryKey: ["agent-analytics", range],
     queryFn: () => getAnalyticsDashboard(),
     staleTime: 300_000,
     retry: 1,
+    enabled: auth.isAuthenticated && !auth.isInitializing && canViewAnalytics,
   });
 
   const summary = query.data;
   const activityData = useMemo(() => toNumericData(summary?.internalActivityLogs), [summary?.internalActivityLogs]);
   const featuredData = useMemo(() => toNumericData(summary?.featuredPropertyPerformance), [summary?.featuredPropertyPerformance]);
   const engagementData = useMemo(() => toNumericData(summary?.listingEngagement), [summary?.listingEngagement]);
+
+  if (auth.isInitializing) {
+    return (
+      <div className="space-y-6" aria-busy="true">
+        <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-4">
+          {Array.from({ length: 4 }).map((_, index) => (
+            <SkeletonLoader key={index} height="148px" />
+          ))}
+        </div>
+        <SkeletonLoader height="320px" />
+      </div>
+    );
+  }
+
+  if (!auth.isAuthenticated) {
+    return (
+      <EmptyState
+        heading="Session required"
+        message="Please sign in to view analytics."
+        action={
+          <Link
+            to="/login"
+            className="inline-flex h-11 items-center justify-center rounded-input bg-[var(--color-accent)] px-4 text-sm font-medium text-white"
+          >
+            Go to login
+          </Link>
+        }
+      />
+    );
+  }
+
+  if (!canViewAnalytics) {
+    return (
+      <EmptyState
+        heading="Access denied"
+        message="You do not have permission to view this page."
+      />
+    );
+  }
 
   if (query.isLoading) {
     return (

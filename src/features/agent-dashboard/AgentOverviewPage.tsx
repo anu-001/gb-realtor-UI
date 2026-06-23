@@ -7,9 +7,51 @@ import { SkeletonLoader } from "@/components/feedback/SkeletonLoader";
 import { EmptyState } from "@/components/feedback/EmptyState";
 import { useAppSelector } from "@/store";
 
-function getNumericEntries(value: unknown): Array<[string, number]> {
-  if (!value || typeof value !== "object") return [];
-  return Object.entries(value as Record<string, unknown>).filter((entry): entry is [string, number] => typeof entry[1] === "number");
+function asRecord(value: unknown): Record<string, unknown> {
+  return value && typeof value === "object" ? (value as Record<string, unknown>) : {};
+}
+
+function asNumber(value: unknown): number | null {
+  return typeof value === "number" && Number.isFinite(value) ? value : null;
+}
+
+function getActionRows(value: unknown): Array<{ label: string; count: number }> {
+  const record = asRecord(value);
+  const byAction = record.byAction;
+
+  if (Array.isArray(byAction)) {
+    return byAction
+      .flatMap((entry) => {
+        if (!entry || typeof entry !== "object") return [];
+        const action = (entry as Record<string, unknown>).action;
+        const count = asNumber((entry as Record<string, unknown>).count);
+        if (typeof action !== "string" || count === null) return [];
+        return [{ label: action.replace(/\./g, " · "), count }];
+      })
+      .slice(0, 5);
+  }
+
+  const total = asNumber(record.total);
+  return total === null ? [] : [{ label: "Total events", count: total }];
+}
+
+function getPerformanceRows(value: unknown): Array<{ label: string; value: string }> {
+  const record = asRecord(value);
+  const rows = [
+    { key: "activeFeaturedProperties", label: "Active featured" },
+    { key: "views", label: "Views" },
+    { key: "clicks", label: "Clicks" },
+    { key: "clickThroughRate", label: "Click-through rate" },
+  ] as const;
+
+  return rows.flatMap(({ key, label }) => {
+    const raw = record[key];
+    if (raw === undefined || raw === null) return [];
+    if (typeof raw === "number") {
+      return [{ label, value: key === "clickThroughRate" ? `${raw.toFixed(1)}%` : raw.toLocaleString("en-NG") }];
+    }
+    return [{ label, value: String(raw) }];
+  });
 }
 
 export default function AgentOverviewPage() {
@@ -22,8 +64,8 @@ export default function AgentOverviewPage() {
   });
 
   const summary = dashboardQuery.data;
-  const activityEntries = getNumericEntries(summary?.internalActivityLogs);
-  const featuredEntries = getNumericEntries(summary?.featuredPropertyPerformance);
+  const activityEntries = getActionRows(summary?.internalActivityLogs);
+  const featuredEntries = getPerformanceRows(summary?.featuredPropertyPerformance);
 
   if (dashboardQuery.isLoading) {
     return (
@@ -38,7 +80,7 @@ export default function AgentOverviewPage() {
     );
   }
 
-  if (!summary) {
+  if (dashboardQuery.isError || !summary) {
     return (
       <EmptyState
         heading="Overview unavailable"
@@ -91,9 +133,7 @@ export default function AgentOverviewPage() {
             </Link>
           </div>
         </div>
-        <div className="mt-6 inline-flex rounded-full border border-[var(--color-border)] bg-[var(--color-surface)] px-4 py-2 text-small text-[var(--color-text-secondary)]">
-          Role: {role}
-        </div>
+        <div className="mt-6 inline-flex rounded-full border border-[var(--color-border)] bg-[var(--color-surface)] px-4 py-2 text-small text-[var(--color-text-secondary)]">Role: {role}</div>
       </section>
 
       <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-4">
@@ -103,7 +143,7 @@ export default function AgentOverviewPage() {
       </div>
 
       <div className="grid gap-6 xl:grid-cols-[minmax(0,1.2fr)_minmax(0,0.8fr)]">
-        <section className="space-y-4 rounded-card border border-[var(--color-border)] bg-[var(--color-surface)] p-6 shadow-card">
+        <section className="space-y-4 rounded-card border border-[var(--color-border)] bg-[var(--color-surface)] p-6 shadow-card" aria-busy={dashboardQuery.isFetching}>
           <div className="flex items-center justify-between">
             <div>
               <h2 className="font-display text-h4 text-[var(--color-text-primary)]">Recent activity</h2>
@@ -113,18 +153,18 @@ export default function AgentOverviewPage() {
           {activityEntries.length === 0 ? (
             <EmptyState heading="No activity yet" message="Recent system events will show up here as they happen." />
           ) : (
-            <div className="grid gap-3 md:grid-cols-2">
-              {activityEntries.slice(0, 6).map(([label, count]) => (
-                <div key={label} className="rounded-[18px] border border-[var(--color-border)] p-4">
-                  <p className="text-caption text-[var(--color-text-secondary)]">{label}</p>
-                  <p className="mt-2 font-display text-h4 text-[var(--color-text-primary)]">{count}</p>
-                </div>
+            <ul className="grid gap-3 md:grid-cols-2">
+              {activityEntries.slice(0, 6).map((item) => (
+                <li key={item.label} className="rounded-[18px] border border-[var(--color-border)] p-4">
+                  <p className="text-caption text-[var(--color-text-secondary)]">{item.label}</p>
+                  <p className="mt-2 font-display text-h4 text-[var(--color-text-primary)]">{item.count}</p>
+                </li>
               ))}
-            </div>
+            </ul>
           )}
         </section>
 
-        <section className="space-y-4 rounded-card border border-[var(--color-border)] bg-[var(--color-surface)] p-6 shadow-card">
+        <section className="space-y-4 rounded-card border border-[var(--color-border)] bg-[var(--color-surface)] p-6 shadow-card" aria-busy={dashboardQuery.isFetching}>
           <div>
             <h2 className="font-display text-h4 text-[var(--color-text-primary)]">Featured performance</h2>
             <p className="text-caption text-[var(--color-text-secondary)]">Featured surfaces and engagement totals.</p>
@@ -132,11 +172,11 @@ export default function AgentOverviewPage() {
           {featuredEntries.length === 0 ? (
             <EmptyState heading="No featured insights" message="Feature metrics will appear when there are active featured listings." />
           ) : (
-            <div className="space-y-3">
-              {featuredEntries.slice(0, 5).map(([label, count]) => (
-                <div key={label} className="flex items-center justify-between rounded-[16px] border border-[var(--color-border)] px-4 py-3">
-                  <span className="text-sm text-[var(--color-text-secondary)]">{label}</span>
-                  <span className="font-medium text-[var(--color-text-primary)]">{count}</span>
+            <div className="grid gap-3 sm:grid-cols-2">
+              {featuredEntries.slice(0, 4).map((item) => (
+                <div key={item.label} className="rounded-[16px] border border-[var(--color-border)] px-4 py-3">
+                  <p className="text-caption text-[var(--color-text-secondary)]">{item.label}</p>
+                  <p className="mt-2 font-display text-h4 text-[var(--color-text-primary)]">{item.value}</p>
                 </div>
               ))}
             </div>

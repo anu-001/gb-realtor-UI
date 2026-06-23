@@ -153,6 +153,39 @@ export function isPublicRoute(url: string): boolean {
 async function fetchWithAuth(input: RequestInfo | URL, init?: RequestInit): Promise<Response> {
   const request = new Request(input, init);
   const auth = getAuthSnapshot();
+  const refreshToken = getRefreshToken();
+
+  if (!isPublicRoute(request.url) && !auth.accessToken) {
+    if (refreshToken) {
+      const refreshed = await refreshAccessToken();
+      if (!refreshed?.accessToken) {
+        redirectToLogin();
+        return new Response(JSON.stringify({ statusCode: 401, message: "Session expired, please log in again." }), {
+          status: 401,
+          headers: { "Content-Type": "application/json" },
+        });
+      }
+      const refreshedRequest = appendAuthorizationHeader(request, refreshed.accessToken);
+      const refreshedResponse = await rawFetch(refreshedRequest);
+
+      if (refreshedResponse.status === 429) {
+        notifyRateLimit();
+      } else if (refreshedResponse.status === 500) {
+        notifyServerError();
+      }
+
+      if (refreshedResponse.status !== 401) {
+        return refreshedResponse;
+      }
+    } else {
+      redirectToLogin();
+      return new Response(JSON.stringify({ statusCode: 401, message: "Session expired, please log in again." }), {
+        status: 401,
+        headers: { "Content-Type": "application/json" },
+      });
+    }
+  }
+
   const authenticatedRequest = appendAuthorizationHeader(request, auth.accessToken);
 
   const response = await rawFetch(authenticatedRequest);
