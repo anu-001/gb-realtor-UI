@@ -1,0 +1,337 @@
+<!doctype html>
+<html lang="en" data-theme="light">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Design System Test</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Manrope:wght@400;500;600;700&display=swap"
+      rel="stylesheet"
+    />
+    <style>
+      :root {
+        --font-body: "Inter", sans-serif;
+        --font-display: "Manrope", sans-serif;
+        --text-display: 56px;
+        --text-h1: 48px;
+        --text-h2: 36px;
+        --text-h3: 30px;
+        --text-h4: 24px;
+        --text-body-lg: 18px;
+        --text-body: 16px;
+        --text-caption: 14px;
+        --text-small: 12px;
+        --color-primary: #2f6bff;
+        --color-primary-hover: #1e293b;
+        --color-accent: #2563eb;
+        --color-accent-hover: #1d4ed8;
+        --color-success: #16a34a;
+        --color-warning: #f59e0b;
+        --color-danger: #dc2626;
+        --color-bg: #f8fafc;
+        --color-surface: #ffffff;
+        --color-border: #e2e8f0;
+        --color-text-primary: #0f172a;
+        --color-text-secondary: #64748b;
+        --radius-input: 12px;
+        --radius-card: 16px;
+        --radius-modal: 20px;
+        --shadow-card: 0 1px 3px rgba(15,23,42,0.08), 0 4px 16px rgba(15,23,42,0.06);
+        --shadow-card-hover: 0 4px 12px rgba(15,23,42,0.12), 0 16px 40px rgba(15,23,42,0.10);
+        --shadow-modal: 0 20px 60px rgba(15,23,42,0.20);
+      }
+
+      [data-theme="dark"] {
+        --color-bg: #020617;
+        --color-surface: #0f172a;
+        --color-border: #1e293b;
+        --color-text-primary: #f1f5f9;
+        --color-text-secondary: #94a3b8;
+      }
+
+      * { box-sizing: border-box; }
+      html, body { margin: 0; min-height: 100%; }
+      body {
+        background:
+          radial-gradient(circle at top left, rgba(37, 99, 235, 0.08), transparent 34%),
+          radial-gradient(circle at bottom right, rgba(47, 107, 255, 0.08), transparent 28%),
+          var(--color-bg);
+        color: var(--color-text-primary);
+        font-family: var(--font-body);
+        -webkit-font-smoothing: antialiased;
+        -moz-osx-font-smoothing: grayscale;
+      }
+
+      .wrap {
+        max-width: 1440px;
+        margin: 0 auto;
+        padding: 24px;
+      }
+
+      .grid {
+        display: grid;
+        grid-template-columns: repeat(12, minmax(0, 1fr));
+        gap: 16px;
+      }
+
+      .panel {
+        grid-column: span 12;
+        background: var(--color-surface);
+        border: 1px solid var(--color-border);
+        border-radius: var(--radius-modal);
+        box-shadow: var(--shadow-modal);
+        padding: 24px;
+      }
+
+      @media (min-width: 768px) {
+        .wrap { padding: 32px; }
+        .panel { padding: 32px; }
+      }
+
+      @media (min-width: 1280px) {
+        .wrap { padding: 48px; }
+        .span-6 { grid-column: span 6; }
+        .span-4 { grid-column: span 4; }
+      }
+
+      h1, h2, h3, h4, .display {
+        font-family: var(--font-display);
+        letter-spacing: -0.03em;
+        margin: 0;
+      }
+      .display { font-size: var(--text-display); line-height: 1.05; font-weight: 700; }
+      .h1 { font-size: var(--text-h1); line-height: 1.05; font-weight: 700; }
+      .h2 { font-size: var(--text-h2); line-height: 1.1; font-weight: 600; }
+      .h3 { font-size: var(--text-h3); line-height: 1.15; font-weight: 600; }
+      .h4 { font-size: var(--text-h4); line-height: 1.2; font-weight: 600; }
+      .body-lg { font-size: var(--text-body-lg); line-height: 1.6; }
+      .body { font-size: var(--text-body); line-height: 1.6; }
+      .caption { font-size: var(--text-caption); line-height: 1.5; }
+      .small { font-size: var(--text-small); line-height: 1.4; }
+
+      .swatches {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+        gap: 12px;
+      }
+      .swatch {
+        border-radius: 16px;
+        min-height: 96px;
+        padding: 14px;
+        display: flex;
+        flex-direction: column;
+        justify-content: space-between;
+        border: 1px solid rgba(15, 23, 42, 0.08);
+      }
+      .swatch strong { font-size: 14px; }
+      .swatch span { font-size: 12px; opacity: 0.85; }
+
+      .surface-stack {
+        display: grid;
+        gap: 16px;
+        grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+      }
+
+      .shadow-card {
+        background: var(--color-surface);
+        border: 1px solid var(--color-border);
+        border-radius: var(--radius-card);
+        box-shadow: var(--shadow-card);
+        padding: 18px;
+      }
+      .shadow-card:hover {
+        box-shadow: var(--shadow-card-hover);
+      }
+
+      .btn-row {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 12px;
+      }
+      .btn {
+        border: 0;
+        border-radius: 12px;
+        padding: 12px 18px;
+        font: 600 14px/1 var(--font-body);
+        cursor: pointer;
+        transition: transform 160ms ease, background 160ms ease, box-shadow 160ms ease;
+      }
+      .btn:hover { transform: translateY(-1px); }
+      .btn:focus-visible { outline: 2px solid var(--color-accent); outline-offset: 2px; }
+      .btn-primary { background: var(--color-primary); color: #fff; }
+      .btn-primary:hover { background: var(--color-primary-hover); }
+      .btn-accent { background: var(--color-accent); color: #fff; }
+      .btn-accent:hover { background: var(--color-accent-hover); }
+      .btn-ghost {
+        background: transparent;
+        color: var(--color-text-primary);
+        border: 1px solid var(--color-border);
+      }
+
+      .contrast-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+        gap: 12px;
+      }
+      .contrast-item {
+        padding: 14px;
+        border-radius: 14px;
+        border: 1px solid var(--color-border);
+        display: flex;
+        justify-content: space-between;
+        gap: 12px;
+      }
+      .pill {
+        padding: 4px 10px;
+        border-radius: 9999px;
+        font-size: 12px;
+        font-weight: 700;
+        align-self: flex-start;
+      }
+      .pass { background: rgba(22, 163, 74, 0.12); color: #166534; }
+      .fail { background: rgba(220, 38, 38, 0.12); color: #991b1b; }
+    </style>
+  </head>
+  <body>
+    <main class="wrap">
+      <div class="grid">
+        <section class="panel span-12">
+          <div class="display">Design System Validation</div>
+          <p class="body-lg" style="max-width: 70ch; color: var(--color-text-secondary); margin-top: 12px;">
+            This page exercises the type scale, colors, surfaces, shadows, buttons, and accessibility contrast checks.
+          </p>
+        </section>
+
+        <section class="panel span-12">
+          <h2 class="h2">Type Scale</h2>
+          <div style="display: grid; gap: 10px; margin-top: 16px;">
+            <div class="display">Display 56 / Manrope / 700</div>
+            <div class="h1">H1 48 / Manrope / 700</div>
+            <div class="h2">H2 36 / Manrope / 600</div>
+            <div class="h3">H3 30 / Manrope / 600</div>
+            <div class="h4">H4 24 / Manrope / 600</div>
+            <div class="body-lg">Body-lg 18 / Inter / 400</div>
+            <div class="body">Body 16 / Inter / 400</div>
+            <div class="caption">Caption 14 / Inter / 400</div>
+            <div class="small">Small 12 / Inter / 400</div>
+          </div>
+        </section>
+
+        <section class="panel span-12">
+          <h2 class="h2">Color Swatches</h2>
+          <div class="swatches" style="margin-top: 16px;">
+            <div class="swatch" style="background: var(--color-primary); color: #fff;"><strong>Primary</strong><span>#2F6BFF</span></div>
+            <div class="swatch" style="background: var(--color-accent); color: #fff;"><strong>Accent</strong><span>#2563EB</span></div>
+            <div class="swatch" style="background: var(--color-success); color: #fff;"><strong>Success</strong><span>#16A34A</span></div>
+            <div class="swatch" style="background: var(--color-warning); color: #111827;"><strong>Warning</strong><span>#F59E0B</span></div>
+            <div class="swatch" style="background: var(--color-danger); color: #fff;"><strong>Danger</strong><span>#DC2626</span></div>
+            <div class="swatch" style="background: var(--color-surface); color: var(--color-text-primary); border: 1px solid var(--color-border);"><strong>Surface</strong><span>#FFFFFF</span></div>
+          </div>
+        </section>
+
+        <section class="panel span-6">
+          <h2 class="h2">Surface Layering</h2>
+          <div class="surface-stack" style="margin-top: 16px;">
+            <div class="shadow-card">Card one</div>
+            <div class="shadow-card">Card two</div>
+          </div>
+        </section>
+
+        <section class="panel span-6">
+          <h2 class="h2">Shadows</h2>
+          <div style="display: grid; gap: 16px; margin-top: 16px;">
+            <div class="shadow-card">Shadow card</div>
+            <div class="shadow-card" style="box-shadow: var(--shadow-modal);">Shadow modal</div>
+          </div>
+        </section>
+
+        <section class="panel span-12">
+          <h2 class="h2">Button States</h2>
+          <div class="btn-row" style="margin-top: 16px;">
+            <button class="btn btn-primary" type="button">Primary</button>
+            <button class="btn btn-accent" type="button">Accent</button>
+            <button class="btn btn-ghost" type="button">Ghost</button>
+          </div>
+        </section>
+
+        <section class="panel span-12">
+          <h2 class="h2">Hover Card</h2>
+          <div style="max-width: 320px; margin-top: 16px;">
+            <div class="shadow-card" style="transition: box-shadow 200ms ease, transform 200ms ease;">
+              <div class="caption" style="color: var(--color-text-secondary);">Property card</div>
+              <div class="h4" style="margin-top: 8px;">2 Bed Apartment</div>
+              <p class="body" style="color: var(--color-text-secondary);">Hover this card to see the stronger shadow token.</p>
+            </div>
+          </div>
+        </section>
+
+        <section class="panel span-12">
+          <h2 class="h2">WCAG AA Contrast Check</h2>
+          <div id="contrast-results" class="contrast-grid" style="margin-top: 16px;"></div>
+        </section>
+      </div>
+    </main>
+
+    <script>
+      const tokens = {
+        bg: getComputedStyle(document.documentElement).getPropertyValue('--color-bg').trim(),
+        textPrimary: getComputedStyle(document.documentElement).getPropertyValue('--color-text-primary').trim(),
+        textSecondary: getComputedStyle(document.documentElement).getPropertyValue('--color-text-secondary').trim(),
+        accent: getComputedStyle(document.documentElement).getPropertyValue('--color-accent').trim(),
+        primary: getComputedStyle(document.documentElement).getPropertyValue('--color-primary').trim(),
+        success: getComputedStyle(document.documentElement).getPropertyValue('--color-success').trim(),
+        danger: getComputedStyle(document.documentElement).getPropertyValue('--color-danger').trim(),
+      };
+
+      function hexToRgb(hex) {
+        hex = hex.replace('#', '');
+        if (hex.length === 3) hex = hex.split('').map((c) => c + c).join('');
+        const num = Number.parseInt(hex, 16);
+        return [(num >> 16) & 255, (num >> 8) & 255, num & 255];
+      }
+
+      function srgb(v) {
+        v /= 255;
+        return v <= 0.03928 ? v / 12.92 : Math.pow((v + 0.055) / 1.055, 2.4);
+      }
+
+      function luminance(hex) {
+        const [r, g, b] = hexToRgb(hex).map(srgb);
+        return 0.2126 * r + 0.7152 * g + 0.0722 * b;
+      }
+
+      function contrast(a, b) {
+        const la = luminance(a);
+        const lb = luminance(b);
+        const [hi, lo] = la > lb ? [la, lb] : [lb, la];
+        return (hi + 0.05) / (lo + 0.05);
+      }
+
+      const checks = [
+        { label: 'Text primary on bg', a: tokens.textPrimary, b: tokens.bg, min: 4.5 },
+        { label: 'Text secondary on bg', a: tokens.textSecondary, b: tokens.bg, min: 4.5 },
+        { label: 'White on accent', a: '#FFFFFF', b: tokens.accent, min: 4.5 },
+        { label: 'White on primary', a: '#FFFFFF', b: tokens.primary, min: 4.5 },
+        { label: 'White on success', a: '#FFFFFF', b: tokens.success, min: 3 },
+        { label: 'White on danger', a: '#FFFFFF', b: tokens.danger, min: 4.5 },
+      ];
+
+      const results = document.getElementById('contrast-results');
+      results.innerHTML = checks.map((item) => {
+        const ratio = contrast(item.a, item.b);
+        const pass = ratio >= item.min;
+        return `
+          <div class="contrast-item">
+            <div>
+              <div style="font-weight: 700;">${item.label}</div>
+              <div class="small" style="color: var(--color-text-secondary); margin-top: 4px;">Ratio ${ratio.toFixed(2)}:1, target ${item.min}:1</div>
+            </div>
+            <span class="pill ${pass ? 'pass' : 'fail'}">${pass ? 'PASS' : 'FAIL'}</span>
+          </div>
+        `;
+      }).join('');
+    </script>
+  </body>
+</html>
