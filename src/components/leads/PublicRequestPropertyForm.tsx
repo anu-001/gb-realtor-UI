@@ -166,8 +166,8 @@ export function PublicRequestPropertyForm({
   });
 
   return (
-    <section className={cn("overflow-hidden rounded-modal border border-[var(--color-border)] bg-[var(--color-surface)] shadow-modal", className)}>
-      <div className="border-b border-[var(--color-border)] bg-[linear-gradient(180deg,color-mix(in_srgb,var(--color-surface)_96%,white)_0%,var(--color-surface)_100%)] p-6 md:p-8">
+    <section className={cn("ui-surface-strong overflow-hidden", className)}>
+      <div className="border-b border-[var(--color-border)] bg-[linear-gradient(180deg,color-mix(in_srgb,var(--color-surface)_97%,white)_0%,var(--color-surface)_100%)] p-6 md:p-8">
         <p className="text-small font-semibold uppercase tracking-[0.2em] text-[var(--color-text-secondary)]">Private request</p>
         <h2 className="mt-5 font-display text-h2 text-[var(--color-text-primary)]">{headline}</h2>
         <p className="mt-3 max-w-2xl text-body-lg text-[var(--color-text-secondary)]">{subheading}</p>
@@ -238,7 +238,7 @@ export function PublicRequestPropertyForm({
                     id={fieldIds.fullName}
                     autoComplete="name"
                     placeholder="Jane Doe"
-                    className="h-12 w-full rounded-input border border-[var(--color-border)] bg-[var(--color-surface)] px-4 text-body text-[var(--color-text-primary)] outline-none transition focus-visible:border-[var(--color-accent)]"
+                    className="ui-field"
                     aria-invalid={Boolean(errors.fullName)}
                     aria-describedby={errors.fullName ? `${fieldIds.fullName}-error` : undefined}
                     {...register("fullName")}
@@ -251,7 +251,7 @@ export function PublicRequestPropertyForm({
                     autoComplete="tel"
                     inputMode="tel"
                     placeholder="+2348012345678"
-                    className="h-12 w-full rounded-input border border-[var(--color-border)] bg-[var(--color-surface)] px-4 text-body text-[var(--color-text-primary)] outline-none transition focus-visible:border-[var(--color-accent)]"
+                    className="ui-field"
                     aria-invalid={Boolean(errors.phoneNumber)}
                     aria-describedby={errors.phoneNumber ? `${fieldIds.phoneNumber}-error` : undefined}
                     {...register("phoneNumber")}
@@ -266,7 +266,7 @@ export function PublicRequestPropertyForm({
                     type="email"
                     autoComplete="email"
                     placeholder="jane@example.com"
-                    className="h-12 w-full rounded-input border border-[var(--color-border)] bg-[var(--color-surface)] px-4 text-body text-[var(--color-text-primary)] outline-none transition focus-visible:border-[var(--color-accent)]"
+                    className="ui-field"
                     aria-invalid={Boolean(errors.email)}
                     aria-describedby={errors.email ? `${fieldIds.email}-error` : undefined}
                     {...register("email")}
@@ -278,7 +278,7 @@ export function PublicRequestPropertyForm({
                     id={fieldIds.preferredLocation}
                     autoComplete="off"
                     placeholder="Lekki"
-                    className="h-12 w-full rounded-input border border-[var(--color-border)] bg-[var(--color-surface)] px-4 text-body text-[var(--color-text-primary)] outline-none transition focus-visible:border-[var(--color-accent)]"
+                    className="ui-field"
                     aria-invalid={Boolean(errors.preferredLocation)}
                     aria-describedby={errors.preferredLocation ? `${fieldIds.preferredLocation}-error` : undefined}
                     {...register("preferredLocation")}
@@ -308,7 +308,7 @@ export function PublicRequestPropertyForm({
                     id={fieldIds.propertyInterest}
                     autoComplete="off"
                     placeholder="3-bedroom apartment"
-                    className="h-12 w-full rounded-input border border-[var(--color-border)] bg-[var(--color-surface)] px-4 text-body text-[var(--color-text-primary)] outline-none transition focus-visible:border-[var(--color-accent)]"
+                    className="ui-field"
                     aria-invalid={Boolean(errors.propertyInterest)}
                     aria-describedby={errors.propertyInterest ? `${fieldIds.propertyInterest}-error` : undefined}
                     {...register("propertyInterest")}
@@ -350,7 +350,7 @@ export function PublicRequestPropertyForm({
                 <button
                   type="submit"
                   disabled={isSubmitting}
-                  className="inline-flex h-12 items-center justify-center gap-2 rounded-full bg-[var(--color-accent)] px-5 text-sm font-medium text-white transition hover:bg-[var(--color-accent-hover)] disabled:cursor-not-allowed disabled:opacity-60"
+                className="ui-button-primary"
                 >
                   {isSubmitting ? (
                     <>

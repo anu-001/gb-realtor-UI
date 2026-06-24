@@ -7,15 +7,17 @@ type ErrorStateProps = {
 
 export function ErrorState({ message, onRetry }: ErrorStateProps) {
   return (
-    <div className="flex flex-col items-center justify-center rounded-card border border-[var(--color-border)] bg-[var(--color-surface)] px-6 py-12 text-center">
-      <AlertTriangle className="h-10 w-10 text-[var(--color-danger)]" aria-hidden="true" />
+    <div className="flex flex-col items-center justify-center rounded-modal border border-[var(--color-border)] bg-[linear-gradient(180deg,color-mix(in_srgb,var(--color-surface)_96%,white)_0%,var(--color-surface)_100%)] px-6 py-12 text-center shadow-card">
+      <div className="flex h-16 w-16 items-center justify-center rounded-full bg-[color-mix(in_srgb,var(--color-danger)_10%,var(--color-surface))] text-[var(--color-danger)]">
+        <AlertTriangle className="h-8 w-8" aria-hidden="true" />
+      </div>
       <h2 className="mt-4 font-display text-h4 text-[var(--color-text-primary)]">Something went wrong</h2>
       <p className="mt-2 max-w-md text-body text-[var(--color-text-secondary)]">{message}</p>
       {onRetry ? (
         <button
           type="button"
           onClick={onRetry}
-          className="mt-6 inline-flex h-11 items-center gap-2 rounded-input bg-[var(--color-accent)] px-4 text-sm font-medium text-white transition hover:bg-[var(--color-accent-hover)]"
+          className="mt-6 ui-button-primary"
         >
           <RotateCcw className="h-4 w-4" />
           Retry

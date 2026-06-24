@@ -246,7 +246,7 @@ export default function HomePage() {
                   <select
                     value={filters.beds}
                     onChange={(event) => updateFilters({ beds: event.target.value as HeroFilters["beds"] })}
-                    className="h-12 w-full rounded-input border border-[var(--color-border)] bg-[var(--color-surface)] px-4 text-sm outline-none"
+                    className="ui-field h-12"
                   >
                     <option value="">Any</option>
                     {[1, 2, 3, 4, 5].map((count) => (

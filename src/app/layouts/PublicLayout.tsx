@@ -19,39 +19,31 @@ export function PublicLayout({ children }: PublicLayoutProps) {
       <motion.main id="main-content" {...pageTransition} className="app-container py-8">
         {children ?? <Outlet />}
       </motion.main>
-      <footer className="border-t border-[var(--color-border)] bg-[color-mix(in_srgb,var(--color-surface)_88%,var(--color-bg))] py-8">
+      <footer className="border-t border-[var(--color-border)] bg-[linear-gradient(180deg,color-mix(in_srgb,var(--color-surface)_90%,var(--color-bg))_0%,var(--color-bg)_100%)] py-8">
         <div className="app-container space-y-6">
-          <div className="flex flex-col gap-6 md:flex-row md:items-start md:justify-between">
-            <div className="space-y-4">
-              <div className="flex items-center gap-3">
-                <BrandMark compact />
-              </div>
-              <p className="max-w-xl text-body text-[var(--color-text-secondary)]">
-                Over 20 years of trusted property guidance.
+          <div className="flex flex-col gap-6 md:flex-row md:items-center md:justify-between">
+            <div className="space-y-3">
+              <BrandMark compact />
+              <p className="max-w-lg text-body text-[var(--color-text-secondary)]">
+                Over 20 years of steady, trusted property guidance.
               </p>
-              <a
-                href="mailto:hello@gbrealty.com"
-                className="inline-flex text-sm font-medium text-[var(--color-text-secondary)] transition hover:text-[var(--color-text-primary)]"
-              >
-                hello@gbrealty.com
-              </a>
             </div>
-            <div className="flex flex-wrap items-center gap-4 text-sm font-medium md:justify-end">
-              <Link to="/search" className="text-[var(--color-text-secondary)] transition hover:text-[var(--color-text-primary)]">
+            <div className="flex flex-wrap items-center gap-3 text-sm font-medium">
+              <Link to="/search" className="ui-chip">
                 Listings
               </Link>
-              <Link to="/request-property" className="text-[var(--color-text-secondary)] transition hover:text-[var(--color-text-primary)]">
+              <Link to="/request-property" className="ui-chip">
                 Request property
               </Link>
-              <a href="mailto:hello@gbrealty.com" className="text-[var(--color-text-secondary)] transition hover:text-[var(--color-text-primary)]">
+              <a href="mailto:hello@gbrealty.com" className="ui-chip">
                 Contact
               </a>
             </div>
           </div>
 
-          <div className="flex flex-col gap-3 border-t border-[var(--color-border)] pt-5 text-small text-[var(--color-text-secondary)] md:flex-row md:items-center md:justify-between">
+          <div className="flex flex-col gap-2 border-t border-[var(--color-border)] pt-5 text-small text-[var(--color-text-secondary)] md:flex-row md:items-center md:justify-between">
             <p>All rights reserved.</p>
-            <p>Built for clean discovery, direct enquiries, and a premium visitor experience.</p>
+            <p>Premium property discovery, direct enquiry, and clear follow-up.</p>
           </div>
         </div>
       </footer>

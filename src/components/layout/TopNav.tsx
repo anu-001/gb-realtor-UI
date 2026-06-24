@@ -10,7 +10,7 @@ export function TopNav() {
   const menuLabel = open ? "Close navigation menu" : "Open navigation menu";
 
   return (
-    <header className="sticky top-0 z-40 border-b border-[var(--color-border)]/80 bg-[color-mix(in_srgb,var(--color-bg)_82%,white)]/90 backdrop-blur-xl">
+    <header className="sticky top-0 z-40 border-b border-[var(--color-border)]/80 bg-[color-mix(in_srgb,var(--color-bg)_82%,white)]/92 backdrop-blur-xl">
       <div className="app-container relative flex h-16 items-center gap-4">
         <Link to="/" className="flex items-center gap-3">
           <BrandMark compact />
@@ -19,7 +19,9 @@ export function TopNav() {
         <nav className="ml-4 hidden items-center gap-1 rounded-full border border-[var(--color-border)] bg-[var(--color-surface)] p-1 lg:flex">
           {[
             ["Listings", "/#listings"],
+            ["Featured", "/#featured"],
             ["Search", "/search"],
+            ["Request", "/request-property"],
             ["Contact", "/request-property"],
           ].map(([label, href]) => (
             <Link
@@ -35,7 +37,7 @@ export function TopNav() {
         <div className="ml-auto hidden items-center gap-3 md:flex">
           <Link
             to="/request-property"
-            className="inline-flex h-10 items-center justify-center gap-2 rounded-full bg-[var(--color-accent)] px-4 text-sm font-medium text-white transition hover:bg-[var(--color-accent-hover)]"
+            className="ui-button-primary"
           >
             Request property
             <ArrowRight className="h-4 w-4" />
@@ -60,11 +62,12 @@ export function TopNav() {
               animate={{ opacity: 1, y: 0, transition: { duration: 0.18 } }}
               exit={{ opacity: 0, y: -8, transition: { duration: 0.14 } }}
               id="mobile-navigation"
-              className="absolute left-4 right-4 top-[calc(100%+0.5rem)] z-50 rounded-card border border-[var(--color-border)] bg-[var(--color-surface)] p-3 shadow-modal lg:hidden"
+              className="absolute left-4 right-4 top-[calc(100%+0.5rem)] z-50 rounded-modal border border-[var(--color-border)] bg-[var(--color-surface)] p-3 shadow-modal lg:hidden"
             >
               <div className="grid gap-1">
                 {[
                   ["Listings", "/#listings"],
+                  ["Featured", "/#featured"],
                   ["Contact", "/request-property"],
                   ["Search", "/search"],
                 ].map(([label, href]) => (

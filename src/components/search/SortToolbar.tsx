@@ -20,15 +20,19 @@ export function SortToolbar({ total, sort, onSortChange, pageSize, onPageSizeCha
   ] as const;
 
   return (
-    <div className="flex flex-wrap items-center justify-between gap-3 rounded-card border border-[var(--color-border)] bg-[var(--color-surface)] p-4 shadow-card">
-      <p className="text-sm text-[var(--color-text-secondary)]">{total} properties found</p>
+    <div className="flex flex-wrap items-center justify-between gap-3 rounded-modal border border-[var(--color-border)] bg-[linear-gradient(180deg,color-mix(in_srgb,var(--color-surface)_97%,white)_0%,var(--color-surface)_100%)] p-4 shadow-card">
+      <div className="flex items-center gap-3">
+        <p className="text-sm font-medium text-[var(--color-text-secondary)]">
+          {total.toLocaleString("en-NG")} properties found
+        </p>
+      </div>
       <div className="flex flex-wrap items-center gap-2">
         <label className="inline-flex items-center gap-2 text-sm">
           <ArrowUpDown className="h-4 w-4" />
           <select
             value={sort}
             onChange={(event) => onSortChange(event.target.value)}
-            className="h-10 rounded-input border border-[var(--color-border)] px-3"
+            className="ui-field h-10 min-w-36"
           >
             <option value="newest">Newest</option>
             <option value="oldest">Oldest</option>
@@ -43,7 +47,7 @@ export function SortToolbar({ total, sort, onSortChange, pageSize, onPageSizeCha
             <select
               value={pageSize ?? 25}
               onChange={(event) => onPageSizeChange(Number(event.target.value))}
-              className="h-10 rounded-input border border-[var(--color-border)] px-3"
+              className="ui-field h-10 w-24"
             >
               {[12, 25, 48].map((size) => (
                 <option key={size} value={size}>
@@ -58,9 +62,9 @@ export function SortToolbar({ total, sort, onSortChange, pageSize, onPageSizeCha
             <button
               key={mode}
               type="button"
-              aria-label={mode}
+              aria-label={`Switch to ${mode} view`}
               onClick={() => dispatch(setViewMode(mode as "grid" | "list" | "map"))}
-              className={`inline-flex h-10 w-10 items-center justify-center ${
+              className={`inline-flex h-10 w-10 items-center justify-center transition ${
                 viewMode === mode ? "bg-[var(--color-accent)] text-white" : "bg-transparent text-[var(--color-text-secondary)]"
               }`}
             >

@@ -26,10 +26,10 @@ export function FilterPanel({ value, onChange, onClear }: FilterPanelProps) {
   const merged = useMemo(() => ({ ...value }), [value]);
 
   return (
-    <aside className="space-y-5 rounded-card border border-[var(--color-border)] bg-[var(--color-surface)] p-4 shadow-card">
-      <div className="flex items-center justify-between">
+    <aside className="space-y-5 rounded-modal border border-[var(--color-border)] bg-[linear-gradient(180deg,color-mix(in_srgb,var(--color-surface)_97%,white)_0%,var(--color-surface)_100%)] p-4 shadow-card">
+      <div className="flex items-center justify-between gap-3">
         <h2 className="font-display text-h4">Filters</h2>
-        <button type="button" onClick={onClear} className="text-sm font-medium text-[var(--color-accent)]">
+        <button type="button" onClick={onClear} className="text-sm font-medium text-[var(--color-accent)] transition hover:text-[var(--color-accent-hover)]">
           Clear
         </button>
       </div>
@@ -41,7 +41,7 @@ export function FilterPanel({ value, onChange, onClear }: FilterPanelProps) {
           onChange={(event) => onChange({ ...merged, location: event.target.value })}
           list="city-suggestions"
           placeholder="Search city or state"
-          className="h-11 w-full rounded-input border border-[var(--color-border)] px-4"
+          className="ui-field h-11"
         />
         <datalist id="city-suggestions">
           {cities.map((city) => (
@@ -55,7 +55,7 @@ export function FilterPanel({ value, onChange, onClear }: FilterPanelProps) {
         <select
           value={merged.type ?? ""}
           onChange={(event) => onChange({ ...merged, type: event.target.value })}
-          className="h-11 w-full rounded-input border border-[var(--color-border)] px-4"
+          className="ui-field h-11"
         >
           <option value="">Any</option>
           {Object.values(PropertyType).map((item) => (
@@ -71,7 +71,7 @@ export function FilterPanel({ value, onChange, onClear }: FilterPanelProps) {
         <select
           value={merged.listingType ?? ""}
           onChange={(event) => onChange({ ...merged, listingType: event.target.value })}
-          className="h-11 w-full rounded-input border border-[var(--color-border)] px-4"
+          className="ui-field h-11"
         >
           <option value="">Any</option>
           <option value="sale">Buy</option>
@@ -84,7 +84,7 @@ export function FilterPanel({ value, onChange, onClear }: FilterPanelProps) {
         <select
           value={merged.beds ?? ""}
           onChange={(event) => onChange({ ...merged, beds: event.target.value ? Number(event.target.value) : "" })}
-          className="h-11 w-full rounded-input border border-[var(--color-border)] px-4"
+          className="ui-field h-11"
         >
           <option value="">Any</option>
           {[1, 2, 3, 4, 5].map((count) => (
@@ -104,7 +104,7 @@ export function FilterPanel({ value, onChange, onClear }: FilterPanelProps) {
         formatValue={(value) => new Intl.NumberFormat("en-NG", { style: "currency", currency: "NGN", maximumFractionDigits: 0 }).format(value)}
       />
 
-      <button type="button" className="inline-flex items-center gap-2 text-sm font-medium text-[var(--color-accent)]">
+      <button type="button" className="inline-flex items-center gap-2 text-sm font-medium text-[var(--color-accent)] transition hover:text-[var(--color-accent-hover)]">
         <ChevronDown className="h-4 w-4" />
         More filters
       </button>

@@ -14,7 +14,7 @@ export function StatCard({ label, value, description, icon: Icon, trend, classNa
   return (
     <div
       className={cn(
-        "rounded-card border border-[var(--color-border)] bg-[var(--color-surface)] p-5 shadow-card",
+        "rounded-card border border-[var(--color-border)] bg-[linear-gradient(180deg,color-mix(in_srgb,var(--color-surface)_97%,white)_0%,var(--color-surface)_100%)] p-5 shadow-card",
         className,
       )}
     >
