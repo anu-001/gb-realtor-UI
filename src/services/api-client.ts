@@ -41,6 +41,7 @@ const publicRouteMatchers: RegExp[] = [
   /^\/api\/v1\/public\/properties\/discovery(?:\/?)?$/,
   /^\/api\/v1\/public\/properties\/[^/?#]+(?:\/?)?$/,
   /^\/api\/v1\/public\/leads(?:\/?)?$/,
+  /^\/api\/v1\/public\/leads\/request(?:\/?)?$/,
   /^\/api\/v1\/auth\/login(?:\/?)?$/,
   /^\/api\/v1\/auth\/refresh(?:\/?)?$/,
 ];

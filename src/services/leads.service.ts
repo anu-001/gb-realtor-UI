@@ -5,6 +5,7 @@ import type {
   LeadNote,
   LeadNotePayload,
   LeadStatusPayload,
+  PublicPropertyRequestPayload,
   PublicLeadPayload,
 } from "../types/lead";
 import { privateClient, publicClient } from "./api-client";
@@ -59,6 +60,15 @@ export async function captureLead(payload: PublicLeadPayload | CreateLeadPayload
 }
 
 export const createPublicLead = captureLead;
+
+export async function createPublicPropertyRequest(payload: PublicPropertyRequestPayload): Promise<Lead> {
+  const postPublicPropertyRequest = publicClient.POST as unknown as (
+    path: string,
+    options: { body: unknown },
+  ) => Promise<{ data?: Record<string, unknown>; error?: unknown; response: Response }>;
+
+  return normalizeLead(await unwrapApiResponse(postPublicPropertyRequest("/api/v1/public/leads/request", { body: payload })));
+}
 
 export async function listLeads(filters?: Record<string, unknown>): Promise<PaginatedLeadsResponse> {
   const response = await unwrapApiResponse(
