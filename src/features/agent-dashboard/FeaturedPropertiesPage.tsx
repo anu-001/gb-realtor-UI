@@ -31,7 +31,7 @@ export default function FeaturedPropertiesPage() {
   const queryClient = useQueryClient();
   const featuredQuery = useQuery({
     queryKey: ["featured-properties-page"],
-    queryFn: () => listFeaturedProperties(100),
+    queryFn: () => listFeaturedProperties(24),
     staleTime: 120_000,
     retry: 1,
   });
@@ -80,18 +80,18 @@ export default function FeaturedPropertiesPage() {
 
   return (
     <div className="space-y-6">
-      <section className="rounded-[32px] border border-[var(--color-border)] bg-[var(--color-surface)] p-6 shadow-card">
+      <section className="rounded-[32px] border border-[var(--color-border)] bg-[linear-gradient(180deg,color-mix(in_srgb,var(--color-surface)_97%,white)_0%,var(--color-surface)_100%)] p-6 shadow-card">
         <div className="flex flex-col gap-4 lg:flex-row lg:items-end lg:justify-between">
           <div className="space-y-2">
             <p className="text-small font-semibold uppercase tracking-[0.2em] text-[var(--color-text-secondary)]">Featured properties</p>
-            <h1 className="font-display text-h2 text-[var(--color-text-primary)]">Featured listings.</h1>
+            <h1 className="font-display text-h2 text-[var(--color-text-primary)]">Manage featured listings.</h1>
             <p className="max-w-2xl text-body text-[var(--color-text-secondary)]">
-              Review what is featured and remove it when needed.
+              Review what is highlighted on the homepage and remove it when needed.
             </p>
           </div>
           <Link
             to="/agent/listings"
-            className="inline-flex h-11 items-center gap-2 rounded-full border border-[var(--color-border)] bg-[var(--color-surface)] px-4 text-sm font-medium text-[var(--color-text-primary)] transition hover:bg-[var(--color-surface-raised)]"
+            className="ui-chip inline-flex h-11 items-center gap-2 px-4"
           >
             Open properties
             <ArrowRight className="h-4 w-4" />
@@ -105,7 +105,7 @@ export default function FeaturedPropertiesPage() {
           <EmptyState
             icon={Star}
             heading="No featured listings"
-            message="Promote a property from Listings."
+            message="Feature a property from Listings to show it on the homepage."
             action={
               <Link
                 to="/agent/listings"
@@ -118,7 +118,7 @@ export default function FeaturedPropertiesPage() {
       ) : (
         <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-3">
           {featured.map((item) => (
-            <article key={item.id} className="overflow-hidden rounded-card border border-[var(--color-border)] bg-[var(--color-surface)] shadow-card">
+            <article key={item.id} className="overflow-hidden rounded-card border border-[var(--color-border)] bg-[linear-gradient(180deg,color-mix(in_srgb,var(--color-surface)_97%,white)_0%,var(--color-surface)_100%)] shadow-card">
               <div className="aspect-[4/3] bg-[var(--color-surface-raised)]">
                 <img
                   src={getFeaturedImageUrl(item as unknown as Record<string, unknown>)}
@@ -131,7 +131,7 @@ export default function FeaturedPropertiesPage() {
               <div className="space-y-4 p-5">
                 <div className="space-y-1">
                   <p className="text-small font-semibold uppercase tracking-[0.18em] text-[var(--color-text-secondary)]">Featured listing</p>
-                    <h2 className="font-display text-h4 text-[var(--color-text-primary)]">{item.title}</h2>
+                  <h2 className="font-display text-h4 text-[var(--color-text-primary)]">{item.title}</h2>
                   <p className="text-caption text-[var(--color-text-secondary)]">
                     {item.area}, {item.city}, {item.state}
                   </p>

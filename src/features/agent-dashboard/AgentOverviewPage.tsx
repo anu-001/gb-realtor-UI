@@ -21,7 +21,7 @@ import { StatCard } from "@/components/data-display/StatCard";
 import { SkeletonLoader } from "@/components/feedback/SkeletonLoader";
 import { EmptyState } from "@/components/feedback/EmptyState";
 import { useAppSelector } from "@/store";
-import { canCreateListing, canManageTeam, canViewAnalytics, canViewDashboard, canViewLeads, resolveAgentRole } from "@/utils/agent-access";
+import { canCreateListing, canEditListing, canManageTeam, canViewAnalytics, canViewDashboard, canViewLeads, resolveAgentRole } from "@/utils/agent-access";
 import { resolveWorkspaceRole } from "@/utils/auth-role";
 
 function asRecord(value: unknown): Record<string, unknown> {
@@ -182,14 +182,14 @@ export default function AgentOverviewPage() {
       description: "Manage the listings currently highlighted on the site.",
       to: "/agent/featured-properties",
       icon: Star,
-      visible: canSeeAnalytics || canSeeTeam,
+      visible: canCreate || canEditListing(role) || canSeeTeam,
     },
     {
       label: "Property media",
       description: "Upload and organise listing photos with a dedicated view.",
       to: "/agent/property-media",
       icon: ImagePlus,
-      visible: canSeeAnalytics || canSeeTeam,
+      visible: canCreate || canEditListing(role) || canSeeTeam,
     },
     {
       label: "Public search",
