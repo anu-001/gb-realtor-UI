@@ -72,9 +72,10 @@ export function AgentLayout({ children }: AgentLayoutProps) {
               {canCreate ? (
                 <Link
                   to="/agent/listings/new"
-                  className="hidden h-10 items-center justify-center rounded-full bg-[var(--color-accent)] px-4 text-sm font-medium text-white transition hover:bg-[var(--color-accent-hover)] md:inline-flex"
+                  className="inline-flex h-10 items-center justify-center rounded-full bg-[var(--color-accent)] px-4 text-sm font-medium text-white transition hover:bg-[var(--color-accent-hover)]"
                 >
-                  Add listing
+                  <span className="hidden sm:inline">Add listing</span>
+                  <span className="sm:hidden">Add</span>
                 </Link>
               ) : null}
               <span className="rounded-full border border-[var(--color-border)] px-3 py-1 text-caption text-[var(--color-text-secondary)]">

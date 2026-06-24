@@ -1,9 +1,10 @@
 import { useEffect, useId, useMemo, useRef, useState, type ReactNode, type DragEvent } from "react";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
-import { ArrowRight, CheckCircle2, ImagePlus, Image as ImageIcon, Star, Trash2, Upload } from "lucide-react";
+import { ArrowRight, CheckCircle2, ImagePlus, Image as ImageIcon, ShieldAlert, Star, Trash2, Upload } from "lucide-react";
 import { z } from "zod";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
+import { Link } from "react-router-dom";
 import { RichTextEditorField } from "@/components/ui/RichTextEditorField";
 import { EmptyState } from "@/components/feedback/EmptyState";
 import { SkeletonLoader } from "@/components/feedback/SkeletonLoader";
@@ -171,6 +172,7 @@ function mapCreateResponse(
 export function PropertyCreateForm({ className }: PropertyCreateFormProps) {
   const queryClient = useQueryClient();
   const [submitError, setSubmitError] = useState<string | null>(null);
+  const [accessDenied, setAccessDenied] = useState<{ heading: string; message: string; actionTo: string; actionLabel: string } | null>(null);
   const [createdProperty, setCreatedProperty] = useState<Property | null>(null);
   const [uploadSlots, setUploadSlots] = useState<UploadSlotState[]>([]);
   const [selectedImages, setSelectedImages] = useState<SelectedImage[]>([]);
@@ -412,6 +414,7 @@ export function PropertyCreateForm({ className }: PropertyCreateFormProps) {
       return mapCreateResponse(created);
     },
     onSuccess: async ({ property, uploadSlots: responseUploadSlots }) => {
+      setAccessDenied(null);
       if (!property?.id) {
         setSubmitError("The property was created, but the server did not return a property record.");
         return;
@@ -435,6 +438,26 @@ export function PropertyCreateForm({ className }: PropertyCreateFormProps) {
       const parsedError = parseApiError(error);
       const fieldErrors = getFieldErrors(parsedError);
 
+      if (parsedError.statusCode === 401) {
+        setAccessDenied({
+          heading: "Session expired",
+          message: "Your session has expired. Please log in again to continue creating listings.",
+          actionTo: "/login",
+          actionLabel: "Go to login",
+        });
+        return;
+      }
+
+      if (parsedError.statusCode === 403) {
+        setAccessDenied({
+          heading: "Access denied",
+          message: "Your account does not have permission to create properties.",
+          actionTo: "/agent",
+          actionLabel: "Back to workspace",
+        });
+        return;
+      }
+
       Object.entries(fieldErrors).forEach(([field, fieldError]) => {
         if (field === "title" || field === "description" || field === "purpose" || field === "state" || field === "city" || field === "area" || field === "priceKobo" || field === "bedrooms" || field === "bathrooms") {
           setError(field as keyof CreatePropertyFormValues, {
@@ -444,6 +467,7 @@ export function PropertyCreateForm({ className }: PropertyCreateFormProps) {
         }
       });
 
+      setAccessDenied(null);
       setSubmitError(getApiErrorMessage(parsedError));
     },
   });
@@ -460,6 +484,7 @@ export function PropertyCreateForm({ className }: PropertyCreateFormProps) {
 
   const clearForm = () => {
     setSubmitError(null);
+    setAccessDenied(null);
     setImageError(null);
     setUploadSlots([]);
     setCreatedProperty(null);
@@ -477,6 +502,34 @@ export function PropertyCreateForm({ className }: PropertyCreateFormProps) {
       bathrooms: undefined,
     });
   };
+
+  if (accessDenied) {
+    return (
+      <section className={cn("space-y-6", className)}>
+        <div className="space-y-2">
+          <p className="text-small font-semibold uppercase tracking-[0.2em] text-[var(--color-text-secondary)]">Property manager</p>
+          <h1 className="font-display text-h2 text-[var(--color-text-primary)]">Create a property</h1>
+          <p className="max-w-2xl text-body text-[var(--color-text-secondary)]">
+            Add the listing details, format the description beautifully, and attach images in one polished flow.
+          </p>
+        </div>
+
+        <EmptyState
+          icon={ShieldAlert}
+          heading={accessDenied.heading}
+          message={accessDenied.message}
+          action={
+            <Link
+              to={accessDenied.actionTo}
+              className="inline-flex h-11 items-center justify-center rounded-full bg-[var(--color-accent)] px-4 text-sm font-medium text-white transition hover:bg-[var(--color-accent-hover)]"
+            >
+              {accessDenied.actionLabel}
+            </Link>
+          }
+        />
+      </section>
+    );
+  }
 
   const content = createdProperty ? (
     <div className="space-y-6">

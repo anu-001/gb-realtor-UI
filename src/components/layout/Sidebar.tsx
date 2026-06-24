@@ -1,5 +1,5 @@
 import { useMemo } from "react";
-import { NavLink, useNavigate } from "react-router-dom";
+import { Link, NavLink, useNavigate } from "react-router-dom";
 import { AnimatePresence, motion } from "framer-motion";
 import {
   BarChart3,
@@ -9,6 +9,7 @@ import {
   ImagePlus,
   LayoutDashboard,
   LogOut,
+  Plus,
   ScrollText,
   Users,
 } from "lucide-react";
@@ -18,6 +19,7 @@ import { closeModal, setSidebarOpen } from "@/store/slices/uiSlice";
 import { UserRole } from "@/constants/api-enums";
 import { cn } from "@/utils/cn";
 import { BrandMark } from "@/components/layout/BrandMark";
+import { canCreateListing } from "@/utils/agent-access";
 import { resolveAgentRole } from "@/utils/agent-access";
 import { resolveWorkspaceRole } from "@/utils/auth-role";
 
@@ -61,6 +63,7 @@ export function Sidebar() {
     resolveWorkspaceRole(user, accessToken) ??
     resolveAgentRole(user?.role ?? user?.roles?.[0]?.code ?? UserRole.PropertyManager) ??
     UserRole.PropertyManager;
+  const canCreate = canCreateListing(role);
 
   const items = useMemo(
     () => navigation.filter((item) => !item.roles || item.roles.includes(role as UserRole)),
@@ -99,6 +102,19 @@ export function Sidebar() {
           </div>
         </div>
       </div>
+
+      {canCreate ? (
+        <div className="px-4 py-4">
+          <Link
+            to="/agent/listings/new"
+            onClick={() => dispatch(setSidebarOpen(false))}
+            className="flex h-11 items-center justify-center gap-2 rounded-full bg-[var(--color-accent)] px-4 text-sm font-medium text-white transition hover:bg-[var(--color-accent-hover)]"
+          >
+            <Plus className="h-4 w-4" />
+            <span>Add listing</span>
+          </Link>
+        </div>
+      ) : null}
 
       <nav className="flex-1 space-y-1 px-3 py-4">
         {items.map((item) => {
