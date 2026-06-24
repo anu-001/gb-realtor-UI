@@ -79,22 +79,23 @@ export function PropertyCard({ property, showEnquiry = false, variant = "grid", 
       whileHover={{ y: -2 }}
       transition={{ duration: 0.2 }}
       className={cn(
-        "overflow-hidden rounded-card border border-[var(--color-border)] bg-[linear-gradient(180deg,color-mix(in_srgb,var(--color-surface)_97%,white)_0%,var(--color-surface)_100%)] shadow-card transition-shadow hover:shadow-card-hover",
+        "relative isolate overflow-hidden rounded-card border border-[var(--color-border)] bg-[linear-gradient(180deg,color-mix(in_srgb,var(--color-surface)_97%,white)_0%,var(--color-surface)_100%)] shadow-card transition-shadow hover:shadow-card-hover",
         variant === "list" && "flex flex-col md:flex-row",
         className,
       )}
     >
+      <Link
+        to={propertyUrl}
+        aria-label={`View details for ${property.title}`}
+        onMouseEnter={prefetchDetails}
+        onFocus={prefetchDetails}
+        className="absolute inset-0 z-0 rounded-card focus:outline-none focus-visible:ring-2 focus-visible:ring-[var(--color-accent)]"
+      >
+        <span className="sr-only">{property.title}</span>
+      </Link>
+
       <div className={cn("block", variant === "list" ? "md:w-[40%]" : "w-full")}>
-        <div className="group relative aspect-[4/3] overflow-hidden bg-[var(--color-border)]">
-          <Link
-            to={propertyUrl}
-            aria-label={`View details for ${property.title}`}
-            onMouseEnter={prefetchDetails}
-            onFocus={prefetchDetails}
-            className="absolute inset-0 focus:outline-none focus-visible:ring-2 focus-visible:ring-[var(--color-accent)]"
-          >
-            <span className="sr-only">{property.title}</span>
-          </Link>
+        <div className="group relative z-10 aspect-[4/3] overflow-hidden bg-[var(--color-border)]">
           <img
             src={image?.url ?? "https://images.unsplash.com/photo-1512917774080-9991f1c4c750?auto=format&fit=crop&w=1200&q=80"}
             alt={typeof image?.altText === "string" ? image.altText : property.title}
@@ -105,7 +106,7 @@ export function PropertyCard({ property, showEnquiry = false, variant = "grid", 
           <div className="absolute left-3 top-3 z-10">
             <StatusBadge status={property.listingType} />
           </div>
-          <div className="absolute right-3 top-3 z-10 flex gap-2">
+          <div className="absolute right-3 top-3 z-20 flex gap-2">
             <button
               type="button"
               aria-label="Favorite property"
@@ -135,13 +136,11 @@ export function PropertyCard({ property, showEnquiry = false, variant = "grid", 
           </div>
         </div>
       </div>
-      <div className="flex min-w-0 flex-1 flex-col gap-4 p-4">
+      <div className="relative z-10 flex min-w-0 flex-1 flex-col gap-4 p-4">
         <div>
           <div className="flex items-start justify-between gap-3">
             <div className="min-w-0">
-              <Link to={`/properties/${property.id}`} className="line-clamp-2 font-display text-h4 text-[var(--color-text-primary)]">
-                {property.title}
-              </Link>
+              <p className="line-clamp-2 font-display text-h4 text-[var(--color-text-primary)]">{property.title}</p>
               <p className="mt-1 text-caption text-[var(--color-text-secondary)]">
                 {property.area}, {property.city}, {property.state}
               </p>
@@ -173,16 +172,10 @@ export function PropertyCard({ property, showEnquiry = false, variant = "grid", 
               type="button"
               onClick={() => setInquiryOpen(true)}
               aria-label={`Inquire about ${property.title}`}
-              className="ui-button-primary flex-1"
+              className="ui-button-primary relative z-20 flex-1"
             >
               Enquire
             </button>
-            <Link
-              to={propertyUrl}
-              className="inline-flex h-11 items-center justify-center rounded-input border border-[var(--color-border)] px-4 text-sm font-medium text-[var(--color-text-primary)] transition hover:bg-[var(--color-surface-raised)]"
-            >
-              View
-            </Link>
           </div>
         ) : null}
       </div>
