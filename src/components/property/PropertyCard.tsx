@@ -94,7 +94,7 @@ export function PropertyCard({ property, showEnquiry = false, variant = "grid", 
         <span className="sr-only">{property.title}</span>
       </Link>
 
-      <div className={cn("block", variant === "list" ? "md:w-[40%]" : "w-full")}>
+      <div className={cn("block pointer-events-none", variant === "list" ? "md:w-[40%]" : "w-full")}>
         <div className="group relative z-10 aspect-[4/3] overflow-hidden bg-[var(--color-border)]">
           <img
             src={image?.url ?? "https://images.unsplash.com/photo-1512917774080-9991f1c4c750?auto=format&fit=crop&w=1200&q=80"}
