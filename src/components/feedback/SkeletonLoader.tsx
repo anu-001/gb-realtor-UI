@@ -16,7 +16,7 @@ export function SkeletonLoader({
   return (
     <div
       aria-hidden="true"
-      className={cn("skeleton-surface", className)}
+      className={cn("skeleton-surface overflow-hidden", className)}
       style={{ width, height, borderRadius }}
     />
   );

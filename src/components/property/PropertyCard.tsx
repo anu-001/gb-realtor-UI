@@ -2,9 +2,11 @@ import { Suspense, lazy, useState } from "react";
 import { Bath, Bed, Heart, Share2, Maximize2 } from "lucide-react";
 import { Link } from "react-router-dom";
 import { motion } from "framer-motion";
+import { useQueryClient } from "@tanstack/react-query";
 import type { components } from "@/types/api.generated";
 import { StatusBadge } from "./StatusBadge";
 import { cn } from "@/utils/cn";
+import { getPublicPropertyById } from "@/services/properties.service";
 const InquiryModal = lazy(() => import("./InquiryModal").then((module) => ({ default: module.InquiryModal })));
 
 type PropertyCardProps = {
@@ -38,11 +40,20 @@ function toLabel(value: unknown): string {
 }
 
 export function PropertyCard({ property, showEnquiry = false, variant = "grid", className }: PropertyCardProps) {
+  const queryClient = useQueryClient();
   const [favorite, setFavorite] = useState(false);
   const [shareLabel, setShareLabel] = useState("Share property");
   const [inquiryOpen, setInquiryOpen] = useState(false);
   const image = property.thumbnails?.[0];
   const propertyUrl = `/properties/${property.id}`;
+
+  const prefetchDetails = () => {
+    void queryClient.prefetchQuery({
+      queryKey: ["public-property", property.id],
+      queryFn: () => getPublicPropertyById(property.id),
+      staleTime: 120_000,
+    });
+  };
 
   const shareProperty = async () => {
     const url = new URL(propertyUrl, window.location.origin).toString();
@@ -68,16 +79,23 @@ export function PropertyCard({ property, showEnquiry = false, variant = "grid", 
       whileHover={{ y: -2 }}
       transition={{ duration: 0.2 }}
       className={cn(
-        "overflow-hidden rounded-card border border-[var(--color-border)] bg-[var(--color-surface)] shadow-card transition-shadow hover:shadow-card-hover",
+        "group relative isolate cursor-pointer overflow-hidden rounded-card border border-[var(--color-border)] bg-[linear-gradient(180deg,color-mix(in_srgb,var(--color-surface)_97%,white)_0%,var(--color-surface)_100%)] shadow-card transition-shadow hover:shadow-card-hover",
         variant === "list" && "flex flex-col md:flex-row",
         className,
       )}
     >
-      <div className={cn("block", variant === "list" ? "md:w-[40%]" : "w-full")}>
-        <div className="group relative aspect-[4/3] overflow-hidden bg-[var(--color-border)]">
-          <Link to={propertyUrl} aria-label={`View details for ${property.title}`} className="absolute inset-0 focus:outline-none focus-visible:ring-2 focus-visible:ring-[var(--color-accent)]">
-            <span className="sr-only">{property.title}</span>
-          </Link>
+      <Link
+        to={propertyUrl}
+        aria-label={`View details for ${property.title}`}
+        onMouseEnter={prefetchDetails}
+        onFocus={prefetchDetails}
+        className="absolute inset-0 z-0 rounded-card focus:outline-none focus-visible:ring-2 focus-visible:ring-[var(--color-accent)]"
+      >
+        <span className="sr-only">{property.title}</span>
+      </Link>
+
+      <div className={cn("block pointer-events-none", variant === "list" ? "md:w-[40%]" : "w-full")}>
+        <div className="group relative z-10 aspect-[4/3] overflow-hidden bg-[var(--color-border)]">
           <img
             src={image?.url ?? "https://images.unsplash.com/photo-1512917774080-9991f1c4c750?auto=format&fit=crop&w=1200&q=80"}
             alt={typeof image?.altText === "string" ? image.altText : property.title}
@@ -88,7 +106,7 @@ export function PropertyCard({ property, showEnquiry = false, variant = "grid", 
           <div className="absolute left-3 top-3 z-10">
             <StatusBadge status={property.listingType} />
           </div>
-          <div className="absolute right-3 top-3 z-10 flex gap-2">
+          <div className="absolute right-3 top-3 z-20 flex gap-2">
             <button
               type="button"
               aria-label="Favorite property"
@@ -98,7 +116,7 @@ export function PropertyCard({ property, showEnquiry = false, variant = "grid", 
                 setFavorite((value) => !value);
               }}
               className={cn(
-                "inline-flex h-10 w-10 items-center justify-center rounded-full border border-white/60 bg-white/90 text-[var(--color-text-primary)] shadow-sm backdrop-blur",
+                "inline-flex h-10 w-10 items-center justify-center rounded-full border border-white/60 bg-white/92 text-[var(--color-text-primary)] shadow-sm backdrop-blur transition hover:scale-[1.02]",
                 favorite && "text-[var(--color-danger)]",
               )}
             >
@@ -111,20 +129,18 @@ export function PropertyCard({ property, showEnquiry = false, variant = "grid", 
                 event.preventDefault();
                 void shareProperty();
               }}
-              className="inline-flex h-10 w-10 items-center justify-center rounded-full border border-white/60 bg-white/90 text-[var(--color-text-primary)] shadow-sm backdrop-blur"
+              className="inline-flex h-10 w-10 items-center justify-center rounded-full border border-white/60 bg-white/92 text-[var(--color-text-primary)] shadow-sm backdrop-blur transition hover:scale-[1.02]"
             >
               <Share2 className="h-4 w-4" />
             </button>
           </div>
         </div>
       </div>
-      <div className="flex min-w-0 flex-1 flex-col gap-4 p-4">
+      <div className="relative z-10 flex min-w-0 flex-1 flex-col gap-4 p-4 pointer-events-none">
         <div>
           <div className="flex items-start justify-between gap-3">
             <div className="min-w-0">
-              <Link to={`/properties/${property.id}`} className="line-clamp-2 font-display text-h4 text-[var(--color-text-primary)]">
-                {property.title}
-              </Link>
+              <p className="line-clamp-2 font-display text-h4 text-[var(--color-text-primary)]">{property.title}</p>
               <p className="mt-1 text-caption text-[var(--color-text-secondary)]">
                 {property.area}, {property.city}, {property.state}
               </p>
@@ -156,16 +172,10 @@ export function PropertyCard({ property, showEnquiry = false, variant = "grid", 
               type="button"
               onClick={() => setInquiryOpen(true)}
               aria-label={`Inquire about ${property.title}`}
-              className="inline-flex h-11 flex-1 items-center justify-center rounded-input bg-[var(--color-accent)] px-4 text-sm font-medium text-white transition hover:bg-[var(--color-accent-hover)]"
+              className="pointer-events-auto relative z-20 inline-flex h-10 items-center justify-center rounded-full bg-[var(--color-accent)] px-4 text-small font-semibold text-white transition hover:bg-[var(--color-accent-hover)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--color-accent)]"
             >
               Enquire
             </button>
-            <Link
-              to={propertyUrl}
-              className="inline-flex h-11 items-center justify-center rounded-input border border-[var(--color-border)] px-4 text-sm font-medium text-[var(--color-text-primary)]"
-            >
-              View
-            </Link>
           </div>
         ) : null}
       </div>

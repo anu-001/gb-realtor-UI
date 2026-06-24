@@ -159,8 +159,8 @@ function SearchShell() {
         <QueryErrorResetBoundary>
           {({ reset }) => (
             <ErrorBoundary
-              title="Couldn’t load listings"
-              message="Try again in a moment."
+              title="We couldn’t load listings"
+              message="Please try again in a moment."
               onRetry={reset}
             >
               <SearchResultsPanel />

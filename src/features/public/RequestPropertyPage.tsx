@@ -1,5 +1,5 @@
 import { motion } from "framer-motion";
-import { RequestPropertyForm } from "@/components/leads/RequestPropertyForm";
+import { PublicRequestPropertyForm } from "@/components/leads/PublicRequestPropertyForm";
 import { pageTransition } from "@/utils/motion";
 
 export default function RequestPropertyPage() {
@@ -10,19 +10,14 @@ export default function RequestPropertyPage() {
           Request a Property
         </p>
         <h1 className="font-display text-h1 text-[var(--color-text-primary)]">
-          Tell us what you’re after.
+          Tell us what you’re looking for.
         </h1>
         <p className="max-w-xl text-body-lg text-[var(--color-text-secondary)]">
-          Share the brief. We’ll handle the search.
+          Share the brief in your own words. We’ll follow up with a sharper match.
         </p>
       </div>
 
-      <RequestPropertyForm
-        compact
-        headline="Request a Property"
-        subheading="A clear brief gets a sharper match."
-        submitLabel="Send Request"
-      />
+      <PublicRequestPropertyForm />
     </motion.div>
   );
 }

@@ -3,6 +3,19 @@ import type { components } from "./api.generated";
 export type LeadNote = components["schemas"]["LeadNoteResponseDto"];
 
 export type CreateLeadPayload = components["schemas"]["CreateLeadDto"];
+export interface PublicPropertyRequestPayload {
+  fullName: string;
+  phoneNumber: string;
+  email?: string;
+  preferredLocation?: string;
+  budgetKobo?: string | number;
+  propertyInterest?: string;
+  inquiryNotes?: string;
+  message?: string;
+  source?: string;
+  website?: string;
+}
+
 export interface PublicLeadPayload {
   propertyId?: string;
   fullName: string;

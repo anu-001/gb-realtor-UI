@@ -86,7 +86,7 @@ export function LoginPage() {
       variants={slideUp}
       initial="initial"
       animate="animate"
-      className="w-full rounded-modal border border-[var(--color-border)] bg-[var(--color-surface)] p-4 shadow-modal md:p-8"
+      className="w-full rounded-modal border border-[var(--color-border)] bg-[linear-gradient(180deg,color-mix(in_srgb,var(--color-surface)_97%,white)_0%,var(--color-surface)_100%)] p-4 shadow-modal md:p-8"
     >
       <div className="mb-8">
         <Typography as="h1" variant="h2" className="text-[var(--color-text-primary)]">
@@ -112,7 +112,7 @@ export function LoginPage() {
             id="email"
             type="email"
             autoComplete="email"
-            className="h-12 w-full rounded-input border border-[var(--color-border)] bg-white px-4 text-body outline-none transition focus-visible:border-[var(--color-accent)]"
+            className="ui-field"
             {...register("email")}
           />
           {errors.email?.message ? <p className="mt-2 text-caption text-[var(--color-danger)]">{errors.email.message}</p> : null}
@@ -127,7 +127,7 @@ export function LoginPage() {
               id="password"
               type={showPassword ? "text" : "password"}
               autoComplete="current-password"
-              className="h-12 w-full rounded-input border border-[var(--color-border)] bg-white px-4 pr-12 text-body outline-none transition focus-visible:border-[var(--color-accent)]"
+              className="ui-field pr-12"
               {...register("password")}
             />
             <button
@@ -147,7 +147,7 @@ export function LoginPage() {
         <button
           type="submit"
           disabled={isSubmitting}
-          className="inline-flex h-12 w-full items-center justify-center rounded-input bg-[var(--color-accent)] px-4 font-body text-body font-medium text-white transition hover:bg-[var(--color-accent-hover)] disabled:cursor-not-allowed disabled:opacity-70"
+          className="ui-button-primary w-full"
         >
           {isSubmitting ? <LoaderCircle className="h-4 w-4 animate-spin" aria-hidden="true" /> : "Sign in"}
         </button>

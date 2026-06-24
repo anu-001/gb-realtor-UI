@@ -240,13 +240,13 @@ export function RequestPropertyForm({
   return (
     <section
       className={cn(
-        "overflow-hidden rounded-modal border border-[var(--color-border)] bg-[var(--color-surface)] shadow-modal",
+        "ui-surface-strong overflow-hidden",
         className,
       )}
     >
       {!compact ? (
-        <div className="border-b border-[var(--color-border)] bg-[linear-gradient(180deg,color-mix(in_srgb,var(--color-surface)_96%,white)_0%,var(--color-surface)_100%)] p-6 md:p-8">
-          <p className="text-small font-semibold uppercase tracking-[0.2em] text-[var(--color-text-secondary)]">Private request</p>
+        <div className="border-b border-[var(--color-border)] bg-[linear-gradient(180deg,color-mix(in_srgb,var(--color-surface)_97%,white)_0%,var(--color-surface)_100%)] p-6 md:p-8">
+          <p className="text-small font-semibold uppercase tracking-[0.2em] text-[var(--color-text-secondary)]">Request details</p>
           <h2 className="mt-5 font-display text-h2 text-[var(--color-text-primary)]">{headline}</h2>
           <p className="mt-3 max-w-2xl text-body-lg text-[var(--color-text-secondary)]">{subheading}</p>
         </div>
@@ -255,7 +255,7 @@ export function RequestPropertyForm({
       <div className={cn("p-6 md:p-8", compact && "md:p-10")}>
         {compact ? (
           <div className="mb-6 flex flex-col gap-4 border-b border-[var(--color-border)] pb-6 sm:flex-row sm:items-center sm:justify-between">
-            <p className="text-small font-semibold uppercase tracking-[0.2em] text-[var(--color-text-secondary)]">Private request</p>
+            <p className="text-small font-semibold uppercase tracking-[0.2em] text-[var(--color-text-secondary)]">Request details</p>
 
             {hasContext ? (
               <div className="max-w-sm rounded-[24px] border border-[var(--color-border)] bg-[var(--color-surface)] px-4 py-3">
@@ -342,7 +342,7 @@ export function RequestPropertyForm({
                       id={fieldIds.fullName}
                       autoComplete="name"
                       placeholder="Jane Doe"
-                      className="h-12 w-full rounded-input border border-[var(--color-border)] bg-[var(--color-surface)] px-4 text-body text-[var(--color-text-primary)] outline-none transition focus-visible:border-[var(--color-accent)]"
+                      className="ui-field"
                       aria-invalid={Boolean(errors.fullName)}
                       aria-describedby={errors.fullName ? `${fieldIds.fullName}-error` : undefined}
                       {...register("fullName")}
@@ -359,7 +359,7 @@ export function RequestPropertyForm({
                       autoComplete="tel"
                       inputMode="tel"
                       placeholder="+2348012345678"
-                      className="h-12 w-full rounded-input border border-[var(--color-border)] bg-[var(--color-surface)] px-4 text-body text-[var(--color-text-primary)] outline-none transition focus-visible:border-[var(--color-accent)]"
+                      className="ui-field"
                       aria-invalid={Boolean(errors.phoneNumber)}
                       aria-describedby={errors.phoneNumber ? `${fieldIds.phoneNumber}-error` : undefined}
                       {...register("phoneNumber")}
@@ -374,7 +374,7 @@ export function RequestPropertyForm({
                       type="email"
                       autoComplete="email"
                       placeholder="jane@example.com"
-                      className="h-12 w-full rounded-input border border-[var(--color-border)] bg-[var(--color-surface)] px-4 text-body text-[var(--color-text-primary)] outline-none transition focus-visible:border-[var(--color-accent)]"
+                      className="ui-field"
                       aria-invalid={Boolean(errors.email)}
                       aria-describedby={errors.email ? `${fieldIds.email}-error` : undefined}
                       {...register("email")}
@@ -445,7 +445,7 @@ export function RequestPropertyForm({
                       id={fieldIds.propertyInterest}
                       autoComplete="off"
                       placeholder="3-bedroom apartment"
-                      className="h-12 w-full rounded-input border border-[var(--color-border)] bg-[var(--color-surface)] px-4 text-body text-[var(--color-text-primary)] outline-none transition focus-visible:border-[var(--color-accent)]"
+                      className="ui-field"
                       aria-invalid={Boolean(errors.propertyInterest)}
                       aria-describedby={errors.propertyInterest ? `${fieldIds.propertyInterest}-error` : undefined}
                       {...register("propertyInterest")}
@@ -476,7 +476,7 @@ export function RequestPropertyForm({
                   <button
                     type="submit"
                     disabled={isSubmitting}
-                    className="inline-flex h-12 items-center justify-center gap-2 rounded-full bg-[var(--color-accent)] px-5 text-sm font-medium text-white transition hover:bg-[var(--color-accent-hover)] disabled:cursor-not-allowed disabled:opacity-60"
+                    className="ui-button-primary"
                   >
                     {isSubmitting ? (
                       <>

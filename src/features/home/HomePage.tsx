@@ -246,7 +246,7 @@ export default function HomePage() {
                   <select
                     value={filters.beds}
                     onChange={(event) => updateFilters({ beds: event.target.value as HeroFilters["beds"] })}
-                    className="h-12 w-full rounded-input border border-[var(--color-border)] bg-[var(--color-surface)] px-4 text-sm outline-none"
+                    className="ui-field h-12"
                   >
                     <option value="">Any</option>
                     {[1, 2, 3, 4, 5].map((count) => (
@@ -306,9 +306,9 @@ export default function HomePage() {
         <div className="flex flex-col gap-3 md:flex-row md:items-end md:justify-between">
           <div className="max-w-2xl">
             <p className="text-small font-semibold uppercase tracking-[0.2em] text-[var(--color-text-secondary)]">
-              Live listings
+              Available now
             </p>
-            <h2 className="mt-2 font-display text-h2 text-[var(--color-text-primary)]">Live listings</h2>
+            <h2 className="mt-2 font-display text-h2 text-[var(--color-text-primary)]">Latest homes</h2>
           </div>
           <div className="rounded-full border border-[var(--color-border)] bg-[var(--color-surface)] px-4 py-2 text-sm font-medium text-[var(--color-text-secondary)] shadow-card">
             <span aria-live="polite">{totalListings} properties found</span>
@@ -325,12 +325,12 @@ export default function HomePage() {
           <EmptyState
             icon={Filter}
             heading="Couldn’t load listings"
-            message="Try again in a moment or open search."
+            message="Please try again or open search."
             action={
               <button
                 type="button"
                 onClick={() => void listingsQuery.refetch()}
-                className="inline-flex h-11 items-center justify-center rounded-input bg-[var(--color-accent)] px-4 text-sm font-medium text-white transition hover:bg-[var(--color-accent-hover)]"
+                className="ui-button-primary"
               >
                 Retry
               </button>
@@ -345,16 +345,16 @@ export default function HomePage() {
             }
           />
       ) : properties.length === 0 ? (
-        <EmptyState
-          heading="No matches yet"
-          message="Broaden the filters or request a property."
-          action={
-            <button
-              type="button"
-              onClick={resetFilters}
-              className="inline-flex h-11 items-center justify-center rounded-input bg-[var(--color-accent)] px-4 text-sm font-medium text-white transition hover:bg-[var(--color-accent-hover)]"
-            >
-              Clear filters
+          <EmptyState
+            heading="No matches yet"
+            message="Broaden the filters or request a property."
+            action={
+              <button
+                type="button"
+                onClick={resetFilters}
+                className="ui-button-primary"
+              >
+                Clear filters
               </button>
             }
             secondaryAction={

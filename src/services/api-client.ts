@@ -41,6 +41,7 @@ const publicRouteMatchers: RegExp[] = [
   /^\/api\/v1\/public\/properties\/discovery(?:\/?)?$/,
   /^\/api\/v1\/public\/properties\/[^/?#]+(?:\/?)?$/,
   /^\/api\/v1\/public\/leads(?:\/?)?$/,
+  /^\/api\/v1\/public\/leads\/request(?:\/?)?$/,
   /^\/api\/v1\/auth\/login(?:\/?)?$/,
   /^\/api\/v1\/auth\/refresh(?:\/?)?$/,
 ];
@@ -95,7 +96,7 @@ function notifyRateLimit(): void {
 }
 
 function notifyServerError(): void {
-  config.toast?.error("Something went wrong, please try again.");
+  config.toast?.error("We hit a problem. Please try again.");
 }
 
 function handleResponseSideEffects(response: Response): void {

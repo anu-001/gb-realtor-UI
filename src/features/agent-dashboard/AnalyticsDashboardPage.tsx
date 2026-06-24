@@ -74,7 +74,7 @@ export default function AnalyticsDashboardPage() {
         action={
           <Link
             to="/login"
-            className="inline-flex h-11 items-center justify-center rounded-input bg-[var(--color-accent)] px-4 text-sm font-medium text-white"
+            className="ui-button-primary"
           >
             Go to login
           </Link>
@@ -106,7 +106,17 @@ export default function AnalyticsDashboardPage() {
   }
 
   if (!summary) {
-    return <EmptyState heading="Analytics unavailable" message="The dashboard analytics could not be loaded right now." action={<button type="button" onClick={() => void query.refetch()} className="inline-flex h-11 items-center justify-center rounded-input bg-[var(--color-accent)] px-4 text-sm font-medium text-white">Retry</button>} />;
+    return (
+      <EmptyState
+        heading="Analytics unavailable"
+        message="Please try again in a moment."
+        action={
+          <button type="button" onClick={() => void query.refetch()} className="ui-button-primary">
+            Retry
+          </button>
+        }
+      />
+    );
   }
 
   const stats = [
