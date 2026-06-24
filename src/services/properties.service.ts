@@ -1,5 +1,14 @@
 import type { components } from "../types/api.generated";
-import type { Property, PropertyFilters, PropertyImage, CreatePropertyPayload, UpdatePropertyPayload } from "../types/property";
+import type {
+  Property,
+  PropertyFilters,
+  PropertyImage,
+  CreatePropertyPayload,
+  UpdatePropertyPayload,
+  CreatePropertyWithImagesPayload,
+  CreatePropertyWithImagesResponse,
+  PropertyUploadSlot,
+} from "../types/property";
 import { privateClient, publicClient } from "./api-client";
 import { unwrapApiResponse } from "./_request";
 
@@ -89,6 +98,72 @@ export async function listProperties(
 
 export async function createProperty(payload: CreatePropertyPayload): Promise<Property> {
   return (await unwrapApiResponse(privateClient.POST("/api/v1/properties", { body: payload }))) as unknown as Property;
+}
+
+function isRecord(value: unknown): value is Record<string, unknown> {
+  return typeof value === "object" && value !== null;
+}
+
+function extractPropertyFromCreateResponse(response: CreatePropertyWithImagesResponse | Property | null | undefined): Property {
+  if (!response) {
+    return {} as Property;
+  }
+
+  const record = response as Record<string, unknown>;
+
+  if (isRecord(record)) {
+    if (typeof record.id === "string") {
+      return record as unknown as Property;
+    }
+
+    const data = record.data;
+    if (isRecord(data) && typeof data.id === "string") {
+      return data as unknown as Property;
+    }
+
+    const property = record.property;
+    if (isRecord(property) && typeof property.id === "string") {
+      return property as unknown as Property;
+    }
+  }
+
+  return {} as Property;
+}
+
+function extractUploadSlots(response: CreatePropertyWithImagesResponse | Property | null | undefined): PropertyUploadSlot[] {
+  if (!isRecord(response)) {
+    return [];
+  }
+
+  const record = response as Record<string, unknown>;
+
+  if (Array.isArray(record.uploadSlots)) {
+    return record.uploadSlots as unknown as PropertyUploadSlot[];
+  }
+
+  if (Array.isArray(record.slots)) {
+    return record.slots as unknown as PropertyUploadSlot[];
+  }
+
+  if (Array.isArray(record.uploads)) {
+    return record.uploads as unknown as PropertyUploadSlot[];
+  }
+
+  return [];
+}
+
+export async function createPropertyWithImages(
+  payload: CreatePropertyWithImagesPayload,
+): Promise<{ property: Property; uploadSlots: PropertyUploadSlot[]; raw: CreatePropertyWithImagesResponse }> {
+  const response = (await unwrapApiResponse(
+    privateClient.POST("/api/v1/properties/with-images" as never, { body: payload as never } as never),
+  )) as CreatePropertyWithImagesResponse;
+
+  return {
+    property: extractPropertyFromCreateResponse(response),
+    uploadSlots: extractUploadSlots(response),
+    raw: response,
+  };
 }
 
 export async function getPropertyById(id: string): Promise<Property> {

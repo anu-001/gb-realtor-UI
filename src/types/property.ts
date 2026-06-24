@@ -6,6 +6,39 @@ export type PropertyImage = components["schemas"]["PropertyImageResponseDto"];
 export type CreatePropertyPayload = components["schemas"]["CreatePropertyDto"];
 export type UpdatePropertyPayload = components["schemas"]["UpdatePropertyDto"];
 
+export interface PropertyImageMetadataInput {
+  filename: string;
+  mimeType: string;
+  sizeBytes: number;
+  altText?: string;
+  isPrimary?: boolean;
+}
+
+export interface CreatePropertyWithImagesPayload extends CreatePropertyPayload {
+  images: PropertyImageMetadataInput[];
+}
+
+export interface PropertyUploadSlot {
+  uploadUrl: string;
+  publicUrl?: string;
+  assetId?: string;
+  imageId?: string;
+  filename?: string;
+  mimeType?: string;
+  sizeBytes?: number;
+  altText?: string | null;
+  isPrimary?: boolean;
+}
+
+export interface CreatePropertyWithImagesResponse {
+  property?: Property | null;
+  data?: Property | null;
+  uploadSlots?: PropertyUploadSlot[];
+  slots?: PropertyUploadSlot[];
+  uploads?: PropertyUploadSlot[];
+  images?: PropertyUploadSlot[];
+}
+
 export type Property = Omit<
   components["schemas"]["PropertyResponseDto"],
   "bedrooms" | "bathrooms" | "reviewedAt" | "publishedAt"
