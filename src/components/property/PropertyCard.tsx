@@ -79,7 +79,7 @@ export function PropertyCard({ property, showEnquiry = false, variant = "grid", 
       whileHover={{ y: -2 }}
       transition={{ duration: 0.2 }}
       className={cn(
-        "relative isolate overflow-hidden rounded-card border border-[var(--color-border)] bg-[linear-gradient(180deg,color-mix(in_srgb,var(--color-surface)_97%,white)_0%,var(--color-surface)_100%)] shadow-card transition-shadow hover:shadow-card-hover",
+        "group relative isolate cursor-pointer overflow-hidden rounded-card border border-[var(--color-border)] bg-[linear-gradient(180deg,color-mix(in_srgb,var(--color-surface)_97%,white)_0%,var(--color-surface)_100%)] shadow-card transition-shadow hover:shadow-card-hover",
         variant === "list" && "flex flex-col md:flex-row",
         className,
       )}
@@ -136,7 +136,7 @@ export function PropertyCard({ property, showEnquiry = false, variant = "grid", 
           </div>
         </div>
       </div>
-      <div className="relative z-10 flex min-w-0 flex-1 flex-col gap-4 p-4">
+      <div className="relative z-10 flex min-w-0 flex-1 flex-col gap-4 p-4 pointer-events-none">
         <div>
           <div className="flex items-start justify-between gap-3">
             <div className="min-w-0">
@@ -172,7 +172,7 @@ export function PropertyCard({ property, showEnquiry = false, variant = "grid", 
               type="button"
               onClick={() => setInquiryOpen(true)}
               aria-label={`Inquire about ${property.title}`}
-              className="ui-button-primary relative z-20 flex-1"
+              className="pointer-events-auto relative z-20 inline-flex h-10 items-center justify-center rounded-full bg-[var(--color-accent)] px-4 text-small font-semibold text-white transition hover:bg-[var(--color-accent-hover)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--color-accent)]"
             >
               Enquire
             </button>
