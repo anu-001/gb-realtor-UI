@@ -11,7 +11,7 @@ export function ErrorState({ message, onRetry }: ErrorStateProps) {
       <div className="flex h-16 w-16 items-center justify-center rounded-full bg-[color-mix(in_srgb,var(--color-danger)_10%,var(--color-surface))] text-[var(--color-danger)]">
         <AlertTriangle className="h-8 w-8" aria-hidden="true" />
       </div>
-      <h2 className="mt-4 font-display text-h4 text-[var(--color-text-primary)]">Something went wrong</h2>
+      <h2 className="mt-4 font-display text-h4 text-[var(--color-text-primary)]">We couldn’t load this section</h2>
       <p className="mt-2 max-w-md text-body text-[var(--color-text-secondary)]">{message}</p>
       {onRetry ? (
         <button

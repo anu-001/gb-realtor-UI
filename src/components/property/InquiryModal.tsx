@@ -6,6 +6,7 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import { ArrowRight, X } from "lucide-react";
 import { RichTextEditorField } from "@/components/ui/RichTextEditorField";
 import { createPublicLead } from "@/services/leads.service";
+import { getApiErrorMessage, parseApiError } from "@/utils/api-error";
 import { htmlTextLength } from "@/utils/html-text-length";
 import { cn } from "@/utils/cn";
 
@@ -150,11 +151,8 @@ export function InquiryModal({
                   });
                   setSubmittedName(values.fullName);
                 } catch (error) {
-                  const statusCode =
-                    typeof error === "object" && error && "statusCode" in error
-                      ? Number((error as { statusCode?: number }).statusCode)
-                      : undefined;
-                  setSubmitError(statusCode === 429 ? "Too many requests, please try again later" : "Something went wrong, please try again");
+                  const parsed = parseApiError(error);
+                  setSubmitError(getApiErrorMessage(parsed));
                 }
               })}
             >

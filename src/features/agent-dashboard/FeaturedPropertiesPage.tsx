@@ -64,12 +64,12 @@ export default function FeaturedPropertiesPage() {
     return (
       <EmptyState
         heading="Featured properties unavailable"
-        message="Try again in a moment."
+        message="Please try again in a moment."
         action={
           <button
             type="button"
             onClick={() => void featuredQuery.refetch()}
-            className="inline-flex h-11 items-center justify-center rounded-input bg-[var(--color-accent)] px-4 text-sm font-medium text-white"
+            className="ui-button-primary"
           >
             Retry
           </button>
@@ -102,18 +102,18 @@ export default function FeaturedPropertiesPage() {
       <StatCard label="Featured listings" value={String(featured.length)} icon={Star} description="Properties on the homepage." />
 
       {featured.length === 0 ? (
-        <EmptyState
-          icon={Star}
-          heading="No featured listings"
-          message="Promote a property from Listings."
-          action={
-            <Link
-              to="/agent/listings"
-              className="inline-flex h-11 items-center justify-center rounded-input bg-[var(--color-accent)] px-4 text-sm font-medium text-white"
-            >
-              Go to properties
-            </Link>
-          }
+          <EmptyState
+            icon={Star}
+            heading="No featured listings"
+            message="Promote a property from Listings."
+            action={
+              <Link
+                to="/agent/listings"
+                className="ui-button-primary"
+              >
+                Go to properties
+              </Link>
+            }
         />
       ) : (
         <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-3">

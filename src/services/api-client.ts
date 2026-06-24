@@ -96,7 +96,7 @@ function notifyRateLimit(): void {
 }
 
 function notifyServerError(): void {
-  config.toast?.error("Something went wrong, please try again.");
+  config.toast?.error("We hit a problem. Please try again.");
 }
 
 function handleResponseSideEffects(response: Response): void {

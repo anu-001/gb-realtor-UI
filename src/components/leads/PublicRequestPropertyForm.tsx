@@ -168,7 +168,7 @@ export function PublicRequestPropertyForm({
   return (
     <section className={cn("ui-surface-strong overflow-hidden", className)}>
       <div className="border-b border-[var(--color-border)] bg-[linear-gradient(180deg,color-mix(in_srgb,var(--color-surface)_97%,white)_0%,var(--color-surface)_100%)] p-6 md:p-8">
-        <p className="text-small font-semibold uppercase tracking-[0.2em] text-[var(--color-text-secondary)]">Private request</p>
+        <p className="text-small font-semibold uppercase tracking-[0.2em] text-[var(--color-text-secondary)]">Request details</p>
         <h2 className="mt-5 font-display text-h2 text-[var(--color-text-primary)]">{headline}</h2>
         <p className="mt-3 max-w-2xl text-body-lg text-[var(--color-text-secondary)]">{subheading}</p>
       </div>

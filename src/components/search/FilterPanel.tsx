@@ -1,5 +1,4 @@
 import { useMemo } from "react";
-import { ChevronDown } from "lucide-react";
 import { RangeSlider } from "@/components/forms/RangeSlider";
 import { PropertyType } from "@/constants/api-enums";
 
@@ -104,10 +103,6 @@ export function FilterPanel({ value, onChange, onClear }: FilterPanelProps) {
         formatValue={(value) => new Intl.NumberFormat("en-NG", { style: "currency", currency: "NGN", maximumFractionDigits: 0 }).format(value)}
       />
 
-      <button type="button" className="inline-flex items-center gap-2 text-sm font-medium text-[var(--color-accent)] transition hover:text-[var(--color-accent-hover)]">
-        <ChevronDown className="h-4 w-4" />
-        More filters
-      </button>
     </aside>
   );
 }

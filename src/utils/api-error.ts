@@ -12,12 +12,12 @@ type BackendErrorLike = {
 export type FieldErrorMap = Record<string, { type: "server"; message: string }>;
 
 const fallbackMessages: Record<number, string> = {
-  400: "The request could not be processed.",
-  401: "Session expired, please log in.",
-  403: "You do not have permission to do this.",
-  404: "Not found.",
-  429: "Too many requests, please wait.",
-  500: "Something went wrong, please try again.",
+  400: "Check the highlighted fields and try again.",
+  401: "Your session expired. Please sign in again.",
+  403: "You do not have access to this action.",
+  404: "We couldn’t find that item.",
+  429: "Too many requests. Please wait and try again.",
+  500: "We hit a problem. Please try again.",
 };
 
 function isRecord(value: unknown): value is Record<string, unknown> {
@@ -72,6 +72,10 @@ export function parseApiError(error: unknown, response?: Response): ApiError {
 }
 
 export function getApiErrorMessage(error: unknown, response?: Response): string {
+  if (isNetworkError(error)) {
+    return "We couldn’t connect. Check your connection and try again.";
+  }
+
   const parsed = parseApiError(error, response);
 
   if (parsed.statusCode === 400 || parsed.statusCode === 422) {
@@ -82,6 +86,8 @@ export function getApiErrorMessage(error: unknown, response?: Response): string 
     if (parsed.errors?.length) {
       return parsed.errors[0]?.message ?? fallbackMessages[parsed.statusCode] ?? "The request could not be processed.";
     }
+
+    return fallbackMessages[parsed.statusCode] ?? "Check the highlighted fields and try again.";
   }
 
   if (parsed.statusCode in fallbackMessages) {
@@ -125,4 +131,24 @@ export function isNetworkError(error: unknown): boolean {
   }
 
   return error.name === "TypeError" && typeof error.message === "string" && /fetch/i.test(error.message);
+}
+
+export function getValidationHint(statusCode?: number): string {
+  switch (statusCode) {
+    case 400:
+    case 422:
+      return "Check the highlighted fields and try again.";
+    case 401:
+      return "Please sign in again.";
+    case 403:
+      return "You don’t have access to this action.";
+    case 404:
+      return "The item you’re looking for no longer exists.";
+    case 429:
+      return "Please wait a moment before trying again.";
+    case 500:
+      return "Please try again in a moment.";
+    default:
+      return "Please try again.";
+  }
 }

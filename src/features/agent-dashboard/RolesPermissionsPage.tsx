@@ -32,12 +32,12 @@ export default function RolesPermissionsPage() {
     return (
       <EmptyState
         heading="Roles unavailable"
-        message="Try again in a moment."
+        message="Please try again in a moment."
         action={
           <button
             type="button"
             onClick={() => void rolesQuery.refetch()}
-            className="inline-flex h-11 items-center justify-center rounded-input bg-[var(--color-accent)] px-4 text-sm font-medium text-white"
+            className="ui-button-primary"
           >
             Retry
           </button>
