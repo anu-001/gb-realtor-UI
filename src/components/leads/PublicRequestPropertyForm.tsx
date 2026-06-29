@@ -261,11 +261,11 @@ export function PublicRequestPropertyForm({
                 </FormField>
 
                 <FormField label="Phone number" htmlFor={fieldIds.phoneNumber} error={errors.phoneNumber?.message}>
-                  <div className="flex min-h-12 overflow-hidden rounded-input border border-[var(--color-border)] bg-[var(--color-surface)] transition focus-within:border-[var(--color-accent)] focus-within:ring-2 focus-within:ring-[var(--color-accent)]">
+                  <div className="flex min-h-12 w-full items-center overflow-hidden rounded-input border border-[var(--color-border)] bg-[var(--color-surface)] transition focus-within:border-[var(--color-accent)] focus-within:ring-2 focus-within:ring-[var(--color-accent)]">
                     <label htmlFor={fieldIds.countryCode} className="sr-only">Country code</label>
                     <select
                       id={fieldIds.countryCode}
-                      className="min-h-12 border-r border-[var(--color-border)] bg-transparent px-3 text-sm font-medium text-[var(--color-text-primary)] outline-none"
+                      className="min-h-12 flex-shrink-0 border-r border-[var(--color-border)] bg-transparent px-2 text-sm font-medium text-[var(--color-text-primary)] outline-none"
                       {...register("countryCode")}
                     >
                       {countryCodes.map((country) => (
@@ -279,7 +279,7 @@ export function PublicRequestPropertyForm({
                       autoComplete="tel"
                       inputMode="tel"
                       placeholder="801 234 5678"
-                      className="min-h-12 w-full bg-transparent px-4 text-body text-[var(--color-text-primary)] outline-none placeholder:text-gray-500"
+                      className="min-h-12 min-w-0 flex-1 bg-transparent px-4 text-body text-[var(--color-text-primary)] outline-none placeholder:text-gray-500"
                       aria-invalid={Boolean(errors.phoneNumber)}
                       aria-describedby={errors.phoneNumber ? `${fieldIds.phoneNumber}-error` : undefined}
                       {...register("phoneNumber")}
@@ -289,7 +289,8 @@ export function PublicRequestPropertyForm({
               </div>
 
               <div className="grid gap-4 md:grid-cols-2">
-                <FormField label="Email address" htmlFor={fieldIds.email} error={errors.email?.message}>
+                <div className="md:col-span-2">
+                  <FormField label="Email address" htmlFor={fieldIds.email} error={errors.email?.message}>
                   <input
                     id={fieldIds.email}
                     type="email"
@@ -300,7 +301,8 @@ export function PublicRequestPropertyForm({
                     aria-describedby={errors.email ? `${fieldIds.email}-error` : undefined}
                     {...register("email")}
                   />
-                </FormField>
+                  </FormField>
+                </div>
 
                 <FormField label="Preferred location" htmlFor={fieldIds.preferredLocation} error={errors.preferredLocation?.message}>
                   <input

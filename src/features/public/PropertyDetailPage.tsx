@@ -13,8 +13,22 @@ import { htmlTextLength } from "@/utils/html-text-length";
 import { formatCompactNaira, formatPropertyStatus } from "@/utils/formatters";
 const COLLAPSED_DESCRIPTION_HEIGHT = 240;
 
-function PropertyDescription({ description }: { description?: string | null }) {
-  const content = description ?? "";
+function escapeRegExp(value: string): string {
+  return value.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
+}
+
+function stripLeadingTitleFromDescription(description: string, title: string): string {
+  const escapedTitle = escapeRegExp(title.trim());
+  if (!escapedTitle) return description;
+
+  return description
+    .replace(new RegExp(`^\\s*<h[1-3][^>]*>\\s*${escapedTitle}\\s*</h[1-3]>\\s*`, "i"), "")
+    .replace(new RegExp(`^\\s*<p[^>]*>\\s*<(strong|b)[^>]*>\\s*${escapedTitle}\\s*</\\1>\\s*</p>\\s*`, "i"), "")
+    .replace(new RegExp(`^\\s*<(strong|b)[^>]*>\\s*${escapedTitle}\\s*</\\1>\\s*`, "i"), "");
+}
+
+function PropertyDescription({ description, title }: { description?: string | null; title: string }) {
+  const content = stripLeadingTitleFromDescription(description ?? "", title);
   const [expanded, setExpanded] = useState(false);
   const [contentHeight, setContentHeight] = useState(COLLAPSED_DESCRIPTION_HEIGHT);
   const contentRef = useRef<HTMLDivElement | null>(null);
@@ -170,7 +184,7 @@ export default function PropertyDetailPage() {
           <p className="mt-2 text-body-lg text-[var(--color-text-secondary)]">
             {property.area}, {property.city}, {property.state}
           </p>
-          <PropertyDescription description={property.description} />
+          <PropertyDescription description={property.description} title={property.title} />
         </div>
       </div>
       <div ref={formRef} className="space-y-4 lg:sticky lg:top-24 lg:self-start">

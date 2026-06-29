@@ -372,11 +372,11 @@ export function RequestPropertyForm({
                   </FormField>
 
                   <FormField label="Phone number" htmlFor={fieldIds.phoneNumber} error={errors.phoneNumber?.message}>
-                    <div className="flex min-h-12 overflow-hidden rounded-input border border-[var(--color-border)] bg-[var(--color-surface)] transition focus-within:border-[var(--color-accent)] focus-within:ring-2 focus-within:ring-[var(--color-accent)]">
+                    <div className="flex min-h-12 w-full items-center overflow-hidden rounded-input border border-[var(--color-border)] bg-[var(--color-surface)] transition focus-within:border-[var(--color-accent)] focus-within:ring-2 focus-within:ring-[var(--color-accent)]">
                       <label htmlFor={fieldIds.countryCode} className="sr-only">Country code</label>
                       <select
                         id={fieldIds.countryCode}
-                        className="min-h-12 border-r border-[var(--color-border)] bg-transparent px-3 text-sm font-medium text-[var(--color-text-primary)] outline-none"
+                        className="min-h-12 flex-shrink-0 border-r border-[var(--color-border)] bg-transparent px-2 text-sm font-medium text-[var(--color-text-primary)] outline-none"
                         {...register("countryCode")}
                       >
                         {countryCodes.map((country) => (
@@ -390,7 +390,7 @@ export function RequestPropertyForm({
                         autoComplete="tel"
                         inputMode="tel"
                         placeholder="801 234 5678"
-                        className="min-h-12 w-full bg-transparent px-4 text-body text-[var(--color-text-primary)] outline-none placeholder:text-gray-500"
+                        className="min-h-12 min-w-0 flex-1 bg-transparent px-4 text-body text-[var(--color-text-primary)] outline-none placeholder:text-gray-500"
                         aria-invalid={Boolean(errors.phoneNumber)}
                         aria-describedby={errors.phoneNumber ? `${fieldIds.phoneNumber}-error` : undefined}
                         {...register("phoneNumber")}
@@ -400,7 +400,8 @@ export function RequestPropertyForm({
                 </div>
 
                 <div className="grid gap-4 md:grid-cols-2">
-                  <FormField label="Email address" htmlFor={fieldIds.email} error={errors.email?.message}>
+                  <div className="md:col-span-2">
+                    <FormField label="Email address" htmlFor={fieldIds.email} error={errors.email?.message}>
                     <input
                       id={fieldIds.email}
                       type="email"
@@ -411,33 +412,36 @@ export function RequestPropertyForm({
                       aria-describedby={errors.email ? `${fieldIds.email}-error` : undefined}
                       {...register("email")}
                     />
-                  </FormField>
+                    </FormField>
+                  </div>
 
                   {!isPropertySpecific ? (
-                    <FormField
-                      label="Preferred location"
-                      htmlFor={fieldIds.preferredLocation}
-                      error={errors.preferredLocation?.message}
-                    >
-                      <div className="flex h-12 items-center gap-2 rounded-input border border-[var(--color-border)] bg-[var(--color-surface)] px-4 transition focus-within:border-[var(--color-accent)] focus-within:ring-2 focus-within:ring-[var(--color-accent)]">
-                        <MapPin className="h-4 w-4 text-[var(--color-text-secondary)]" />
-                        <input
-                          id={fieldIds.preferredLocation}
-                          list={`${fieldIds.preferredLocation}-cities`}
-                          autoComplete="off"
-                          className="w-full bg-transparent text-body text-[var(--color-text-primary)] outline-none placeholder:text-gray-500"
-                          placeholder="Lagos"
-                          aria-invalid={Boolean(errors.preferredLocation)}
-                          aria-describedby={errors.preferredLocation ? `${fieldIds.preferredLocation}-error` : undefined}
-                          {...register("preferredLocation")}
-                        />
-                        <datalist id={`${fieldIds.preferredLocation}-cities`}>
-                          {citySuggestions.map((city) => (
-                            <option key={city} value={city} />
-                          ))}
-                        </datalist>
-                      </div>
-                    </FormField>
+                    <div className="md:col-span-2">
+                      <FormField
+                        label="Preferred location"
+                        htmlFor={fieldIds.preferredLocation}
+                        error={errors.preferredLocation?.message}
+                      >
+                        <div className="flex h-12 items-center gap-2 rounded-input border border-[var(--color-border)] bg-[var(--color-surface)] px-4 transition focus-within:border-[var(--color-accent)] focus-within:ring-2 focus-within:ring-[var(--color-accent)]">
+                          <MapPin className="h-4 w-4 text-[var(--color-text-secondary)]" />
+                          <input
+                            id={fieldIds.preferredLocation}
+                            list={`${fieldIds.preferredLocation}-cities`}
+                            autoComplete="off"
+                            className="w-full bg-transparent text-body text-[var(--color-text-primary)] outline-none placeholder:text-gray-500"
+                            placeholder="Lagos"
+                            aria-invalid={Boolean(errors.preferredLocation)}
+                            aria-describedby={errors.preferredLocation ? `${fieldIds.preferredLocation}-error` : undefined}
+                            {...register("preferredLocation")}
+                          />
+                          <datalist id={`${fieldIds.preferredLocation}-cities`}>
+                            {citySuggestions.map((city) => (
+                              <option key={city} value={city} />
+                            ))}
+                          </datalist>
+                        </div>
+                      </FormField>
+                    </div>
                   ) : null}
                 </div>
 
