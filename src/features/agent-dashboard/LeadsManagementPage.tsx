@@ -1,11 +1,13 @@
 import { useEffect, useState } from "react";
-import { useQuery } from "@tanstack/react-query";
+import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { Mail, Search, Phone } from "lucide-react";
-import { listLeads } from "@/services/leads.service";
+import { assignLead, listLeads } from "@/services/leads.service";
+import { listUsers } from "@/services/users.service";
 import { LeadDetailDrawer } from "./components/LeadDetailDrawer";
 import { EmptyState } from "@/components/feedback/EmptyState";
 import { SkeletonLoader } from "@/components/feedback/SkeletonLoader";
 import { StatusBadge } from "@/components/property/StatusBadge";
+import { Select } from "@/components/ui/Select";
 import { useAppSelector } from "@/store";
 import { canManageLeadActions, canViewLeads, resolveAgentRole } from "@/utils/agent-access";
 import { resolveWorkspaceRole } from "@/utils/auth-role";
@@ -28,6 +30,7 @@ function useDebouncedValue<T>(value: T, delay = 300): T {
 }
 
 export default function LeadsManagementPage() {
+  const queryClient = useQueryClient();
   const auth = useAppSelector((state) => state.auth);
   const role = resolveWorkspaceRole(auth.user, auth.accessToken) ?? resolveAgentRole(auth.user?.role ?? auth.user?.roles?.[0]?.code ?? null);
   const canView = canViewLeads(role);
@@ -49,9 +52,25 @@ export default function LeadsManagementPage() {
     placeholderData: (previous) => previous,
   });
 
+  const agentsQuery = useQuery({
+    queryKey: ["lead-assignees"],
+    queryFn: () => listUsers({ active: true, limit: 100 }),
+    staleTime: 120_000,
+    enabled: canView && canManage,
+  });
+
+  const assignMutation = useMutation({
+    mutationFn: ({ leadId, assigneeId }: { leadId: string; assigneeId: string }) =>
+      assignLead(leadId, { assigneeId }),
+    onSuccess: async () => {
+      await queryClient.invalidateQueries({ queryKey: ["agent-leads"] });
+    },
+  });
+
   const leads = leadsQuery.data?.data ?? [];
   const leadsMeta = leadsQuery.data?.meta as { total?: number } | undefined;
   const selectedLead = leads.find((lead) => lead.id === selectedLeadId) ?? null;
+  const agents = agentsQuery.data?.data ?? [];
 
   if (!canView) {
     return (
@@ -125,37 +144,76 @@ export default function LeadsManagementPage() {
             message="There are no leads matching the current filters."
           />
         ) : (
-          <div className="divide-y divide-[var(--color-border)]">
-            {leads.map((lead) => (
-              <button
-                key={lead.id}
-                type="button"
-                onClick={() => setSelectedLeadId(lead.id)}
-                className="grid w-full gap-3 px-4 py-4 text-left transition hover:bg-[var(--color-surface-raised)] md:grid-cols-[1.3fr_1fr_1fr_1fr]"
-              >
-                <div className="space-y-1">
-                  <p className="font-medium text-[var(--color-text-primary)]">{lead.fullName}</p>
-                  <div className="flex flex-wrap gap-3 text-caption text-[var(--color-text-secondary)]">
-                    <span className="inline-flex items-center gap-1">
-                      <Phone className="h-3.5 w-3.5" />
-                      {lead.phoneNumber}
-                    </span>
-                    {lead.email ? (
-                      <span className="inline-flex items-center gap-1">
-                        <Mail className="h-3.5 w-3.5" />
-                        {lead.email}
-                      </span>
-                    ) : null}
-                  </div>
-                </div>
-                <div className="text-sm text-[var(--color-text-secondary)]">{lead.propertyInterest ?? "No property interest"}</div>
-                <div className="text-sm text-[var(--color-text-secondary)]">{lead.assignee?.fullName ?? "Unassigned"}</div>
-                <div className="flex items-center justify-between gap-2">
-                  <StatusBadge status={lead.status} />
-                  <span className="text-caption text-[var(--color-text-secondary)]">{new Date(lead.createdAt).toLocaleDateString()}</span>
-                </div>
-              </button>
-            ))}
+          <div className="w-full overflow-x-auto">
+            <table className="min-w-[920px] divide-y divide-[var(--color-border)]">
+              <thead className="bg-[color-mix(in_srgb,var(--color-surface)_96%,white)]">
+                <tr className="text-left text-small uppercase tracking-[0.16em] text-[var(--color-text-secondary)]">
+                  <th scope="col" className="px-6 py-4">Lead</th>
+                  <th scope="col" className="px-6 py-4">Interest</th>
+                  <th scope="col" className="px-6 py-4">Assignee</th>
+                  <th scope="col" className="px-6 py-4">Status</th>
+                </tr>
+              </thead>
+              <tbody className="divide-y divide-[var(--color-border)]">
+                {leads.map((lead) => (
+                  <tr
+                    key={lead.id}
+                    className="align-top transition-colors duration-200 hover:bg-gray-50"
+                  >
+                    <td className="px-6 py-4">
+                      <button type="button" onClick={() => setSelectedLeadId(lead.id)} className="block max-w-sm text-left">
+                        <span className="block font-medium text-[var(--color-text-primary)]">{lead.fullName}</span>
+                        <span className="mt-1 flex flex-wrap gap-3 text-caption text-[var(--color-text-secondary)]">
+                          <span className="inline-flex items-center gap-1">
+                            <Phone className="h-3.5 w-3.5" />
+                            {lead.phoneNumber || "No phone"}
+                          </span>
+                          {lead.email ? (
+                            <span className="inline-flex min-w-0 max-w-[14rem] items-center gap-1 truncate">
+                              <Mail className="h-3.5 w-3.5 shrink-0" />
+                              <span className="truncate">{lead.email}</span>
+                            </span>
+                          ) : null}
+                        </span>
+                      </button>
+                    </td>
+                    <td className="max-w-xs px-6 py-4 text-sm text-[var(--color-text-secondary)]">
+                      <span className="line-clamp-2">{lead.propertyInterest ?? "No property interest"}</span>
+                    </td>
+                    <td className="px-6 py-4">
+                      {canManage ? (
+                        <Select
+                          value={lead.assignee?.id ?? ""}
+                          disabled={assignMutation.isPending || agentsQuery.isLoading}
+                          onChange={(event) => {
+                            if (event.target.value) {
+                              void assignMutation.mutateAsync({ leadId: lead.id, assigneeId: event.target.value });
+                            }
+                          }}
+                          aria-label={`Assign ${lead.fullName}`}
+                          className="max-w-56"
+                        >
+                          <option value="">Unassigned</option>
+                          {agents.map((agent) => (
+                            <option key={agent.id} value={agent.id}>
+                              {agent.fullName}
+                            </option>
+                          ))}
+                        </Select>
+                      ) : (
+                        <span className="text-sm text-[var(--color-text-secondary)]">{lead.assignee?.fullName ?? "Unassigned"}</span>
+                      )}
+                    </td>
+                    <td className="px-6 py-4">
+                      <div className="flex items-center justify-between gap-2">
+                        <StatusBadge status={lead.status} />
+                        <span className="text-caption text-[var(--color-text-secondary)]">{new Date(lead.createdAt).toLocaleDateString()}</span>
+                      </div>
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
           </div>
         )}
       </section>

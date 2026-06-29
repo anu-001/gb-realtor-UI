@@ -8,8 +8,6 @@ import { Typography } from "@/components/ui/Typography";
 import { useAppDispatch, useAppSelector } from "@/store";
 import { setSidebarOpen } from "@/store/slices/uiSlice";
 import { resolveWorkspaceRole } from "@/utils/auth-role";
-import { canCreateListing } from "@/utils/agent-access";
-import { Link } from "react-router-dom";
 
 type AgentLayoutProps = {
   children?: ReactNode;
@@ -21,7 +19,6 @@ export function AgentLayout({ children }: AgentLayoutProps) {
   const user = useAppSelector((state) => state.auth.user);
   const accessToken = useAppSelector((state) => state.auth.accessToken);
   const role = resolveWorkspaceRole(user, accessToken) ?? user?.role ?? user?.roles?.[0]?.code ?? "PropertyManager";
-  const canCreate = canCreateListing(role);
   const title =
     location.pathname === "/agent"
       ? "Overview"
@@ -69,15 +66,6 @@ export function AgentLayout({ children }: AgentLayoutProps) {
                 </div>
               </div>
             <div className="flex items-center gap-2">
-              {canCreate ? (
-                <Link
-                  to="/agent/listings/new"
-                  className="inline-flex h-10 items-center justify-center rounded-full bg-[var(--color-accent)] px-4 text-sm font-medium text-white transition hover:bg-[var(--color-accent-hover)]"
-                >
-                  <span className="hidden sm:inline">Add listing</span>
-                  <span className="sm:hidden">Add</span>
-                </Link>
-              ) : null}
               <span className="rounded-full border border-[var(--color-border)] px-3 py-1 text-caption text-[var(--color-text-secondary)]">
                 {role}
               </span>

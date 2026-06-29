@@ -5,6 +5,7 @@ import { createUser, assignUserRoles, deactivateUser, listRolesPermissions, list
 import { EmptyState } from "@/components/feedback/EmptyState";
 import { SkeletonLoader } from "@/components/feedback/SkeletonLoader";
 import { StatCard } from "@/components/data-display/StatCard";
+import { Select } from "@/components/ui/Select";
 import { Users, UserPlus } from "lucide-react";
 
 export default function TeamManagementPage() {
@@ -92,45 +93,60 @@ export default function TeamManagementPage() {
           ) : users.length === 0 ? (
             <EmptyState heading="No team members" message="Invite a teammate to start building the workspace." />
           ) : (
-            <div className="divide-y divide-[var(--color-border)]">
-              {users.map((user) => (
-                <div key={user.id} className="grid gap-4 px-4 py-4 md:grid-cols-[1.4fr_1fr_1fr_auto] md:items-center">
-                  <div>
-                    <p className="font-medium text-[var(--color-text-primary)]">{user.fullName}</p>
-                    <p className="text-caption text-[var(--color-text-secondary)]">{user.email}</p>
-                  </div>
-                  <label className="space-y-2">
-                    <span className="text-small font-semibold uppercase tracking-[0.18em] text-[var(--color-text-secondary)]">Role</span>
-                    <select
-                      defaultValue={user.roles?.[0]?.code ?? rolesQuery.data?.[0]?.code ?? ""}
-                      onChange={(event) => {
-                        void roleMutation.mutateAsync({ id: user.id, roleCodes: [event.target.value] });
-                      }}
-                      className="h-11 w-full rounded-input border border-[var(--color-border)] bg-[var(--color-surface)] px-3 text-sm outline-none transition focus-visible:border-[var(--color-accent)]"
-                    >
-                      {(rolesQuery.data ?? []).map((role) => (
-                        <option key={role.code} value={role.code}>
-                          {role.name}
-                        </option>
-                      ))}
-                    </select>
-                  </label>
-                  <div className="text-sm text-[var(--color-text-secondary)]">
-                    {user.isActive ? "Active" : "Inactive"}
-                  </div>
-                  <button
-                    type="button"
-                    onClick={() => {
-                      if (window.confirm("Deactivate this account?")) {
-                        void deactivateMutation.mutateAsync(user.id);
-                      }
-                    }}
-                    className="inline-flex h-10 items-center justify-center rounded-full border border-[var(--color-border)] px-4 text-sm font-medium text-[var(--color-text-primary)] transition hover:bg-[var(--color-surface-raised)]"
-                  >
-                    Deactivate
-                  </button>
-                </div>
-              ))}
+            <div className="w-full overflow-x-auto">
+              <table className="min-w-[820px] divide-y divide-[var(--color-border)]">
+                <thead className="bg-[color-mix(in_srgb,var(--color-surface)_96%,white)]">
+                  <tr className="text-left text-small uppercase tracking-[0.16em] text-[var(--color-text-secondary)]">
+                    <th scope="col" className="px-6 py-4">User</th>
+                    <th scope="col" className="px-6 py-4">Role</th>
+                    <th scope="col" className="px-6 py-4">Status</th>
+                    <th scope="col" className="px-6 py-4">Actions</th>
+                  </tr>
+                </thead>
+                <tbody className="divide-y divide-[var(--color-border)]">
+                  {users.map((user) => (
+                    <tr key={user.id} className="align-top transition-colors duration-200 hover:bg-gray-50">
+                      <td className="px-6 py-4">
+                        <p className="font-medium text-[var(--color-text-primary)]">{user.fullName}</p>
+                        <p className="max-w-[16rem] truncate text-caption text-[var(--color-text-secondary)]">{user.email}</p>
+                      </td>
+                      <td className="px-6 py-4">
+                        <Select
+                          defaultValue={user.roles?.[0]?.code ?? rolesQuery.data?.[0]?.code ?? ""}
+                          disabled={roleMutation.isPending}
+                          onChange={(event) => {
+                            void roleMutation.mutateAsync({ id: user.id, roleCodes: [event.target.value] });
+                          }}
+                          aria-label={`Role for ${user.fullName}`}
+                          className="max-w-56"
+                        >
+                          {(rolesQuery.data ?? []).map((role) => (
+                            <option key={role.code} value={role.code}>
+                              {role.name}
+                            </option>
+                          ))}
+                        </Select>
+                      </td>
+                      <td className="px-6 py-4 text-sm text-[var(--color-text-secondary)]">
+                        {user.isActive ? "Active" : "Inactive"}
+                      </td>
+                      <td className="px-6 py-4">
+                        <button
+                          type="button"
+                          onClick={() => {
+                            if (window.confirm("Deactivate this account?")) {
+                              void deactivateMutation.mutateAsync(user.id);
+                            }
+                          }}
+                          className="inline-flex h-10 items-center justify-center rounded-full border border-[var(--color-border)] px-4 text-sm font-medium text-[var(--color-text-primary)] transition hover:bg-[var(--color-surface-raised)]"
+                        >
+                          Deactivate
+                        </button>
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
             </div>
           )}
         </div>
@@ -160,17 +176,16 @@ export default function TeamManagementPage() {
           </label>
           <label className="block space-y-2">
             <span className="text-sm font-medium text-[var(--color-text-primary)]">Role</span>
-            <select
+            <Select
               value={inviteRoleCode}
               onChange={(event) => setInviteRoleCode(event.target.value)}
-              className="h-11 w-full rounded-input border border-[var(--color-border)] px-4 text-sm outline-none transition focus-visible:border-[var(--color-accent)]"
             >
               {(rolesQuery.data ?? []).map((role) => (
                 <option key={role.code} value={role.code}>
                   {role.name}
                 </option>
               ))}
-            </select>
+            </Select>
           </label>
           <button
             type="button"

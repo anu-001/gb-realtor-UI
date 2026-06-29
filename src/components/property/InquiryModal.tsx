@@ -13,7 +13,7 @@ import { cn } from "@/utils/cn";
 const inquirySchema = z.object({
   fullName: z.string().min(1, "Full name is required"),
   email: z.string().min(1, "Email is required").email("Enter a valid email address"),
-  phoneNumber: z.string().min(1, "Phone number is required"),
+  phoneNumber: z.string().optional(),
   inquiryNotes: z
     .string()
     .refine((html) => htmlTextLength(html) > 0, "Inquiry notes are required")
@@ -144,7 +144,7 @@ export function InquiryModal({
                     propertyId,
                     fullName: values.fullName,
                     email: values.email,
-                    phoneNumber: values.phoneNumber.trim(),
+                    phoneNumber: values.phoneNumber?.trim() || "",
                     inquiryNotes: values.inquiryNotes,
                     preferredLocation,
                     source: "website-form",
@@ -200,7 +200,6 @@ export function InquiryModal({
                 </label>
                 <input
                   id={fieldIds.phoneNumber}
-                  required
                   aria-invalid={Boolean(errors.phoneNumber)}
                   aria-describedby={errors.phoneNumber ? `${fieldIds.phoneNumber}-error` : undefined}
                   className="h-11 w-full rounded-input border border-[var(--color-border)] bg-[var(--color-surface)] px-4 text-body text-[var(--color-text-primary)] outline-none transition focus-visible:border-[var(--color-accent)]"
@@ -217,7 +216,7 @@ export function InquiryModal({
                 id={fieldIds.inquiryNotes}
                 name="inquiryNotes"
                 control={control}
-                label="Inquiry notes"
+                label="Inquiry Notes"
                 helperText="Use the toolbar to add emphasis, structure, links, and a little more detail."
                 placeholder="Tell us what you are looking for, any specific requirements, your timeline, or questions you have..."
                 minHeight={160}

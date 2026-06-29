@@ -5,6 +5,8 @@ import { listRolesPermissions } from "@/services/users.service";
 import { EmptyState } from "@/components/feedback/EmptyState";
 import { SkeletonLoader } from "@/components/feedback/SkeletonLoader";
 
+const VISIBLE_LIMIT = 5;
+
 export default function RolesPermissionsPage() {
   const rolesQuery = useQuery({
     queryKey: ["roles-permissions"],
@@ -92,14 +94,19 @@ export default function RolesPermissionsPage() {
                 {role.permissions.length} permissions
               </div>
               <div className="flex flex-wrap gap-2">
-                {role.permissions.slice(0, 6).map((permission) => (
+                {role.permissions.slice(0, VISIBLE_LIMIT).map((permission) => (
                   <span
                     key={permission.code}
-                    className="rounded-full border border-[var(--color-border)] bg-[var(--color-surface-raised)] px-3 py-1 text-small text-[var(--color-text-secondary)]"
+                    className="rounded-full border border-[var(--color-border)] bg-[var(--color-surface-raised)] px-3 py-1 text-small text-gray-600 transition-colors duration-200"
                   >
                     {permission.code}
                   </span>
                 ))}
+                {role.permissions.length > VISIBLE_LIMIT ? (
+                  <span className="rounded-full border border-[var(--color-border)] px-3 py-1 text-small font-medium text-gray-600">
+                    +{role.permissions.length - VISIBLE_LIMIT} more
+                  </span>
+                ) : null}
               </div>
             </div>
           </article>

@@ -4,6 +4,7 @@ import { Search } from "lucide-react";
 import { listAuditLogs } from "@/services/users.service";
 import { EmptyState } from "@/components/feedback/EmptyState";
 import { SkeletonLoader } from "@/components/feedback/SkeletonLoader";
+import { formatSystemAction } from "@/utils/analytics-formatter";
 
 function asRecord(value: unknown): Record<string, unknown> {
   return value && typeof value === "object" ? (value as Record<string, unknown>) : {};
@@ -88,13 +89,13 @@ export default function AuditLogsPage() {
           <EmptyState heading="Nothing yet" message="Audit entries will appear here." />
         ) : (
           <div className="overflow-x-auto">
-            <table className="min-w-full divide-y divide-[var(--color-border)]">
+            <table className="min-w-[760px] divide-y divide-[var(--color-border)]">
               <thead className="bg-[color-mix(in_srgb,var(--color-surface)_96%,white)]">
                 <tr className="text-left text-small uppercase tracking-[0.16em] text-[var(--color-text-secondary)]">
-                  <th className="px-4 py-3">Action</th>
-                  <th className="px-4 py-3">Actor</th>
-                  <th className="px-4 py-3">Target</th>
-                  <th className="px-4 py-3">Timestamp</th>
+                  <th scope="col" className="px-6 py-4">Action</th>
+                  <th scope="col" className="px-6 py-4">Actor</th>
+                  <th scope="col" className="px-6 py-4">Target</th>
+                  <th scope="col" className="px-6 py-4">Timestamp</th>
                 </tr>
               </thead>
               <tbody className="divide-y divide-[var(--color-border)]">
@@ -105,11 +106,11 @@ export default function AuditLogsPage() {
                   const target = asRecord(record.target);
 
                   return (
-                    <tr key={key} className="align-top">
-                      <td className="px-4 py-4 font-medium text-[var(--color-text-primary)]">{text(record.action ?? record.event)}</td>
-                      <td className="px-4 py-4 text-sm text-[var(--color-text-secondary)]">{text(actor.fullName ?? actor.name)}</td>
-                      <td className="px-4 py-4 text-sm text-[var(--color-text-secondary)]">{text(target.name ?? target.title)}</td>
-                      <td className="px-4 py-4 text-sm text-[var(--color-text-secondary)]">
+                    <tr key={key} className="align-top transition-colors duration-200 hover:bg-gray-50">
+                      <td className="px-6 py-4 font-medium text-[var(--color-text-primary)]">{formatSystemAction(record.action ?? record.event)}</td>
+                      <td className="px-6 py-4 text-sm text-gray-600">{text(actor.fullName ?? actor.name)}</td>
+                      <td className="px-6 py-4 text-sm text-gray-600">{text(target.name ?? target.title)}</td>
+                      <td className="px-6 py-4 text-sm text-gray-600">
                         {formatTimestamp(record.createdAt ?? record.timestamp)}
                       </td>
                     </tr>
