@@ -23,7 +23,6 @@ function reportError(error: Error, info: ErrorInfo): void {
   const monitoring = globalThis as typeof globalThis & { Sentry?: MonitoringClient };
   monitoring.Sentry?.captureException?.(error, { extra: { componentStack: info.componentStack } });
   if (import.meta.env.DEV) {
-    // Keep dev console noise useful without crashing the app shell.
     console.error(error, info);
   }
 }

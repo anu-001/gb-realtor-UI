@@ -2,6 +2,7 @@ import { useEffect, useRef, useState } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { useParams } from "react-router-dom";
 import { motion } from "framer-motion";
+import { Images } from "lucide-react";
 import { getPublicPropertyById } from "@/services/properties.service";
 import { RichTextContent } from "@/components/data-display/RichTextContent";
 import { RequestPropertyForm } from "@/components/leads/RequestPropertyForm";
@@ -9,10 +10,25 @@ import { StatusBadge } from "@/components/property/StatusBadge";
 import { SkeletonLoader } from "@/components/feedback/SkeletonLoader";
 import NotFoundPage from "@/features/public/NotFoundPage";
 import { htmlTextLength } from "@/utils/html-text-length";
+import { formatCompactNaira, formatPropertyStatus } from "@/utils/formatters";
 const COLLAPSED_DESCRIPTION_HEIGHT = 240;
 
-function PropertyDescription({ description }: { description?: string | null }) {
-  const content = description ?? "";
+function escapeRegExp(value: string): string {
+  return value.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
+}
+
+function stripLeadingTitleFromDescription(description: string, title: string): string {
+  const escapedTitle = escapeRegExp(title.trim());
+  if (!escapedTitle) return description;
+
+  return description
+    .replace(new RegExp(`^\\s*<h[1-3][^>]*>\\s*${escapedTitle}\\s*</h[1-3]>\\s*`, "i"), "")
+    .replace(new RegExp(`^\\s*<p[^>]*>\\s*<(strong|b)[^>]*>\\s*${escapedTitle}\\s*</\\1>\\s*</p>\\s*`, "i"), "")
+    .replace(new RegExp(`^\\s*<(strong|b)[^>]*>\\s*${escapedTitle}\\s*</\\1>\\s*`, "i"), "");
+}
+
+function PropertyDescription({ description, title }: { description?: string | null; title: string }) {
+  const content = stripLeadingTitleFromDescription(description ?? "", title);
   const [expanded, setExpanded] = useState(false);
   const [contentHeight, setContentHeight] = useState(COLLAPSED_DESCRIPTION_HEIGHT);
   const contentRef = useRef<HTMLDivElement | null>(null);
@@ -89,6 +105,8 @@ function PropertyDescription({ description }: { description?: string | null }) {
 
 export default function PropertyDetailPage() {
   const { id } = useParams();
+  const formRef = useRef<HTMLDivElement | null>(null);
+  const [showAllPhotos, setShowAllPhotos] = useState(false);
   const propertyQuery = useQuery({
     queryKey: ["public-property", id],
     queryFn: () => getPublicPropertyById(id ?? ""),
@@ -113,35 +131,65 @@ export default function PropertyDetailPage() {
   }
 
   const property = propertyQuery.data;
+  const images = property.thumbnails ?? [];
+  const heroImage = images[0];
 
   if (!property.publishedAt) {
     return <NotFoundPage />;
   }
 
   return (
-    <div className="grid gap-6 lg:grid-cols-[minmax(0,1fr)_360px]">
+    <div className="grid gap-6 pb-20 lg:grid-cols-[minmax(0,1fr)_360px] lg:pb-0">
       <div className="space-y-6">
-        <img
-          src={property.thumbnails?.[0]?.url ?? "https://images.unsplash.com/photo-1505693416388-ac5ce068fe85?auto=format&fit=crop&w=1600&q=80"}
-          alt={typeof property.thumbnails?.[0]?.altText === "string" ? property.thumbnails[0].altText : property.title}
-          className="h-[420px] w-full rounded-card object-cover shadow-card"
-          loading="lazy"
-          decoding="async"
-        />
+        <div className="relative overflow-hidden rounded-card shadow-card">
+          <img
+            src={heroImage?.url ?? "https://images.unsplash.com/photo-1505693416388-ac5ce068fe85?auto=format&fit=crop&w=1600&q=80"}
+            alt={typeof heroImage?.altText === "string" ? heroImage.altText : property.title}
+            className="h-[420px] w-full object-cover"
+            loading="lazy"
+            decoding="async"
+          />
+          <button
+            type="button"
+            onClick={() => setShowAllPhotos((value) => !value)}
+            className="absolute bottom-4 right-4 inline-flex min-h-11 items-center gap-2 rounded-full border border-white/70 bg-white/85 px-4 text-sm font-semibold text-gray-950 shadow-sm backdrop-blur transition hover:bg-white focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white focus-visible:ring-offset-2"
+            aria-expanded={showAllPhotos}
+          >
+            <Images className="h-4 w-4" />
+            View all photos
+          </button>
+        </div>
+        {showAllPhotos && images.length > 0 ? (
+          <div className="grid grid-cols-2 gap-3 sm:grid-cols-4" aria-label="Property photos">
+            {images.slice(0, 4).map((image, index) => (
+              <img
+                key={`${image.url}-${index}`}
+                src={image.url}
+                alt={typeof image.altText === "string" ? image.altText : `${property.title} photo ${index + 1}`}
+                className="h-28 w-full rounded-input object-cover"
+                loading="lazy"
+                decoding="async"
+              />
+            ))}
+          </div>
+        ) : null}
         <div className="rounded-card border border-[var(--color-border)] bg-[var(--color-surface)] p-6 shadow-card">
           <div className="flex flex-wrap items-center gap-3">
-            <StatusBadge status="Published" />
-            <StatusBadge status={property.listingType} />
+            <StatusBadge status={formatPropertyStatus(property.listingType)} />
           </div>
           <h1 className="mt-4 font-display text-h2">{property.title}</h1>
+          <p className="mt-3 font-display text-h3 font-semibold text-[var(--color-text-primary)]">
+            {formatCompactNaira(property.priceKobo)}
+          </p>
           <p className="mt-2 text-body-lg text-[var(--color-text-secondary)]">
             {property.area}, {property.city}, {property.state}
           </p>
-          <PropertyDescription description={property.description} />
+          <PropertyDescription description={property.description} title={property.title} />
         </div>
       </div>
-      <div className="space-y-4">
+      <div ref={formRef} className="space-y-4 lg:sticky lg:top-24 lg:self-start">
         <RequestPropertyForm
+          variant="property_specific"
           propertyId={property.id}
           propertyTitle={property.title}
           preferredLocation={`${property.area}, ${property.city}`}
@@ -149,6 +197,15 @@ export default function PropertyDetailPage() {
           subheading="Share your details and we’ll respond with next steps within 24 hours."
           submitLabel="Send request"
         />
+      </div>
+      <div className="fixed inset-x-0 bottom-0 z-40 border-t border-[var(--color-border)] bg-[var(--color-surface)]/95 p-4 shadow-modal backdrop-blur lg:hidden">
+        <button
+          type="button"
+          onClick={() => formRef.current?.scrollIntoView({ behavior: "smooth", block: "start" })}
+          className="ui-button-primary h-12 w-full"
+        >
+          Request Info
+        </button>
       </div>
     </div>
   );
