@@ -12,6 +12,28 @@ export function formatCompactNaira(value: number | string | null | undefined): s
   }).format(amount);
 }
 
+export function formatKoboAsCompactNaira(value: number | string | null | undefined): string {
+  if (value === null || value === undefined) return "Price on request";
+
+  const amount = typeof value === "number" ? value : Number(value);
+  if (!Number.isFinite(amount)) return String(value);
+
+  return formatCompactNaira(amount / 100);
+}
+
+export function formatKoboAsNaira(value: number | string | null | undefined): string {
+  if (value === null || value === undefined) return "Price on request";
+
+  const amount = typeof value === "number" ? value : Number(value);
+  if (!Number.isFinite(amount)) return String(value);
+
+  return new Intl.NumberFormat("en-NG", {
+    style: "currency",
+    currency: "NGN",
+    maximumFractionDigits: 0,
+  }).format(amount / 100);
+}
+
 export function formatPropertyStatus(value: string | null | undefined): string {
   if (!value) return "";
 
@@ -38,4 +60,13 @@ export function formatNumberWithCommas(value: string | number | null | undefined
 export function stripNumberFormatting(value: string | null | undefined): string | undefined {
   const digits = value?.replace(/[^\d]/g, "");
   return digits ? digits : undefined;
+}
+
+export function formatNairaInput(value: string | number | null | undefined): string {
+  return formatNumberWithCommas(value);
+}
+
+export function nairaInputToKobo(value: string | null | undefined): string {
+  const digits = stripNumberFormatting(value);
+  return digits ? `${digits}00` : "";
 }

@@ -297,6 +297,48 @@ export default function AgentOverviewPage() {
       </div>
 
       <div className="grid gap-6 xl:grid-cols-[minmax(0,1.2fr)_minmax(0,0.8fr)]">
+        <section className="space-y-4 rounded-card border border-[var(--color-border)] bg-[var(--color-surface)] p-6 shadow-card" aria-busy={dashboardQuery.isFetching}>
+          <div>
+            <h2 className="font-display text-h4 text-[var(--color-text-primary)]">Featured performance</h2>
+            <p className="text-caption text-[var(--color-text-secondary)]">Featured reach and engagement.</p>
+          </div>
+          {featuredEntries.length === 0 ? (
+            <EmptyState heading="No featured data" message="Metrics appear once listings are featured." />
+          ) : (
+            <div className="grid gap-3 sm:grid-cols-2">
+              {featuredEntries.slice(0, 4).map((item) => (
+                <div key={item.label} className="rounded-[16px] border border-[var(--color-border)] px-4 py-3">
+                  <p className="text-caption text-[var(--color-text-secondary)]">{item.label}</p>
+                  <p className="mt-2 font-display text-h4 text-[var(--color-text-primary)]">{item.value}</p>
+                </div>
+              ))}
+            </div>
+          )}
+        </section>
+
+        <section className="space-y-4 rounded-card border border-[var(--color-border)] bg-[var(--color-surface)] p-6 shadow-card" aria-busy={dashboardQuery.isFetching}>
+          <div className="flex items-center justify-between">
+            <div>
+              <h2 className="font-display text-h4 text-[var(--color-text-primary)]">Recent activity</h2>
+              <p className="text-caption text-[var(--color-text-secondary)]">Latest system actions.</p>
+            </div>
+          </div>
+          {activityEntries.length === 0 ? (
+            <EmptyState heading="Nothing yet" message="Recent activity will appear here." />
+          ) : (
+            <ul className="grid gap-3 md:grid-cols-2">
+              {activityEntries.slice(0, 6).map((item) => (
+                <li key={item.label} className="rounded-[18px] border border-[var(--color-border)] px-4 py-2">
+                  <p className="text-caption text-[var(--color-text-secondary)]">{item.label}</p>
+                  <p className="mt-2 font-display text-h4 text-[var(--color-text-primary)]">{item.count}</p>
+                </li>
+              ))}
+            </ul>
+          )}
+        </section>
+      </div>
+
+      <div className="grid gap-6 xl:grid-cols-[minmax(0,1.2fr)_minmax(0,0.8fr)]">
         <section className="space-y-4 rounded-card border border-[var(--color-border)] bg-[var(--color-surface)] p-6 shadow-card">
           <div className="flex items-center justify-between gap-4">
             <div>
@@ -331,48 +373,6 @@ export default function AgentOverviewPage() {
               );
             })}
           </div>
-        </section>
-
-        <section className="space-y-4 rounded-card border border-[var(--color-border)] bg-[var(--color-surface)] p-6 shadow-card" aria-busy={dashboardQuery.isFetching}>
-          <div className="flex items-center justify-between">
-            <div>
-              <h2 className="font-display text-h4 text-[var(--color-text-primary)]">Recent activity</h2>
-              <p className="text-caption text-[var(--color-text-secondary)]">Latest system actions.</p>
-            </div>
-          </div>
-          {activityEntries.length === 0 ? (
-            <EmptyState heading="Nothing yet" message="Recent activity will appear here." />
-          ) : (
-            <ul className="grid gap-3 md:grid-cols-2">
-              {activityEntries.slice(0, 6).map((item) => (
-                <li key={item.label} className="rounded-[18px] border border-[var(--color-border)] p-4">
-                  <p className="text-caption text-[var(--color-text-secondary)]">{item.label}</p>
-                  <p className="mt-2 font-display text-h4 text-[var(--color-text-primary)]">{item.count}</p>
-                </li>
-              ))}
-            </ul>
-          )}
-        </section>
-      </div>
-
-      <div className="grid gap-6 xl:grid-cols-[minmax(0,1.2fr)_minmax(0,0.8fr)]">
-        <section className="space-y-4 rounded-card border border-[var(--color-border)] bg-[var(--color-surface)] p-6 shadow-card" aria-busy={dashboardQuery.isFetching}>
-          <div>
-            <h2 className="font-display text-h4 text-[var(--color-text-primary)]">Featured performance</h2>
-            <p className="text-caption text-[var(--color-text-secondary)]">Featured reach and engagement.</p>
-          </div>
-          {featuredEntries.length === 0 ? (
-            <EmptyState heading="No featured data" message="Metrics appear once listings are featured." />
-          ) : (
-            <div className="grid gap-3 sm:grid-cols-2">
-              {featuredEntries.slice(0, 4).map((item) => (
-                <div key={item.label} className="rounded-[16px] border border-[var(--color-border)] px-4 py-3">
-                  <p className="text-caption text-[var(--color-text-secondary)]">{item.label}</p>
-                  <p className="mt-2 font-display text-h4 text-[var(--color-text-primary)]">{item.value}</p>
-                </div>
-              ))}
-            </div>
-          )}
         </section>
 
         <section className="space-y-4 rounded-card border border-[var(--color-border)] bg-[var(--color-surface)] p-6 shadow-card">

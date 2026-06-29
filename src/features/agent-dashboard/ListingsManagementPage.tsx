@@ -1,18 +1,20 @@
 import { useEffect, useMemo, useState } from "react";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-import { Link } from "react-router-dom";
-import { Archive, ArrowRight, Edit3, Eye, Filter, MapPin, Plus, Send } from "lucide-react";
+import { Link, useSearchParams } from "react-router-dom";
+import { Archive, ArrowRight, Edit3, Eye, Filter, MapPin, MoreHorizontal, Plus, Send, Star } from "lucide-react";
 import { listProperties, archiveProperty, approveProperty, publishProperty, submitPropertyForReview } from "@/services/properties.service";
 import { listFeaturedProperties, featureProperty, unfeatureProperty } from "@/services/media.service";
 import { StatusBadge } from "@/components/property/StatusBadge";
 import { EmptyState } from "@/components/feedback/EmptyState";
 import { SkeletonLoader } from "@/components/feedback/SkeletonLoader";
 import { StatCard } from "@/components/data-display/StatCard";
+import { Dropdown, DropdownItem } from "@/components/ui/Dropdown";
 import { PropertyStatus } from "@/constants/api-enums";
 import { useAppSelector } from "@/store";
 import { cn } from "@/utils/cn";
 import { canArchiveListing, canCreateListing, canEditListing, canManageFeaturedListing, canPublishListing, canViewProperties, resolveAgentRole } from "@/utils/agent-access";
 import { resolveWorkspaceRole } from "@/utils/auth-role";
+import { formatKoboAsCompactNaira } from "@/utils/formatters";
 
 type Filters = {
   search: string;
@@ -38,6 +40,47 @@ const initialFilters: Filters = {
   limit: 10,
 };
 
+function parseFilters(searchParams: URLSearchParams): Filters {
+  const page = Number(searchParams.get("page") ?? initialFilters.page);
+  const limit = Number(searchParams.get("limit") ?? initialFilters.limit);
+
+  return {
+    search: searchParams.get("search") ?? "",
+    status: searchParams.get("status") ?? "",
+    purpose: searchParams.get("purpose") ?? "",
+    state: searchParams.get("state") ?? "",
+    city: searchParams.get("city") ?? "",
+    page: Number.isFinite(page) && page > 0 ? page : initialFilters.page,
+    limit: Number.isFinite(limit) && limit > 0 ? limit : initialFilters.limit,
+  };
+}
+
+function filtersEqual(left: Filters, right: Filters): boolean {
+  return (
+    left.search === right.search &&
+    left.status === right.status &&
+    left.purpose === right.purpose &&
+    left.state === right.state &&
+    left.city === right.city &&
+    left.page === right.page &&
+    left.limit === right.limit
+  );
+}
+
+function filtersToSearchParams(filters: Filters): URLSearchParams {
+  const params = new URLSearchParams();
+
+  if (filters.search) params.set("search", filters.search);
+  if (filters.status) params.set("status", filters.status);
+  if (filters.purpose) params.set("purpose", filters.purpose);
+  if (filters.state) params.set("state", filters.state);
+  if (filters.city) params.set("city", filters.city);
+  if (filters.page !== initialFilters.page) params.set("page", String(filters.page));
+  if (filters.limit !== initialFilters.limit) params.set("limit", String(filters.limit));
+
+  return params;
+}
+
 function useDebouncedValue<T>(value: T, delay = 300): T {
   const [debounced, setDebounced] = useState(value);
 
@@ -51,7 +94,9 @@ function useDebouncedValue<T>(value: T, delay = 300): T {
 
 export default function ListingsManagementPage() {
   const queryClient = useQueryClient();
-  const [filters, setFilters] = useState<Filters>(initialFilters);
+  const [searchParams, setSearchParams] = useSearchParams();
+  const [filters, setFilters] = useState<Filters>(() => parseFilters(searchParams));
+  const [filtersOpen, setFiltersOpen] = useState(false);
   const debounced = useDebouncedValue(filters.search, 300);
   const auth = useAppSelector((state) => state.auth);
   const role = resolveWorkspaceRole(auth.user, auth.accessToken) ?? resolveAgentRole(auth.user?.role ?? auth.user?.roles?.[0]?.code ?? null) ?? null;
@@ -88,6 +133,26 @@ export default function ListingsManagementPage() {
   const canPublish = canPublishListing(role);
   const canArchive = canArchiveListing(role);
   const canFeature = canManageFeaturedListing(role);
+
+  useEffect(() => {
+    const nextFilters = parseFilters(searchParams);
+    setFilters((current) => (filtersEqual(current, nextFilters) ? current : nextFilters));
+  }, [searchParams]);
+
+  useEffect(() => {
+    const nextParams = filtersToSearchParams(filters);
+    if (nextParams.toString() !== searchParams.toString()) {
+      setSearchParams(nextParams, { replace: true });
+    }
+  }, [filters, searchParams, setSearchParams]);
+
+  const updateFilters = (patch: Partial<Filters>, resetPage = true) => {
+    setFilters((current) => ({
+      ...current,
+      ...patch,
+      page: resetPage ? 1 : patch.page ?? current.page,
+    }));
+  };
 
   const refresh = async () => {
     await queryClient.invalidateQueries({ queryKey: ["agent-properties"] });
@@ -139,6 +204,74 @@ export default function ListingsManagementPage() {
   };
 
   const totalPages = meta?.totalPages ?? 1;
+  const filterPanel = (
+    <div
+      className={cn(
+        "grid gap-3 rounded-card border border-[var(--color-border)] bg-[var(--color-surface)] p-4 shadow-card md:grid-cols-2 xl:grid-cols-5",
+        filtersOpen ? "grid" : "hidden lg:grid",
+      )}
+    >
+      <label className="space-y-2 xl:col-span-2">
+        <span className="text-small font-semibold uppercase tracking-[0.18em] text-gray-600">Search</span>
+        <input
+          value={filters.search}
+          onChange={(event) => updateFilters({ search: event.target.value })}
+          placeholder="Search title, city, or area"
+          className="h-11 w-full rounded-input border border-[var(--color-border)] bg-[var(--color-surface)] px-4 text-body outline-none transition focus-visible:border-[var(--color-accent)] focus-visible:ring-2 focus-visible:ring-[var(--color-accent)] focus-visible:ring-offset-1"
+        />
+      </label>
+
+      <label className="space-y-2">
+        <span className="text-small font-semibold uppercase tracking-[0.18em] text-gray-600">Status</span>
+        <select
+          value={filters.status}
+          onChange={(event) => updateFilters({ status: event.target.value })}
+          className="h-11 w-full rounded-input border border-[var(--color-border)] bg-[var(--color-surface)] px-4 text-body outline-none transition focus-visible:border-[var(--color-accent)] focus-visible:ring-2 focus-visible:ring-[var(--color-accent)] focus-visible:ring-offset-1"
+        >
+          <option value="">Any</option>
+          {["draft", "pending_review", "published", "archived"].map((item) => (
+            <option key={item} value={item}>
+              {item.replace("_", " ")}
+            </option>
+          ))}
+        </select>
+      </label>
+
+      <label className="space-y-2">
+        <span className="text-small font-semibold uppercase tracking-[0.18em] text-gray-600">Purpose</span>
+        <select
+          value={filters.purpose}
+          onChange={(event) => updateFilters({ purpose: event.target.value })}
+          className="h-11 w-full rounded-input border border-[var(--color-border)] bg-[var(--color-surface)] px-4 text-body outline-none transition focus-visible:border-[var(--color-accent)] focus-visible:ring-2 focus-visible:ring-[var(--color-accent)] focus-visible:ring-offset-1"
+        >
+          <option value="">Any</option>
+          <option value="sale">Sale</option>
+          <option value="rent">Rent</option>
+          <option value="short_let">Short let</option>
+        </select>
+      </label>
+
+      <label className="space-y-2">
+        <span className="text-small font-semibold uppercase tracking-[0.18em] text-gray-600">State</span>
+        <input
+          value={filters.state}
+          onChange={(event) => updateFilters({ state: event.target.value })}
+          placeholder="Lagos"
+          className="h-11 w-full rounded-input border border-[var(--color-border)] bg-[var(--color-surface)] px-4 text-body outline-none transition focus-visible:border-[var(--color-accent)] focus-visible:ring-2 focus-visible:ring-[var(--color-accent)] focus-visible:ring-offset-1"
+        />
+      </label>
+
+      <label className="space-y-2">
+        <span className="text-small font-semibold uppercase tracking-[0.18em] text-gray-600">City</span>
+        <input
+          value={filters.city}
+          onChange={(event) => updateFilters({ city: event.target.value })}
+          placeholder="Ikeja"
+          className="h-11 w-full rounded-input border border-[var(--color-border)] bg-[var(--color-surface)] px-4 text-body outline-none transition focus-visible:border-[var(--color-accent)] focus-visible:ring-2 focus-visible:ring-[var(--color-accent)] focus-visible:ring-offset-1"
+        />
+      </label>
+    </div>
+  );
 
   if (!canView) {
     return (
@@ -189,67 +322,19 @@ export default function ListingsManagementPage() {
 
       <section className="grid gap-6 xl:grid-cols-[minmax(0,1fr)_20rem]">
         <div className="space-y-4">
-          <div className="grid gap-3 rounded-card border border-[var(--color-border)] bg-[var(--color-surface)] p-4 shadow-card md:grid-cols-2 xl:grid-cols-5">
-            <label className="space-y-2 xl:col-span-2">
-              <span className="text-small font-semibold uppercase tracking-[0.18em] text-[var(--color-text-secondary)]">Search</span>
-              <input
-                value={filters.search}
-                onChange={(event) => setFilters((current) => ({ ...current, search: event.target.value, page: 1 }))}
-                placeholder="Search title, city, or area"
-                className="h-11 w-full rounded-input border border-[var(--color-border)] bg-[var(--color-surface)] px-4 text-body outline-none transition focus-visible:border-[var(--color-accent)]"
-              />
-            </label>
-
-            <label className="space-y-2">
-              <span className="text-small font-semibold uppercase tracking-[0.18em] text-[var(--color-text-secondary)]">Status</span>
-              <select
-                value={filters.status}
-                onChange={(event) => setFilters((current) => ({ ...current, status: event.target.value, page: 1 }))}
-                className="h-11 w-full rounded-input border border-[var(--color-border)] bg-[var(--color-surface)] px-4 text-body outline-none transition focus-visible:border-[var(--color-accent)]"
-              >
-                <option value="">Any</option>
-                {["draft", "pending_review", "published", "archived"].map((item) => (
-                  <option key={item} value={item}>
-                    {item.replace("_", " ")}
-                  </option>
-                ))}
-              </select>
-            </label>
-
-            <label className="space-y-2">
-              <span className="text-small font-semibold uppercase tracking-[0.18em] text-[var(--color-text-secondary)]">Purpose</span>
-              <select
-                value={filters.purpose}
-                onChange={(event) => setFilters((current) => ({ ...current, purpose: event.target.value, page: 1 }))}
-                className="h-11 w-full rounded-input border border-[var(--color-border)] bg-[var(--color-surface)] px-4 text-body outline-none transition focus-visible:border-[var(--color-accent)]"
-              >
-                <option value="">Any</option>
-                <option value="sale">Sale</option>
-                <option value="rent">Rent</option>
-                <option value="short_let">Short let</option>
-              </select>
-            </label>
-
-            <label className="space-y-2">
-              <span className="text-small font-semibold uppercase tracking-[0.18em] text-[var(--color-text-secondary)]">State</span>
-              <input
-                value={filters.state}
-                onChange={(event) => setFilters((current) => ({ ...current, state: event.target.value, page: 1 }))}
-                placeholder="Lagos"
-                className="h-11 w-full rounded-input border border-[var(--color-border)] bg-[var(--color-surface)] px-4 text-body outline-none transition focus-visible:border-[var(--color-accent)]"
-              />
-            </label>
-
-            <label className="space-y-2">
-              <span className="text-small font-semibold uppercase tracking-[0.18em] text-[var(--color-text-secondary)]">City</span>
-              <input
-                value={filters.city}
-                onChange={(event) => setFilters((current) => ({ ...current, city: event.target.value, page: 1 }))}
-                placeholder="Ikeja"
-                className="h-11 w-full rounded-input border border-[var(--color-border)] bg-[var(--color-surface)] px-4 text-body outline-none transition focus-visible:border-[var(--color-accent)]"
-              />
-            </label>
+          <div className="flex justify-end lg:hidden">
+            <button
+              type="button"
+              onClick={() => setFiltersOpen((open) => !open)}
+              className="inline-flex h-11 items-center gap-2 rounded-full border border-[var(--color-border)] bg-[var(--color-surface)] px-4 text-sm font-medium text-[var(--color-text-primary)] transition hover:bg-[var(--color-surface-raised)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--color-accent)] focus-visible:ring-offset-1"
+              aria-expanded={filtersOpen}
+            >
+              <Filter className="h-4 w-4" />
+              Filters
+            </button>
           </div>
+
+          {filterPanel}
 
           <div className="overflow-hidden rounded-card border border-[var(--color-border)] bg-[var(--color-surface)] shadow-card">
             <div className="flex items-center justify-between border-b border-[var(--color-border)] px-4 py-4">
@@ -287,37 +372,37 @@ export default function ListingsManagementPage() {
               />
             ) : (
               <div className="overflow-x-auto">
-                <table className="min-w-full divide-y divide-[var(--color-border)]">
+                <table className="min-w-[920px] divide-y divide-[var(--color-border)]">
                   <thead className="bg-[color-mix(in_srgb,var(--color-surface)_96%,white)]">
                     <tr className="text-left text-small uppercase tracking-[0.16em] text-[var(--color-text-secondary)]">
-                      <th className="px-4 py-3">Property</th>
-                      <th className="px-4 py-3">Location</th>
-                      <th className="px-4 py-3">Price</th>
-                      <th className="px-4 py-3">Status</th>
-                      <th className="px-4 py-3">Actions</th>
+                      <th scope="col" className="sticky left-0 z-10 bg-[color-mix(in_srgb,var(--color-surface)_96%,white)] px-4 py-3">Property</th>
+                      <th scope="col" className="px-4 py-3">Location</th>
+                      <th scope="col" className="px-4 py-3">Price</th>
+                      <th scope="col" className="px-4 py-3">Status</th>
+                      <th scope="col" className="px-4 py-3">Actions</th>
                     </tr>
                   </thead>
                   <tbody className="divide-y divide-[var(--color-border)]">
                     {properties.map((property) => (
-                      <tr key={property.id} className="align-top">
-                        <td className="px-4 py-4">
+                      <tr key={property.id} className="group align-top transition-colors duration-200 hover:bg-gray-50">
+                        <td className="sticky left-0 z-10 bg-[var(--color-surface)] px-4 py-4 transition-colors duration-200 group-hover:bg-gray-50">
                           {(() => {
                             const thumbnail = property.thumbnails?.[0];
                             const thumbnailAlt = toText(thumbnail?.altText);
                             return (
-                          <div className="flex items-start gap-3">
-                            <img
-                              src={thumbnail?.publicUrl ?? "https://images.unsplash.com/photo-1505693416388-ac5ce068fe85?auto=format&fit=crop&w=400&q=80"}
-                              alt={thumbnailAlt && thumbnailAlt.length > 0 ? thumbnailAlt : property.title}
-                              className="h-16 w-16 rounded-[14px] object-cover"
-                            />
-                            <div className="min-w-0">
-                              <p className="font-medium text-[var(--color-text-primary)]">{property.title}</p>
-                              <p className="text-caption text-[var(--color-text-secondary)]">
-                                {property.bedrooms ?? "—"} bd • {property.bathrooms ?? "—"} ba
-                              </p>
-                            </div>
-                          </div>
+                              <div className="flex items-start gap-3">
+                                <img
+                                  src={thumbnail?.publicUrl ?? "https://images.unsplash.com/photo-1505693416388-ac5ce068fe85?auto=format&fit=crop&w=400&q=80"}
+                                  alt={thumbnailAlt && thumbnailAlt.length > 0 ? thumbnailAlt : property.title}
+                                  className="h-16 w-16 rounded-[14px] object-cover"
+                                />
+                                <div className="min-w-0">
+                                  <p className="font-medium text-[var(--color-text-primary)]">{property.title}</p>
+                                  <p className="text-caption text-[var(--color-text-secondary)]">
+                                    {property.bedrooms ?? "—"} bd • {property.bathrooms ?? "—"} ba
+                                  </p>
+                                </div>
+                              </div>
                             );
                           })()}
                         </td>
@@ -330,7 +415,7 @@ export default function ListingsManagementPage() {
                           </div>
                         </td>
                         <td className="px-4 py-4 font-medium text-[var(--color-text-primary)]">
-                          {new Intl.NumberFormat("en-NG", { style: "currency", currency: "NGN", maximumFractionDigits: 0 }).format(Number(property.priceKobo))}
+                          {formatKoboAsCompactNaira(property.priceKobo)}
                         </td>
                         <td className="px-4 py-4">
                           <div className="flex flex-wrap gap-2">
@@ -339,13 +424,7 @@ export default function ListingsManagementPage() {
                           </div>
                         </td>
                         <td className="px-4 py-4">
-                          <div className="flex flex-wrap gap-2">
-                            <Link
-                              to={`/properties/${property.id}`}
-                              className="inline-flex h-9 items-center gap-2 rounded-full border border-[var(--color-border)] px-3 text-sm font-medium text-[var(--color-text-primary)] transition hover:bg-[var(--color-surface-raised)]"
-                            >
-                              View
-                            </Link>
+                          <div className="flex items-center gap-2">
                             {canEdit ? (
                               <Link
                                 to={`/agent/listings/${property.id}/edit`}
@@ -355,63 +434,62 @@ export default function ListingsManagementPage() {
                                 Edit
                               </Link>
                             ) : null}
-                            {canEdit && property.status.toLowerCase() === PropertyStatus.Draft.toLowerCase() ? (
-                              <button
-                                type="button"
-                                onClick={() => void submitForReviewMutation.mutateAsync(property.id)}
-                                className="inline-flex h-9 items-center gap-2 rounded-full border border-[var(--color-border)] px-3 text-sm font-medium text-[var(--color-text-primary)] transition hover:bg-[var(--color-surface-raised)]"
-                              >
-                                Submit
-                              </button>
-                            ) : null}
-                            {canPublish && property.status.toLowerCase() === PropertyStatus.PendingReview.toLowerCase() ? (
-                              <>
+                            <Dropdown
+                              trigger={
                                 <button
                                   type="button"
-                                  onClick={() => void approveMutation.mutateAsync(property.id)}
-                                  className="inline-flex h-9 items-center gap-2 rounded-full border border-[var(--color-border)] px-3 text-sm font-medium text-[var(--color-text-primary)] transition hover:bg-[var(--color-surface-raised)]"
+                                  aria-label="Property actions"
+                                  className="inline-flex h-9 w-9 items-center justify-center rounded-full border border-[var(--color-border)] text-[var(--color-text-primary)] transition hover:bg-[var(--color-surface-raised)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--color-accent)] focus-visible:ring-offset-1"
                                 >
-                                  Approve
+                                  <MoreHorizontal className="h-4 w-4" />
                                 </button>
-                                <button
-                                  type="button"
-                                  onClick={() => void publishMutation.mutateAsync(property.id)}
-                                  className="inline-flex h-9 items-center gap-2 rounded-full bg-[var(--color-accent)] px-3 text-sm font-medium text-white transition hover:bg-[var(--color-accent-hover)]"
+                              }
+                            >
+                              <DropdownItem asChild>
+                                <Link to={`/properties/${property.id}`}>
+                                  <Eye className="h-4 w-4" />
+                                  View
+                                </Link>
+                              </DropdownItem>
+                              {canEdit && property.status.toLowerCase() === PropertyStatus.Draft.toLowerCase() ? (
+                                <DropdownItem onSelect={() => void submitForReviewMutation.mutateAsync(property.id)}>
+                                  <Send className="h-4 w-4" />
+                                  Submit for review
+                                </DropdownItem>
+                              ) : null}
+                              {canPublish && property.status.toLowerCase() === PropertyStatus.PendingReview.toLowerCase() ? (
+                                <>
+                                  <DropdownItem onSelect={() => void approveMutation.mutateAsync(property.id)}>
+                                    <Eye className="h-4 w-4" />
+                                    Approve
+                                  </DropdownItem>
+                                  <DropdownItem onSelect={() => void publishMutation.mutateAsync(property.id)}>
+                                    <Send className="h-4 w-4" />
+                                    Publish
+                                  </DropdownItem>
+                                </>
+                              ) : null}
+                              {canFeature ? (
+                                <DropdownItem
+                                  onSelect={() => {
+                                    if (featuredIds.has(property.id)) {
+                                      void unfeatureMutation.mutateAsync(property.id);
+                                    } else {
+                                      void featureMutation.mutateAsync(property.id);
+                                    }
+                                  }}
                                 >
-                                  Publish
-                                </button>
-                              </>
-                            ) : null}
-                            {canArchive ? (
-                              <button
-                                type="button"
-                                onClick={() => void handleAction("archive", property.id)}
-                                className="inline-flex h-9 items-center gap-2 rounded-full border border-[var(--color-border)] px-3 text-sm font-medium text-[var(--color-text-primary)] transition hover:bg-[var(--color-surface-raised)]"
-                              >
-                                <Archive className="h-4 w-4" />
-                                Archive
-                              </button>
-                            ) : null}
-                            {canFeature ? (
-                              <button
-                                type="button"
-                                onClick={async () => {
-                                  if (featuredIds.has(property.id)) {
-                                    await unfeatureMutation.mutateAsync(property.id);
-                                  } else {
-                                    await featureMutation.mutateAsync(property.id);
-                                  }
-                                }}
-                                className={cn(
-                                  "inline-flex h-9 items-center gap-2 rounded-full px-3 text-sm font-medium transition",
-                                  featuredIds.has(property.id)
-                                    ? "border border-[var(--color-border)] bg-[var(--color-surface-raised)] text-[var(--color-text-primary)]"
-                                    : "border border-[var(--color-border)] text-[var(--color-text-primary)] hover:bg-[var(--color-surface-raised)]",
-                                )}
-                              >
-                                {featuredIds.has(property.id) ? "Unfeature" : "Feature"}
-                              </button>
-                            ) : null}
+                                  <Star className="h-4 w-4" />
+                                  {featuredIds.has(property.id) ? "Unfeature" : "Feature"}
+                                </DropdownItem>
+                              ) : null}
+                              {canArchive ? (
+                                <DropdownItem onSelect={() => void handleAction("archive", property.id)} destructive>
+                                  <Archive className="h-4 w-4" />
+                                  Archive
+                                </DropdownItem>
+                              ) : null}
+                            </Dropdown>
                           </div>
                         </td>
                       </tr>
@@ -429,7 +507,7 @@ export default function ListingsManagementPage() {
                 <button
                   type="button"
                   disabled={(meta?.page ?? 1) <= 1}
-                  onClick={() => setFilters((current) => ({ ...current, page: Math.max(1, current.page - 1) }))}
+                  onClick={() => updateFilters({ page: Math.max(1, filters.page - 1) }, false)}
                   className="inline-flex h-10 items-center justify-center rounded-full border border-[var(--color-border)] px-4 text-sm font-medium text-[var(--color-text-primary)] disabled:opacity-40"
                 >
                   Prev
@@ -437,7 +515,7 @@ export default function ListingsManagementPage() {
                 <button
                   type="button"
                   disabled={(meta?.page ?? 1) >= totalPages}
-                  onClick={() => setFilters((current) => ({ ...current, page: current.page + 1 }))}
+                  onClick={() => updateFilters({ page: filters.page + 1 }, false)}
                   className="inline-flex h-10 items-center justify-center rounded-full border border-[var(--color-border)] px-4 text-sm font-medium text-[var(--color-text-primary)] disabled:opacity-40"
                 >
                   Next
@@ -459,7 +537,7 @@ export default function ListingsManagementPage() {
               ) : (
                 (featuredQuery.data ?? []).map((item) => (
                   <div key={item.id} className="rounded-[18px] border border-[var(--color-border)] p-4">
-                    <p className="font-medium text-[var(--color-text-primary)]">{item.title}</p>
+                    <p className="line-clamp-2 font-medium text-[var(--color-text-primary)]">{item.title}</p>
                     <p className="mt-1 text-caption text-[var(--color-text-secondary)]">
                       {item.area}, {item.city}
                     </p>

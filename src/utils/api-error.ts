@@ -13,10 +13,10 @@ export type FieldErrorMap = Record<string, { type: "server"; message: string }>;
 
 const fallbackMessages: Record<number, string> = {
   400: "Check the highlighted fields and try again.",
-  401: "Your session expired. Please sign in again.",
+  401: "Session expired, please log in again.",
   403: "You do not have access to this action.",
   404: "We couldn’t find that item.",
-  429: "Too many requests. Please wait and try again.",
+  429: "Too many requests, please try again later",
   500: "We hit a problem. Please try again.",
 };
 

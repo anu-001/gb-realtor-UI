@@ -14,6 +14,7 @@ import { htmlTextLength } from "@/utils/html-text-length";
 import { cn } from "@/utils/cn";
 import type { CreatePropertyPayload, Property, PropertyUploadSlot, PropertyImageMetadataInput } from "@/types/property";
 import { getApiErrorMessage, getFieldErrors, parseApiError } from "@/utils/api-error";
+import { formatKoboAsNaira, formatNairaInput, nairaInputToKobo } from "@/utils/formatters";
 
 const allowedMimeTypes = new Set(["image/jpeg", "image/png", "image/webp"]);
 const maxImageBytes = 10 * 1024 * 1024;
@@ -34,7 +35,7 @@ const createPropertySchema = z.object({
     .string()
     .trim()
     .min(1, "Price is required")
-    .regex(/^\d+$/, "Price must contain only numbers"),
+    .regex(/^[\d,]+$/, "Price must contain only numbers"),
   bedrooms: z
     .number()
     .int("Bedrooms must be a whole number")
@@ -212,7 +213,9 @@ export function PropertyCreateForm({ className }: PropertyCreateFormProps) {
     control,
     handleSubmit,
     setError,
+    setValue,
     reset,
+    watch,
     formState: { errors, isSubmitting },
   } = useForm<CreatePropertyFormInput, unknown, CreatePropertyFormValues>({
     resolver: zodResolver(createPropertySchema),
@@ -233,6 +236,7 @@ export function PropertyCreateForm({ className }: PropertyCreateFormProps) {
 
   const imageCount = selectedImages.length;
   const primaryImageCount = selectedImages.filter((image) => image.isPrimary).length;
+  const displayPrice = watch("priceKobo") ?? "";
 
   const setPrimaryImage = (id: string) => {
     setSelectedImages((current) =>
@@ -388,7 +392,7 @@ export function PropertyCreateForm({ className }: PropertyCreateFormProps) {
         state: values.state.trim(),
         city: values.city.trim(),
         area: values.area.trim(),
-        priceKobo: values.priceKobo.trim(),
+        priceKobo: nairaInputToKobo(values.priceKobo),
         ...(typeof values.bedrooms === "number" ? { bedrooms: values.bedrooms } : {}),
         ...(typeof values.bathrooms === "number" ? { bathrooms: values.bathrooms } : {}),
       };
@@ -572,7 +576,7 @@ export function PropertyCreateForm({ className }: PropertyCreateFormProps) {
             {createdProperty.area}, {createdProperty.city}, {createdProperty.state}
           </p>
           <p className="mt-4 text-caption text-[var(--color-text-secondary)]">
-            Price kobo: {createdProperty.priceKobo}
+            Price: {formatKoboAsNaira(createdProperty.priceKobo)}
           </p>
         </section>
 
@@ -680,15 +684,23 @@ export function PropertyCreateForm({ className }: PropertyCreateFormProps) {
                 </select>
               </FormField>
 
-              <FormField label="Price (kobo)" htmlFor={fieldIds.priceKobo} error={errors.priceKobo?.message}>
+              <FormField label="Price" htmlFor={fieldIds.priceKobo} error={errors.priceKobo?.message}>
                 <input
                   id={fieldIds.priceKobo}
                   inputMode="numeric"
-                  placeholder="125000000"
+                  placeholder="125,000,000"
+                  value={displayPrice}
                   className="h-12 w-full rounded-input border border-[var(--color-border)] bg-[var(--color-surface)] px-4 text-body text-[var(--color-text-primary)] outline-none transition focus-visible:border-[var(--color-accent)]"
                   aria-invalid={Boolean(errors.priceKobo)}
                   aria-describedby={errors.priceKobo ? `${fieldIds.priceKobo}-error` : undefined}
-                  {...register("priceKobo")}
+                  {...register("priceKobo", {
+                    onChange: (event) => {
+                      setValue("priceKobo", formatNairaInput(event.target.value), {
+                        shouldDirty: true,
+                        shouldValidate: false,
+                      });
+                    },
+                  })}
                 />
               </FormField>
             </div>
