@@ -358,7 +358,7 @@ export function RequestPropertyForm({
                   </div>
                 ) : null}
 
-                <div className="grid gap-4 md:grid-cols-2">
+                <div className={cn("grid gap-4", !isPropertySpecific && "md:grid-cols-2")}>
                   <FormField label="Full name" htmlFor={fieldIds.fullName} error={errors.fullName?.message}>
                     <input
                       id={fieldIds.fullName}
@@ -372,25 +372,29 @@ export function RequestPropertyForm({
                   </FormField>
 
                   <FormField label="Phone number" htmlFor={fieldIds.phoneNumber} error={errors.phoneNumber?.message}>
-                    <div className="flex min-h-12 w-full items-center overflow-hidden rounded-input border border-[var(--color-border)] bg-[var(--color-surface)] transition focus-within:border-[var(--color-accent)] focus-within:ring-2 focus-within:ring-[var(--color-accent)]">
-                      <label htmlFor={fieldIds.countryCode} className="sr-only">Country code</label>
-                      <select
-                        id={fieldIds.countryCode}
-                        className="min-h-12 flex-shrink-0 border-r border-[var(--color-border)] bg-transparent px-2 text-sm font-medium text-[var(--color-text-primary)] outline-none"
-                        {...register("countryCode")}
-                      >
-                        {countryCodes.map((country) => (
-                          <option key={country.value} value={country.value}>
-                            {country.label} {country.value}
-                          </option>
-                        ))}
-                      </select>
+                    <div
+                      className="flex h-12 w-full min-w-0 overflow-hidden rounded-input border border-[var(--color-border)] bg-[var(--color-surface)] transition focus-within:border-[var(--color-accent)] focus-within:ring-2 focus-within:ring-[var(--color-accent)] focus-within:ring-offset-1"
+                    >
+                      <div className="flex flex-none items-center border-r border-[var(--color-border)] bg-[var(--color-surface)] px-2">
+                        <label htmlFor={fieldIds.countryCode} className="sr-only">Country code</label>
+                        <select
+                          id={fieldIds.countryCode}
+                          className="h-full w-[5.75rem] bg-transparent text-sm font-medium text-[var(--color-text-primary)] outline-none"
+                          {...register("countryCode")}
+                        >
+                          {countryCodes.map((country) => (
+                            <option key={country.value} value={country.value}>
+                              {country.label} {country.value}
+                            </option>
+                          ))}
+                        </select>
+                      </div>
                       <input
                         id={fieldIds.phoneNumber}
                         autoComplete="tel"
                         inputMode="tel"
                         placeholder="801 234 5678"
-                        className="min-h-12 min-w-0 flex-1 bg-transparent px-4 text-body text-[var(--color-text-primary)] outline-none placeholder:text-gray-500"
+                        className="h-full w-0 min-w-0 flex-1 bg-transparent px-3 text-body text-[var(--color-text-primary)] outline-none placeholder:text-gray-500"
                         aria-invalid={Boolean(errors.phoneNumber)}
                         aria-describedby={errors.phoneNumber ? `${fieldIds.phoneNumber}-error` : undefined}
                         {...register("phoneNumber")}
