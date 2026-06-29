@@ -23,6 +23,11 @@ import { resolveAgentRole } from "@/utils/agent-access";
 import { resolveWorkspaceRole } from "@/utils/auth-role";
 import { activitySeries, formatAnalyticsLabel, numericEntries } from "@/utils/analytics-formatter";
 
+function truncateAxisLabel(value: unknown): string {
+  const label = String(value ?? "");
+  return label.length > 15 ? `${label.slice(0, 15)}...` : label;
+}
+
 export default function AnalyticsDashboardPage() {
   const auth = useAppSelector((state) => state.auth);
   const role = resolveWorkspaceRole(auth.user, auth.accessToken) ?? resolveAgentRole(auth.user?.role ?? auth.user?.roles?.[0]?.code ?? "PropertyManager") ?? "PropertyManager";
@@ -40,6 +45,7 @@ export default function AnalyticsDashboardPage() {
   const activityData = useMemo(() => activitySeries(summary?.internalActivityLogs), [summary?.internalActivityLogs]);
   const featuredData = useMemo(() => numericEntries(summary?.featuredPropertyPerformance), [summary?.featuredPropertyPerformance]);
   const engagementData = useMemo(() => numericEntries(summary?.listingEngagement), [summary?.listingEngagement]);
+  const hasEngagementData = engagementData.some((item) => item.value > 0);
 
   if (auth.isInitializing) {
     return (
@@ -154,9 +160,17 @@ export default function AnalyticsDashboardPage() {
           <h2 className="font-display text-h4 text-[var(--color-text-primary)]">Activity trend</h2>
           <div className="mt-4 h-80">
             <ResponsiveContainer width="100%" height="100%">
-              <LineChart data={lineData} margin={{ bottom: 24, left: 4, right: 12 }}>
+              <LineChart data={lineData} margin={{ bottom: 60, left: 4, right: 12 }}>
                 <CartesianGrid strokeDasharray="3 3" stroke="var(--color-border)" />
-                <XAxis dataKey="date" stroke="var(--color-text-secondary)" interval={0} angle={-8} textAnchor="end" height={56} />
+                <XAxis
+                  dataKey="date"
+                  stroke="var(--color-text-secondary)"
+                  interval={0}
+                  angle={-45}
+                  textAnchor="end"
+                  height={92}
+                  tickFormatter={truncateAxisLabel}
+                />
                 <YAxis stroke="var(--color-text-secondary)" />
                 <Tooltip formatter={(value) => [value, "Total"]} labelFormatter={(label) => String(label)} />
                 <Line type="monotone" dataKey="total" name="Total" stroke="var(--color-accent)" strokeWidth={2} dot={{ r: 3 }} />
@@ -178,18 +192,37 @@ export default function AnalyticsDashboardPage() {
             ))}
           </div>
           <div className="mt-6 h-72">
-            <ResponsiveContainer width="100%" height="100%">
-              <BarChart data={engagementData.length ? engagementData : [{ name: "noData", label: "No data", value: 0 }]} margin={{ bottom: 24 }}>
-                <CartesianGrid strokeDasharray="3 3" stroke="var(--color-border)" />
-                <XAxis dataKey="label" stroke="var(--color-text-secondary)" interval={0} angle={-8} textAnchor="end" height={56} />
-                <YAxis stroke="var(--color-text-secondary)" />
-                <Tooltip
-                  formatter={(value, name) => [value, formatAnalyticsLabel(String(name))]}
-                  labelFormatter={(label) => String(label)}
-                />
-                <Bar dataKey="value" name="totalEvents" fill="var(--color-accent)" radius={[6, 6, 0, 0]} />
-              </BarChart>
-            </ResponsiveContainer>
+            {hasEngagementData ? (
+              <ResponsiveContainer width="100%" height="100%">
+                <BarChart data={engagementData} margin={{ bottom: 56, left: 4, right: 12 }}>
+                  <CartesianGrid strokeDasharray="3 3" stroke="var(--color-border)" />
+                  <XAxis
+                    dataKey="label"
+                    stroke="var(--color-text-secondary)"
+                    interval={0}
+                    angle={-45}
+                    textAnchor="end"
+                    height={88}
+                    tickFormatter={truncateAxisLabel}
+                  />
+                  <YAxis stroke="var(--color-text-secondary)" />
+                  <Tooltip
+                    formatter={(value, name) => [value, formatAnalyticsLabel(String(name))]}
+                    labelFormatter={(label) => String(label)}
+                  />
+                  <Bar dataKey="value" name="totalEvents" fill="var(--color-accent)" radius={[6, 6, 0, 0]} />
+                </BarChart>
+              </ResponsiveContainer>
+            ) : (
+              <div className="flex h-full items-center justify-center rounded-[18px] border border-dashed border-[var(--color-border)] bg-[var(--color-surface)] px-6 text-center">
+                <div className="max-w-xs">
+                  <p className="text-sm font-semibold text-[var(--color-text-primary)]">No engagement yet</p>
+                  <p className="mt-1 text-caption text-[var(--color-text-secondary)]">
+                    Views, shares, and inquiries will appear here once visitors interact with listings.
+                  </p>
+                </div>
+              </div>
+            )}
           </div>
         </section>
       </div>
