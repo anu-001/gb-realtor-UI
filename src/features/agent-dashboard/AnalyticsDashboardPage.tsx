@@ -5,12 +5,8 @@ import {
   Bar,
   BarChart,
   CartesianGrid,
-  Cell,
-  Legend,
   Line,
   LineChart,
-  Pie,
-  PieChart,
   ResponsiveContainer,
   Tooltip,
   XAxis,
@@ -25,15 +21,7 @@ import { useAppSelector } from "@/store";
 import { UserRole } from "@/constants/api-enums";
 import { resolveAgentRole } from "@/utils/agent-access";
 import { resolveWorkspaceRole } from "@/utils/auth-role";
-
-const colors = ["#2563EB", "#6CABDD", "#16A34A", "#F59E0B", "#DC2626"];
-
-function toNumericData(value: unknown) {
-  if (!value || typeof value !== "object") return [];
-  return Object.entries(value as Record<string, unknown>)
-    .filter(([, entry]) => typeof entry === "number")
-    .map(([name, value]) => ({ name, value: value as number }));
-}
+import { activitySeries, formatAnalyticsLabel, numericEntries } from "@/utils/analytics-formatter";
 
 export default function AnalyticsDashboardPage() {
   const auth = useAppSelector((state) => state.auth);
@@ -49,9 +37,9 @@ export default function AnalyticsDashboardPage() {
   });
 
   const summary = query.data;
-  const activityData = useMemo(() => toNumericData(summary?.internalActivityLogs), [summary?.internalActivityLogs]);
-  const featuredData = useMemo(() => toNumericData(summary?.featuredPropertyPerformance), [summary?.featuredPropertyPerformance]);
-  const engagementData = useMemo(() => toNumericData(summary?.listingEngagement), [summary?.listingEngagement]);
+  const activityData = useMemo(() => activitySeries(summary?.internalActivityLogs), [summary?.internalActivityLogs]);
+  const featuredData = useMemo(() => numericEntries(summary?.featuredPropertyPerformance), [summary?.featuredPropertyPerformance]);
+  const engagementData = useMemo(() => numericEntries(summary?.listingEngagement), [summary?.listingEngagement]);
 
   if (auth.isInitializing) {
     return (
@@ -126,9 +114,7 @@ export default function AnalyticsDashboardPage() {
     { label: "Lead conversion", value: `${Number(summary.leadConversionRate ?? 0).toFixed(1)}%`, icon: TrendingUp, description: "Captured lead performance." },
   ];
 
-  const lineData = activityData.length
-    ? activityData.map((item, index) => ({ name: item.name, value: item.value, date: index + 1 }))
-    : [{ name: "No data", value: 0, date: 0 }];
+  const lineData = activityData.length ? activityData : [{ date: "No data", total: 0 }];
 
   return (
     <div className="space-y-6">
@@ -168,12 +154,12 @@ export default function AnalyticsDashboardPage() {
           <h2 className="font-display text-h4 text-[var(--color-text-primary)]">Activity trend</h2>
           <div className="mt-4 h-80">
             <ResponsiveContainer width="100%" height="100%">
-              <LineChart data={lineData}>
+              <LineChart data={lineData} margin={{ bottom: 24, left: 4, right: 12 }}>
                 <CartesianGrid strokeDasharray="3 3" stroke="var(--color-border)" />
-                <XAxis dataKey="name" stroke="var(--color-text-secondary)" />
+                <XAxis dataKey="date" stroke="var(--color-text-secondary)" interval={0} angle={-8} textAnchor="end" height={56} />
                 <YAxis stroke="var(--color-text-secondary)" />
-                <Tooltip />
-                <Line type="monotone" dataKey="value" stroke="var(--color-accent)" strokeWidth={2} dot={{ r: 3 }} />
+                <Tooltip formatter={(value) => [value, "Total"]} labelFormatter={(label) => String(label)} />
+                <Line type="monotone" dataKey="total" name="Total" stroke="var(--color-accent)" strokeWidth={2} dot={{ r: 3 }} />
               </LineChart>
             </ResponsiveContainer>
           </div>
@@ -181,31 +167,29 @@ export default function AnalyticsDashboardPage() {
 
         <section className="rounded-card border border-[var(--color-border)] bg-[var(--color-surface)] p-5 shadow-card">
           <h2 className="font-display text-h4 text-[var(--color-text-primary)]">Featured performance</h2>
-          <div className="mt-4 grid gap-4 lg:grid-cols-2">
-            <div className="h-72">
-              <ResponsiveContainer width="100%" height="100%">
-                <PieChart>
-                  <Pie data={featuredData.length ? featuredData : [{ name: "No data", value: 1 }]} dataKey="value" nameKey="name" innerRadius={55} outerRadius={90}>
-                    {(featuredData.length ? featuredData : [{ name: "No data", value: 1 }]).map((_, index) => (
-                      <Cell key={index} fill={colors[index % colors.length]} />
-                    ))}
-                  </Pie>
-                  <Tooltip />
-                  <Legend />
-                </PieChart>
-              </ResponsiveContainer>
-            </div>
-            <div className="h-72">
-              <ResponsiveContainer width="100%" height="100%">
-                <BarChart data={engagementData.length ? engagementData : [{ name: "No data", value: 0 }]}>
-                  <CartesianGrid strokeDasharray="3 3" stroke="var(--color-border)" />
-                  <XAxis dataKey="name" stroke="var(--color-text-secondary)" />
-                  <YAxis stroke="var(--color-text-secondary)" />
-                  <Tooltip />
-                  <Bar dataKey="value" fill="var(--color-accent)" radius={[6, 6, 0, 0]} />
-                </BarChart>
-              </ResponsiveContainer>
-            </div>
+          <div className="mt-4 grid gap-4 sm:grid-cols-2">
+            {(featuredData.length ? featuredData : [{ name: "noData", label: "No data", value: 0 }]).map((item) => (
+              <div key={item.name} className="rounded-[18px] border border-[var(--color-border)] px-4 py-3">
+                <p className="text-caption text-[var(--color-text-secondary)]">{item.label}</p>
+                <p className="mt-2 font-display text-h4 text-[var(--color-text-primary)]">
+                  {item.name === "clickThroughRate" ? `${item.value.toFixed(1)}%` : item.value.toLocaleString("en-NG")}
+                </p>
+              </div>
+            ))}
+          </div>
+          <div className="mt-6 h-72">
+            <ResponsiveContainer width="100%" height="100%">
+              <BarChart data={engagementData.length ? engagementData : [{ name: "noData", label: "No data", value: 0 }]} margin={{ bottom: 24 }}>
+                <CartesianGrid strokeDasharray="3 3" stroke="var(--color-border)" />
+                <XAxis dataKey="label" stroke="var(--color-text-secondary)" interval={0} angle={-8} textAnchor="end" height={56} />
+                <YAxis stroke="var(--color-text-secondary)" />
+                <Tooltip
+                  formatter={(value, name) => [value, formatAnalyticsLabel(String(name))]}
+                  labelFormatter={(label) => String(label)}
+                />
+                <Bar dataKey="value" name="totalEvents" fill="var(--color-accent)" radius={[6, 6, 0, 0]} />
+              </BarChart>
+            </ResponsiveContainer>
           </div>
         </section>
       </div>
