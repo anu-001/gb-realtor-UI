@@ -29,7 +29,11 @@ function toLabel(value: unknown): string {
   return "—";
 }
 
-export function PropertyCard({ property, variant = "grid", className }: PropertyCardProps) {
+export function PropertyCard({
+  property,
+  variant = "grid",
+  className,
+}: PropertyCardProps) {
   const queryClient = useQueryClient();
   const [favorite, setFavorite] = useState(false);
   const [shareLabel, setShareLabel] = useState("Share property");
@@ -82,11 +86,23 @@ export function PropertyCard({ property, variant = "grid", className }: Property
         <span className="sr-only">{property.title}</span>
       </Link>
 
-      <div className={cn("block pointer-events-none", variant === "list" ? "md:w-[40%]" : "w-full")}>
+      <div
+        className={cn(
+          "block pointer-events-none",
+          variant === "list" ? "md:w-[40%]" : "w-full",
+        )}
+      >
         <div className="relative z-10 aspect-[4/3] overflow-hidden bg-[var(--color-border)]">
           <img
-            src={image?.url ?? "https://images.unsplash.com/photo-1512917774080-9991f1c4c750?auto=format&fit=crop&w=1200&q=80"}
-            alt={typeof image?.altText === "string" ? image.altText : property.title}
+            src={
+              image?.url ??
+              "https://images.unsplash.com/photo-1512917774080-9991f1c4c750?auto=format&fit=crop&w=1200&q=80"
+            }
+            alt={
+              typeof image?.altText === "string"
+                ? image.altText
+                : property.title
+            }
             className="h-full w-full object-cover transition duration-200 group-hover:scale-[1.03]"
             loading="lazy"
             decoding="async"

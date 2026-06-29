@@ -46,7 +46,9 @@ describe("HomePage", () => {
           bedrooms: 3,
           bathrooms: 3,
           sizeSqm: 240,
-          thumbnails: [{ url: "https://example.com/image.jpg", altText: "Front view" }],
+          thumbnails: [
+            { url: "https://example.com/image.jpg", altText: "Front view" },
+          ],
         },
       ],
       meta: { page: 1, pageSize: 9, total: 1, totalPages: 1 },
@@ -54,11 +56,25 @@ describe("HomePage", () => {
 
     renderHome();
 
-    expect(await screen.findByRole("heading", { name: /find the right property, faster\./i })).toBeInTheDocument();
+    expect(
+      await screen.findByRole("heading", {
+        name: /find the right property, faster\./i,
+      }),
+    ).toBeInTheDocument();
     expect(await screen.findByText("Latest homes")).toBeInTheDocument();
-    expect(screen.getAllByRole("link", { name: /view details for modern family home/i }).length).toBeGreaterThan(0);
-    expect(screen.getByRole("textbox", { name: /search city, title, or feature/i })).toBeInTheDocument();
-    expect(screen.getByRole("button", { name: /advanced filters/i })).toBeInTheDocument();
-    expect(screen.getByRole("button", { name: /view results/i })).toBeInTheDocument();
+    expect(
+      screen.getAllByRole("link", {
+        name: /view details for modern family home/i,
+      }).length,
+    ).toBeGreaterThan(0);
+    expect(
+      screen.getByRole("textbox", { name: /search city, title, or feature/i }),
+    ).toBeInTheDocument();
+    expect(
+      screen.getByRole("button", { name: /advanced filters/i }),
+    ).toBeInTheDocument();
+    expect(
+      screen.getByRole("button", { name: /view results/i }),
+    ).toBeInTheDocument();
   });
 });
