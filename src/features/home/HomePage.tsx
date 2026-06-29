@@ -9,6 +9,7 @@ import { SkeletonLoader } from "@/components/feedback/SkeletonLoader";
 import { getPublicListings } from "@/services/properties.service";
 import { cn } from "@/utils/cn";
 import { fadeIn, slideUp } from "@/utils/motion";
+import type { components } from "@/types/api.generated";
 
 type HeroFilters = {
   keyword: string;
@@ -19,6 +20,8 @@ type HeroFilters = {
   maxPrice: string;
   beds: "" | "1" | "2" | "3" | "4" | "5";
 };
+
+type PublicProperty = components["schemas"]["PublicPropertyResponseDto"];
 
 const citySuggestions = [
   "Lagos",
@@ -91,8 +94,18 @@ export default function HomePage() {
   const [filters, setFilters] = useState<HeroFilters>(initialFilters);
   const [advancedOpen, setAdvancedOpen] = useState(false);
   const [page, setPage] = useState(1);
+  const [mobileProperties, setMobileProperties] = useState<PublicProperty[]>([]);
   const pageSize = 12;
   const debouncedFilters = useDebouncedValue(filters, 300);
+  const filterKey = [
+    debouncedFilters.keyword,
+    debouncedFilters.location,
+    debouncedFilters.listingType,
+    debouncedFilters.type,
+    debouncedFilters.minPrice,
+    debouncedFilters.maxPrice,
+    debouncedFilters.beds,
+  ].join("|");
 
   const updateFilters = (next: Partial<HeroFilters>) => {
     setFilters((current) => ({ ...current, ...next }));
@@ -136,6 +149,21 @@ export default function HomePage() {
 
   const properties = listingsQuery.data?.data ?? [];
   const totalListings = listingsQuery.data?.meta.total ?? 0;
+  const totalPages = Math.max(1, listingsQuery.data?.meta.totalPages ?? 1);
+
+  useEffect(() => {
+    setMobileProperties([]);
+  }, [filterKey]);
+
+  useEffect(() => {
+    if (!listingsQuery.data) return;
+
+    setMobileProperties((current) => {
+      if (page === 1) return listingsQuery.data.data;
+      const knownIds = new Set(current.map((property) => property.id));
+      return [...current, ...listingsQuery.data.data.filter((property) => !knownIds.has(property.id))];
+    });
+  }, [listingsQuery.data, page]);
 
   const scrollTo = (elementId: string) => {
     document.getElementById(elementId)?.scrollIntoView({ behavior: "smooth", block: "start" });
@@ -161,17 +189,17 @@ export default function HomePage() {
               </div>
             </div>
 
-            <div className="rounded-[28px] border border-white/20 bg-white/10 p-4 text-white shadow-[0_24px_80px_rgba(2,6,23,0.34)] backdrop-blur-md md:p-5">
+            <div className="rounded-[28px] border border-white/20 bg-black/40 p-4 text-white shadow-[0_24px_80px_rgba(2,6,23,0.34)] backdrop-blur-md md:p-5">
               <div className="flex flex-col gap-3 lg:flex-row lg:items-center">
                 <label className="min-w-0 flex-1">
                   <span className="sr-only">Search city, title, or feature</span>
-                  <div className="flex h-14 items-center gap-3 rounded-2xl border border-white/20 bg-white/10 px-4 transition focus-within:border-white/60">
+                  <div className="flex h-14 items-center gap-3 rounded-2xl border border-white/20 bg-white/10 px-4 transition focus-within:border-white/60 focus-within:ring-2 focus-within:ring-white/80">
                     <Search className="h-5 w-5 text-white/76" />
                     <input
                       value={filters.keyword}
                       onChange={(event) => updateFilters({ keyword: event.target.value })}
                       placeholder="Search city, title, or feature"
-                      className="w-full bg-transparent text-base text-white outline-none placeholder:text-white/62"
+                      className="w-full bg-transparent text-base text-white outline-none placeholder:text-white/72"
                     />
                   </div>
                 </label>
@@ -189,7 +217,7 @@ export default function HomePage() {
                         "min-w-24 px-5 transition",
                         filters.listingType === item.value
                           ? "bg-white text-slate-950"
-                          : "text-white/82 hover:bg-white/12 hover:text-white",
+                          : "text-white/88 hover:bg-white/12 hover:text-white",
                       )}
                     >
                       {item.label}
@@ -201,7 +229,7 @@ export default function HomePage() {
                   type="button"
                   onClick={() => setAdvancedOpen((current) => !current)}
                   aria-expanded={advancedOpen}
-                  className="inline-flex h-14 items-center justify-center gap-2 rounded-2xl border border-white/20 bg-white/10 px-5 text-sm font-medium text-white/88 transition hover:bg-white/14 hover:text-white"
+                  className="inline-flex h-14 items-center justify-center gap-2 rounded-2xl border border-white/20 bg-white/10 px-5 text-sm font-medium text-white/88 transition hover:bg-white/14 hover:text-white focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white/80"
                 >
                   <SlidersHorizontal className="h-4 w-4" />
                   Advanced Filters
@@ -212,14 +240,14 @@ export default function HomePage() {
               {advancedOpen ? (
                 <div className="mt-4 grid gap-3 border-t border-white/14 pt-4 sm:grid-cols-2 lg:grid-cols-5">
                   <FilterField label="Location">
-                    <div className="flex h-12 items-center gap-2 rounded-2xl border border-white/18 bg-white/10 px-4">
+                    <div className="flex h-12 items-center gap-2 rounded-2xl border border-white/18 bg-white/10 px-4 transition focus-within:ring-2 focus-within:ring-white/80">
                       <MapPin className="h-4 w-4 text-white/68" />
                       <input
                         value={filters.location}
                         onChange={(event) => updateFilters({ location: event.target.value })}
                         list="homepage-cities"
                         placeholder="Any city"
-                        className="w-full bg-transparent text-sm text-white outline-none placeholder:text-white/58"
+                        className="w-full bg-transparent text-sm text-white outline-none placeholder:text-white/72"
                       />
                       <datalist id="homepage-cities">
                         {citySuggestions.map((city) => (
@@ -233,7 +261,7 @@ export default function HomePage() {
                     <select
                       value={filters.type}
                       onChange={(event) => updateFilters({ type: event.target.value as HeroFilters["type"] })}
-                      className="h-12 w-full rounded-2xl border border-white/18 bg-white/10 px-4 text-sm text-white outline-none transition focus:border-white/60 [&>option]:text-slate-950"
+                      className="h-12 w-full rounded-2xl border border-white/18 bg-white/10 px-4 text-sm text-white outline-none transition focus:border-white/60 focus-visible:ring-2 focus-visible:ring-white/80 [&>option]:text-slate-950"
                     >
                       <option value="">Any</option>
                       <option value="house">House</option>
@@ -248,7 +276,7 @@ export default function HomePage() {
                     <select
                       value={filters.beds}
                       onChange={(event) => updateFilters({ beds: event.target.value as HeroFilters["beds"] })}
-                      className="h-12 w-full rounded-2xl border border-white/18 bg-white/10 px-4 text-sm text-white outline-none transition focus:border-white/60 [&>option]:text-slate-950"
+                      className="h-12 w-full rounded-2xl border border-white/18 bg-white/10 px-4 text-sm text-white outline-none transition focus:border-white/60 focus-visible:ring-2 focus-visible:ring-white/80 [&>option]:text-slate-950"
                     >
                       <option value="">Any</option>
                       {[1, 2, 3, 4, 5].map((count) => (
@@ -260,27 +288,27 @@ export default function HomePage() {
                   </FilterField>
 
                   <FilterField label="Min price">
-                    <div className="flex h-12 items-center gap-2 rounded-2xl border border-white/18 bg-white/10 px-4">
+                    <div className="flex h-12 items-center gap-2 rounded-2xl border border-white/18 bg-white/10 px-4 transition focus-within:ring-2 focus-within:ring-white/80">
                       <span className="text-sm font-medium text-white/68">₦</span>
                       <input
                         value={filters.minPrice}
                         onChange={(event) => updateFilters({ minPrice: event.target.value.replace(/[^\d]/g, "") })}
                         inputMode="numeric"
                         placeholder="Any"
-                        className="w-full bg-transparent text-sm text-white outline-none placeholder:text-white/58"
+                        className="w-full bg-transparent text-sm text-white outline-none placeholder:text-white/72"
                       />
                     </div>
                   </FilterField>
 
                   <FilterField label="Max price">
-                    <div className="flex h-12 items-center gap-2 rounded-2xl border border-white/18 bg-white/10 px-4">
+                    <div className="flex h-12 items-center gap-2 rounded-2xl border border-white/18 bg-white/10 px-4 transition focus-within:ring-2 focus-within:ring-white/80">
                       <span className="text-sm font-medium text-white/68">₦</span>
                       <input
                         value={filters.maxPrice}
                         onChange={(event) => updateFilters({ maxPrice: event.target.value.replace(/[^\d]/g, "") })}
                         inputMode="numeric"
                         placeholder="Any"
-                        className="w-full bg-transparent text-sm text-white outline-none placeholder:text-white/58"
+                        className="w-full bg-transparent text-sm text-white outline-none placeholder:text-white/72"
                       />
                     </div>
                   </FilterField>
@@ -294,14 +322,14 @@ export default function HomePage() {
                 <button
                   type="button"
                   onClick={resetFilters}
-                  className="text-small font-medium text-white/72 underline-offset-4 transition hover:text-white hover:underline"
+                  className="text-small font-medium text-white/80 underline-offset-4 transition hover:text-white hover:underline focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white/80"
                 >
                   Clear filters
                 </button>
                 <button
                   type="button"
                   onClick={() => scrollTo("listings")}
-                  className="inline-flex h-11 items-center justify-center gap-2 rounded-full border border-white/24 bg-white px-4 text-sm font-medium text-slate-950 transition hover:bg-white/90"
+                  className="inline-flex h-11 items-center justify-center gap-2 rounded-full border border-white/24 bg-white px-4 text-sm font-medium text-slate-950 transition hover:bg-white/90 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white/80"
                 >
                   View results
                   <ArrowRight className="h-4 w-4" />
@@ -378,13 +406,30 @@ export default function HomePage() {
           />
         ) : (
           <>
-            <div className="grid gap-5 sm:grid-cols-2 xl:grid-cols-3">
-              {properties.map((property) => (
-                <PropertyCard key={property.id} property={property} showEnquiry />
+            <div className="grid gap-5 md:hidden">
+              {(mobileProperties.length ? mobileProperties : properties).map((property) => (
+                <PropertyCard key={property.id} property={property} />
               ))}
             </div>
 
-            <div className="flex flex-col gap-3 rounded-card border border-[var(--color-border)] bg-[var(--color-surface)] px-4 py-4 shadow-card sm:flex-row sm:items-center sm:justify-between">
+            <div className="hidden gap-5 md:grid md:grid-cols-2 xl:grid-cols-3">
+              {properties.map((property) => (
+                <PropertyCard key={property.id} property={property} />
+              ))}
+            </div>
+
+            <div className="rounded-card border border-[var(--color-border)] bg-[var(--color-surface)] px-4 py-4 shadow-card md:hidden">
+              <button
+                type="button"
+                disabled={page >= totalPages || listingsQuery.isFetching}
+                onClick={() => setPage((current) => current + 1)}
+                className="inline-flex h-12 w-full items-center justify-center rounded-input border border-[var(--color-border)] px-4 text-sm font-semibold text-[var(--color-text-primary)] transition hover:border-[var(--color-accent)] hover:text-[var(--color-accent)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--color-accent)] focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-40"
+              >
+                {listingsQuery.isFetching ? "Loading..." : page >= totalPages ? "All listings loaded" : "Load more"}
+              </button>
+            </div>
+
+            <div className="hidden flex-col gap-3 rounded-card border border-[var(--color-border)] bg-[var(--color-surface)] px-4 py-4 shadow-card md:flex md:flex-row md:items-center md:justify-between">
               <p className="text-sm text-[var(--color-text-secondary)]" aria-live="polite">
                 Showing {totalListings === 0 ? 0 : (page - 1) * pageSize + 1}-
                 {Math.min(page * pageSize, totalListings)} of {totalListings}
@@ -395,18 +440,18 @@ export default function HomePage() {
                   type="button"
                   disabled={page <= 1}
                   onClick={() => setPage((current) => Math.max(1, current - 1))}
-                  className="inline-flex h-11 items-center justify-center rounded-input border border-[var(--color-border)] px-4 text-sm font-medium text-[var(--color-text-primary)] transition hover:border-[var(--color-accent)] hover:text-[var(--color-accent)] disabled:cursor-not-allowed disabled:opacity-40"
+                  className="inline-flex h-11 items-center justify-center rounded-input border border-[var(--color-border)] px-4 text-sm font-medium text-[var(--color-text-primary)] transition hover:border-[var(--color-accent)] hover:text-[var(--color-accent)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--color-accent)] focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-40"
                 >
                   Previous
                 </button>
                 <span className="min-w-20 text-center text-sm font-medium text-[var(--color-text-primary)]">
-                  Page {page} of {Math.max(1, listingsQuery.data?.meta.totalPages ?? 1)}
+                  Page {page} of {totalPages}
                 </span>
                 <button
                   type="button"
-                  disabled={page >= (listingsQuery.data?.meta.totalPages ?? 1)}
+                  disabled={page >= totalPages}
                   onClick={() => setPage((current) => current + 1)}
-                  className="inline-flex h-11 items-center justify-center rounded-input border border-[var(--color-border)] px-4 text-sm font-medium text-[var(--color-text-primary)] transition hover:border-[var(--color-accent)] hover:text-[var(--color-accent)] disabled:cursor-not-allowed disabled:opacity-40"
+                  className="inline-flex h-11 items-center justify-center rounded-input border border-[var(--color-border)] px-4 text-sm font-medium text-[var(--color-text-primary)] transition hover:border-[var(--color-accent)] hover:text-[var(--color-accent)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--color-accent)] focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-40"
                 >
                   Next
                 </button>

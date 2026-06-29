@@ -81,7 +81,7 @@ function SearchResultsPanel() {
       ) : (
         <div className={isListView ? "space-y-4" : "grid gap-4 md:grid-cols-2 xl:grid-cols-3"} aria-busy={isFetching ? "true" : undefined}>
           {data.map((property) => (
-            <PropertyCard key={property.id} property={property} variant={isListView ? "list" : "grid"} showEnquiry />
+            <PropertyCard key={property.id} property={property} variant={isListView ? "list" : "grid"} />
           ))}
         </div>
       )}
