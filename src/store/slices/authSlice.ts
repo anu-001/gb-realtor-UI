@@ -176,7 +176,6 @@ const authSlice = createSlice({
 
 export const { setAuth, clearAuth, setInitializing } = authSlice.actions;
 
-// Compatibility exports for existing code paths
 export const setAccessToken = (accessToken: string | null) => setAuth({ user: null, accessToken });
 export const setAuthLoading = (isLoading: boolean) => setInitializing(isLoading);
 export const hydrateAuth = (tokens: AuthTokens) => setAuth({ user: null, accessToken: tokens.accessToken });

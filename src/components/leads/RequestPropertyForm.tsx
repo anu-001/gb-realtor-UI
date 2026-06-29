@@ -406,16 +406,16 @@ export function RequestPropertyForm({
                 <div className="grid gap-4 md:grid-cols-2">
                   <div className="md:col-span-2">
                     <FormField label="Email address" htmlFor={fieldIds.email} error={errors.email?.message}>
-                    <input
-                      id={fieldIds.email}
-                      type="email"
-                      autoComplete="email"
-                      placeholder="jane@example.com"
-                      className="ui-field placeholder:text-gray-500 focus-visible:ring-2 focus-visible:ring-[var(--color-accent)]"
-                      aria-invalid={Boolean(errors.email)}
-                      aria-describedby={errors.email ? `${fieldIds.email}-error` : undefined}
-                      {...register("email")}
-                    />
+                      <input
+                        id={fieldIds.email}
+                        type="email"
+                        autoComplete="email"
+                        placeholder="jane@example.com"
+                        className="ui-field placeholder:text-gray-500 focus-visible:ring-2 focus-visible:ring-[var(--color-accent)]"
+                        aria-invalid={Boolean(errors.email)}
+                        aria-describedby={errors.email ? `${fieldIds.email}-error` : undefined}
+                        {...register("email")}
+                      />
                     </FormField>
                   </div>
 
@@ -451,47 +451,50 @@ export function RequestPropertyForm({
 
                 {!isPropertySpecific ? (
                   <div className="grid gap-4 md:grid-cols-[minmax(0,0.9fr)_minmax(0,1.1fr)]">
-                  <FormField
-                    label="Budget"
-                    htmlFor={fieldIds.budgetKobo}
-                    error={errors.budgetKobo?.message}
-                  >
-                    <div className="flex h-12 items-center gap-2 rounded-input border border-[var(--color-border)] bg-[var(--color-surface)] px-4 transition focus-within:border-[var(--color-accent)] focus-within:ring-2 focus-within:ring-[var(--color-accent)]">
-                      <span className="text-sm font-medium text-[var(--color-text-secondary)]">₦</span>
-                      <input
-                        id={fieldIds.budgetKobo}
-                        inputMode="numeric"
-                        autoComplete="off"
-                        placeholder="150,000,000"
-                        value={budgetValue}
-                        className="w-full bg-transparent text-body text-[var(--color-text-primary)] outline-none placeholder:text-gray-500"
-                        aria-invalid={Boolean(errors.budgetKobo)}
-                        aria-describedby={errors.budgetKobo ? `${fieldIds.budgetKobo}-error` : undefined}
-                        name={budgetRegistration.name}
-                        ref={budgetRegistration.ref}
-                        onBlur={budgetRegistration.onBlur}
-                        onChange={(event) => {
-                          setValue("budgetKobo", formatNumberWithCommas(event.target.value), { shouldDirty: true, shouldValidate: false });
-                        }}
-                      />
-                    </div>
-                  </FormField>
+                    <FormField
+                      label="Budget"
+                      htmlFor={fieldIds.budgetKobo}
+                      error={errors.budgetKobo?.message}
+                    >
+                      <div className="flex h-12 items-center gap-2 rounded-input border border-[var(--color-border)] bg-[var(--color-surface)] px-4 transition focus-within:border-[var(--color-accent)] focus-within:ring-2 focus-within:ring-[var(--color-accent)]">
+                        <span className="text-sm font-medium text-[var(--color-text-secondary)]">₦</span>
+                        <input
+                          id={fieldIds.budgetKobo}
+                          inputMode="numeric"
+                          autoComplete="off"
+                          placeholder="150,000,000"
+                          value={budgetValue}
+                          className="w-full bg-transparent text-body text-[var(--color-text-primary)] outline-none placeholder:text-gray-500"
+                          aria-invalid={Boolean(errors.budgetKobo)}
+                          aria-describedby={errors.budgetKobo ? `${fieldIds.budgetKobo}-error` : undefined}
+                          name={budgetRegistration.name}
+                          ref={budgetRegistration.ref}
+                          onBlur={budgetRegistration.onBlur}
+                          onChange={(event) => {
+                            setValue("budgetKobo", formatNumberWithCommas(event.target.value), {
+                              shouldDirty: true,
+                              shouldValidate: false,
+                            });
+                          }}
+                        />
+                      </div>
+                    </FormField>
 
-                  <FormField
-                    label="Property interest"
-                    htmlFor={fieldIds.propertyInterest}
-                    error={errors.propertyInterest?.message}
-                  >
-                    <input
-                      id={fieldIds.propertyInterest}
-                      autoComplete="off"
-                      placeholder="3-bedroom apartment"
-                      className="ui-field placeholder:text-gray-500 focus-visible:ring-2 focus-visible:ring-[var(--color-accent)]"
-                      aria-invalid={Boolean(errors.propertyInterest)}
-                      aria-describedby={errors.propertyInterest ? `${fieldIds.propertyInterest}-error` : undefined}
-                      {...register("propertyInterest")}
-                    />
-                  </FormField>
+                    <FormField
+                      label="Property interest"
+                      htmlFor={fieldIds.propertyInterest}
+                      error={errors.propertyInterest?.message}
+                    >
+                      <input
+                        id={fieldIds.propertyInterest}
+                        autoComplete="off"
+                        placeholder="3-bedroom apartment"
+                        className="ui-field placeholder:text-gray-500 focus-visible:ring-2 focus-visible:ring-[var(--color-accent)]"
+                        aria-invalid={Boolean(errors.propertyInterest)}
+                        aria-describedby={errors.propertyInterest ? `${fieldIds.propertyInterest}-error` : undefined}
+                        {...register("propertyInterest")}
+                      />
+                    </FormField>
                   </div>
                 ) : null}
 

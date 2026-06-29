@@ -187,7 +187,7 @@ export function PublicRequestPropertyForm({
         <p className="mt-3 max-w-2xl text-body-lg text-[var(--color-text-secondary)]">{subheading}</p>
       </div>
 
-      <div className="p-6 md:p-8 md:p-10">
+      <div className="p-6 md:p-10">
         <AnimatePresence mode="wait">
           {submittedName ? (
             <motion.div
@@ -293,30 +293,32 @@ export function PublicRequestPropertyForm({
               <div className="grid gap-4 md:grid-cols-2">
                 <div className="md:col-span-2">
                   <FormField label="Email address" htmlFor={fieldIds.email} error={errors.email?.message}>
-                  <input
-                    id={fieldIds.email}
-                    type="email"
-                    autoComplete="email"
-                    placeholder="jane@example.com"
-                    className="ui-field placeholder:text-gray-500 focus-visible:ring-2 focus-visible:ring-[var(--color-accent)]"
-                    aria-invalid={Boolean(errors.email)}
-                    aria-describedby={errors.email ? `${fieldIds.email}-error` : undefined}
-                    {...register("email")}
-                  />
+                    <input
+                      id={fieldIds.email}
+                      type="email"
+                      autoComplete="email"
+                      placeholder="jane@example.com"
+                      className="ui-field placeholder:text-gray-500 focus-visible:ring-2 focus-visible:ring-[var(--color-accent)]"
+                      aria-invalid={Boolean(errors.email)}
+                      aria-describedby={errors.email ? `${fieldIds.email}-error` : undefined}
+                      {...register("email")}
+                    />
                   </FormField>
                 </div>
 
-                <FormField label="Preferred location" htmlFor={fieldIds.preferredLocation} error={errors.preferredLocation?.message}>
-                  <input
-                    id={fieldIds.preferredLocation}
-                    autoComplete="off"
-                    placeholder="Lekki"
-                    className="ui-field placeholder:text-gray-500 focus-visible:ring-2 focus-visible:ring-[var(--color-accent)]"
-                    aria-invalid={Boolean(errors.preferredLocation)}
-                    aria-describedby={errors.preferredLocation ? `${fieldIds.preferredLocation}-error` : undefined}
-                    {...register("preferredLocation")}
-                  />
-                </FormField>
+                <div className="md:col-span-2">
+                  <FormField label="Preferred location" htmlFor={fieldIds.preferredLocation} error={errors.preferredLocation?.message}>
+                    <input
+                      id={fieldIds.preferredLocation}
+                      autoComplete="off"
+                      placeholder="Lekki"
+                      className="ui-field placeholder:text-gray-500 focus-visible:ring-2 focus-visible:ring-[var(--color-accent)]"
+                      aria-invalid={Boolean(errors.preferredLocation)}
+                      aria-describedby={errors.preferredLocation ? `${fieldIds.preferredLocation}-error` : undefined}
+                      {...register("preferredLocation")}
+                    />
+                  </FormField>
+                </div>
               </div>
 
               <div className="grid gap-4 md:grid-cols-2">
@@ -381,7 +383,7 @@ export function PublicRequestPropertyForm({
                 <button
                   type="submit"
                   disabled={isSubmitting}
-                className="ui-button-primary"
+                  className="ui-button-primary"
                 >
                   {isSubmitting ? (
                     <>
