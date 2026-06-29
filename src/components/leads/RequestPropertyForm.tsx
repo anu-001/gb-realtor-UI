@@ -5,9 +5,7 @@ import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { ArrowRight, CheckCircle2, MapPin } from "lucide-react";
 import { createPublicLead } from "@/services/leads.service";
-import { RichTextEditorField } from "@/components/ui/RichTextEditorField";
 import { getApiErrorMessage, getFieldErrors, parseApiError } from "@/utils/api-error";
-import { htmlTextLength, stripHtml } from "@/utils/html-text-length";
 import { cn } from "@/utils/cn";
 
 const citySuggestions = [
@@ -49,10 +47,7 @@ const requestPropertySchema = z.object({
       return digits && digits.length > 0 ? digits : undefined;
     }),
   propertyInterest: z.string().trim().min(1, "Property interest is required"),
-  inquiryNotes: z
-    .string()
-    .refine((html) => htmlTextLength(html) > 0, "Tell us a little about what you need")
-    .refine((html) => htmlTextLength(html) <= 1000, "Notes must not exceed 1000 characters"),
+  inquiryNotes: z.string().trim().min(1, "Tell us a little about what you need").max(5000, "Notes must not exceed 5000 characters"),
   source: z.string().optional(),
   website: z.string().max(0, "Spam detected").optional(),
 });
@@ -138,12 +133,12 @@ export function RequestPropertyForm({
 
   const {
     register,
-    control,
     handleSubmit,
     setFocus,
     setError,
     setValue,
     reset,
+    watch,
     formState: { errors, isSubmitting },
   } = useForm<RequestPropertyFormInput, unknown, RequestPropertyFormValues>({
     resolver: zodResolver(requestPropertySchema),
@@ -162,6 +157,8 @@ export function RequestPropertyForm({
       website: "",
     },
   });
+
+  const inquiryNotes = watch("inquiryNotes") ?? "";
 
   useEffect(() => {
     if (!preferredLocation) {
@@ -188,7 +185,7 @@ export function RequestPropertyForm({
       setSubmitError(null);
 
       try {
-        const normalizedNotes = stripHtml(values.inquiryNotes).replace(/\s+/g, " ").trim();
+        const normalizedNotes = values.inquiryNotes.replace(/\s+/g, " ").trim();
         await createPublicLead({
           ...(propertyId ? { propertyId } : {}),
           fullName: values.fullName.trim(),
@@ -197,7 +194,7 @@ export function RequestPropertyForm({
           preferredLocation: values.preferredLocation.trim(),
           budgetKobo: values.budgetKobo,
           propertyInterest: values.propertyInterest.trim(),
-          inquiryNotes: values.inquiryNotes,
+          inquiryNotes: values.inquiryNotes.trim(),
           message: normalizedNotes.slice(0, 500) || undefined,
           source: values.source?.trim() || source,
           website: values.website,
@@ -453,25 +450,28 @@ export function RequestPropertyForm({
                   </FormField>
                 </div>
 
-                <RichTextEditorField
-                  id={fieldIds.inquiryNotes}
-                  name="inquiryNotes"
-                  control={control}
-                  label="Notes"
-              placeholder="Example: 3-bedroom apartment in Lekki, gated estate, budget under 150m."
-                  minHeight={140}
-                  maxCharacters={1000}
-                  toolbarVariant="editorial"
-                  required
-                  rules={{ required: "Tell us a little about what you need" }}
-                />
+                <FormField label="What do you need?" htmlFor={fieldIds.inquiryNotes} error={errors.inquiryNotes?.message}>
+                  <textarea
+                    id={fieldIds.inquiryNotes}
+                    rows={compact ? 6 : 8}
+                    maxLength={5000}
+                    placeholder="Example: 3-bedroom apartment in Lekki, gated estate, budget under 150m."
+                    className="min-h-[160px] w-full resize-y rounded-input border border-[var(--color-border)] bg-[var(--color-surface)] px-4 py-3 text-body leading-7 text-[var(--color-text-primary)] outline-none transition focus-visible:border-[var(--color-accent)]"
+                    aria-invalid={Boolean(errors.inquiryNotes)}
+                    aria-describedby={errors.inquiryNotes ? `${fieldIds.inquiryNotes}-error` : `${fieldIds.inquiryNotes}-counter`}
+                    {...register("inquiryNotes")}
+                  />
+                  <p id={`${fieldIds.inquiryNotes}-counter`} className="text-right text-small text-slate-700">
+                    {inquiryNotes.length} / 5000 characters
+                  </p>
+                </FormField>
 
                 <input type="hidden" value={source} {...register("source")} />
                 <input type="hidden" value="" aria-hidden="true" tabIndex={-1} autoComplete="off" {...register("website")} />
 
                 <div className="flex flex-col gap-3 pt-2 sm:flex-row sm:items-center sm:justify-between">
-                  <p className="max-w-lg text-caption text-[var(--color-text-secondary)]">
-                    We only use this to reply with suitable properties and next steps.
+                  <p className="max-w-lg text-caption text-slate-700">
+                    Our luxury agents review all briefs and typically respond within 2 hours.
                   </p>
                   <button
                     type="submit"

@@ -2,7 +2,7 @@ import { useEffect, useState, type ReactNode } from "react";
 import { Link } from "react-router-dom";
 import { useQuery } from "@tanstack/react-query";
 import { motion } from "framer-motion";
-import { ArrowRight, Filter, MapPin, Search } from "lucide-react";
+import { ArrowRight, ChevronDown, Filter, MapPin, Search, SlidersHorizontal } from "lucide-react";
 import { PropertyCard } from "@/components/property/PropertyCard";
 import { EmptyState } from "@/components/feedback/EmptyState";
 import { SkeletonLoader } from "@/components/feedback/SkeletonLoader";
@@ -14,6 +14,7 @@ type HeroFilters = {
   keyword: string;
   location: string;
   listingType: "" | "sale" | "rent";
+  type: "" | "house" | "apartment" | "land" | "commercial" | "villa";
   minPrice: string;
   maxPrice: string;
   beds: "" | "1" | "2" | "3" | "4" | "5";
@@ -41,6 +42,7 @@ const initialFilters: HeroFilters = {
   keyword: "",
   location: "",
   listingType: "",
+  type: "",
   minPrice: "",
   maxPrice: "",
   beds: "",
@@ -67,7 +69,7 @@ function sanitizeAmount(value: string): number | undefined {
 function FilterField({ label, children }: { label: string; children: ReactNode }) {
   return (
     <label className="space-y-2">
-      <span className="text-small font-medium uppercase tracking-[0.16em] text-[var(--color-text-secondary)]">
+      <span className="text-small font-medium uppercase tracking-[0.16em] text-white/70">
         {label}
       </span>
       {children}
@@ -87,6 +89,7 @@ function ListingSkeleton() {
 
 export default function HomePage() {
   const [filters, setFilters] = useState<HeroFilters>(initialFilters);
+  const [advancedOpen, setAdvancedOpen] = useState(false);
   const [page, setPage] = useState(1);
   const pageSize = 12;
   const debouncedFilters = useDebouncedValue(filters, 300);
@@ -107,6 +110,7 @@ export default function HomePage() {
       debouncedFilters.keyword,
       debouncedFilters.location,
       debouncedFilters.listingType,
+      debouncedFilters.type,
       debouncedFilters.minPrice,
       debouncedFilters.maxPrice,
       debouncedFilters.beds,
@@ -117,6 +121,7 @@ export default function HomePage() {
         q: debouncedFilters.keyword.trim() || undefined,
         location: debouncedFilters.location.trim() || undefined,
         listingType: debouncedFilters.listingType || undefined,
+        type: debouncedFilters.type || undefined,
         minPrice: sanitizeAmount(debouncedFilters.minPrice),
         maxPrice: sanitizeAmount(debouncedFilters.maxPrice),
         beds: debouncedFilters.beds ? Number(debouncedFilters.beds) : undefined,
@@ -140,158 +145,163 @@ export default function HomePage() {
     <div className="space-y-20 pb-20">
       <motion.section
         {...fadeIn}
-        className="relative overflow-hidden rounded-[32px] border border-[var(--color-border)] bg-[linear-gradient(135deg,rgba(15,23,42,0.96),rgba(15,23,42,0.86)_50%,rgba(37,99,235,0.36)),url('https://images.unsplash.com/photo-1505693416388-ac5ce068fe85?auto=format&fit=crop&w=1800&q=80')] bg-cover bg-center text-white shadow-[0_24px_80px_rgba(15,23,42,0.28)]"
+        className="relative min-h-[82vh] overflow-hidden rounded-[32px] border border-white/10 bg-[linear-gradient(rgba(2,6,23,0.66),rgba(2,6,23,0.58)),url('https://images.unsplash.com/photo-1600607687920-4e2a09cf159d?auto=format&fit=crop&w=2200&q=86')] bg-cover bg-center text-white shadow-[0_28px_90px_rgba(2,6,23,0.32)]"
       >
-        <div className="absolute inset-0 bg-[radial-gradient(circle_at_top_left,rgba(255,255,255,0.12),transparent_32%),radial-gradient(circle_at_bottom_right,rgba(37,99,235,0.18),transparent_30%)]" />
-        <div className="relative app-container py-8 md:py-10">
-          <div className="grid gap-8 lg:grid-cols-[minmax(0,1.05fr)_minmax(0,0.95fr)] lg:items-center">
-            <div className="max-w-2xl space-y-6">
+        <div className="absolute inset-0 bg-[linear-gradient(180deg,rgba(2,6,23,0.2)_0%,rgba(2,6,23,0.62)_72%,rgba(2,6,23,0.78)_100%)]" />
+        <div className="relative app-container flex min-h-[82vh] flex-col justify-center py-12">
+          <div className="max-w-5xl space-y-10">
+            <div className="max-w-3xl space-y-6">
               <div className="space-y-4">
-                <h1 className="font-display text-[clamp(2.8rem,7vw,5rem)] font-bold leading-[0.96] tracking-[-0.04em]">
+                <h1 className="font-display text-[clamp(2.75rem,7vw,5.25rem)] font-bold leading-[0.98]">
                   Find the right property, faster.
                 </h1>
                 <p className="max-w-xl text-body-lg text-white/72">
                   Search verified homes across Nigeria and move straight to enquiry when something fits.
                 </p>
               </div>
-              <div className="flex flex-wrap gap-3">
-                <button
-                  type="button"
-                  onClick={() => scrollTo("listings")}
-                  className="inline-flex h-11 items-center justify-center rounded-full bg-white px-5 text-sm font-medium text-[var(--color-text-primary)] transition hover:bg-white/92"
-                >
-                  Browse listings
-                </button>
-                <Link
-                  to="/request-property"
-                  className="inline-flex h-11 items-center justify-center rounded-full border border-white/14 bg-white/8 px-5 text-sm font-medium text-white transition hover:bg-white/14"
-                >
-                  Request a property
-                </Link>
-              </div>
             </div>
 
-            <div className="rounded-[28px] border border-white/12 bg-white/92 p-4 text-[var(--color-text-primary)] shadow-modal backdrop-blur-xl md:p-5">
-              <div className="flex items-center justify-between gap-3 border-b border-[var(--color-border)] pb-4">
-                <div>
-                  <p className="text-small font-semibold uppercase tracking-[0.18em] text-[var(--color-text-secondary)]">Search</p>
+            <div className="rounded-[28px] border border-white/20 bg-white/10 p-4 text-white shadow-[0_24px_80px_rgba(2,6,23,0.34)] backdrop-blur-md md:p-5">
+              <div className="flex flex-col gap-3 lg:flex-row lg:items-center">
+                <label className="min-w-0 flex-1">
+                  <span className="sr-only">Search city, title, or feature</span>
+                  <div className="flex h-14 items-center gap-3 rounded-2xl border border-white/20 bg-white/10 px-4 transition focus-within:border-white/60">
+                    <Search className="h-5 w-5 text-white/76" />
+                    <input
+                      value={filters.keyword}
+                      onChange={(event) => updateFilters({ keyword: event.target.value })}
+                      placeholder="Search city, title, or feature"
+                      className="w-full bg-transparent text-base text-white outline-none placeholder:text-white/62"
+                    />
+                  </div>
+                </label>
+
+                <div className="grid h-14 grid-cols-2 overflow-hidden rounded-2xl border border-white/20 bg-white/10 text-sm font-medium">
+                  {[
+                    { label: "Buy", value: "sale" },
+                    { label: "Rent", value: "rent" },
+                  ].map((item) => (
+                    <button
+                      key={item.label}
+                      type="button"
+                      onClick={() => updateFilters({ listingType: item.value as HeroFilters["listingType"] })}
+                      className={cn(
+                        "min-w-24 px-5 transition",
+                        filters.listingType === item.value
+                          ? "bg-white text-slate-950"
+                          : "text-white/82 hover:bg-white/12 hover:text-white",
+                      )}
+                    >
+                      {item.label}
+                    </button>
+                  ))}
                 </div>
+
                 <button
                   type="button"
-                  onClick={resetFilters}
-                  className="rounded-full border border-[var(--color-border)] px-3 py-2 text-small font-medium text-[var(--color-text-secondary)] transition hover:bg-[var(--color-surface-raised)] hover:text-[var(--color-text-primary)]"
+                  onClick={() => setAdvancedOpen((current) => !current)}
+                  aria-expanded={advancedOpen}
+                  className="inline-flex h-14 items-center justify-center gap-2 rounded-2xl border border-white/20 bg-white/10 px-5 text-sm font-medium text-white/88 transition hover:bg-white/14 hover:text-white"
                 >
-                  Clear
+                  <SlidersHorizontal className="h-4 w-4" />
+                  Advanced Filters
+                  <ChevronDown className={cn("h-4 w-4 transition", advancedOpen && "rotate-180")} />
                 </button>
               </div>
 
-              <div className="mt-4 grid gap-3 sm:grid-cols-2">
-                <div className="sm:col-span-2">
-                  <FilterField label="Keyword">
-                    <div className="flex h-12 items-center gap-2 rounded-input border border-[var(--color-border)] bg-[var(--color-surface)] px-4">
-                      <Search className="h-4 w-4 text-[var(--color-text-secondary)]" />
+              {advancedOpen ? (
+                <div className="mt-4 grid gap-3 border-t border-white/14 pt-4 sm:grid-cols-2 lg:grid-cols-5">
+                  <FilterField label="Location">
+                    <div className="flex h-12 items-center gap-2 rounded-2xl border border-white/18 bg-white/10 px-4">
+                      <MapPin className="h-4 w-4 text-white/68" />
                       <input
-                        value={filters.keyword}
-                        onChange={(event) => updateFilters({ keyword: event.target.value })}
-                        placeholder="Search city, title, or feature"
-                        className="w-full bg-transparent text-sm outline-none placeholder:text-[var(--color-text-secondary)]"
+                        value={filters.location}
+                        onChange={(event) => updateFilters({ location: event.target.value })}
+                        list="homepage-cities"
+                        placeholder="Any city"
+                        className="w-full bg-transparent text-sm text-white outline-none placeholder:text-white/58"
+                      />
+                      <datalist id="homepage-cities">
+                        {citySuggestions.map((city) => (
+                          <option key={city} value={city} />
+                        ))}
+                      </datalist>
+                    </div>
+                  </FilterField>
+
+                  <FilterField label="Property type">
+                    <select
+                      value={filters.type}
+                      onChange={(event) => updateFilters({ type: event.target.value as HeroFilters["type"] })}
+                      className="h-12 w-full rounded-2xl border border-white/18 bg-white/10 px-4 text-sm text-white outline-none transition focus:border-white/60 [&>option]:text-slate-950"
+                    >
+                      <option value="">Any</option>
+                      <option value="house">House</option>
+                      <option value="apartment">Apartment</option>
+                      <option value="land">Land</option>
+                      <option value="commercial">Commercial</option>
+                      <option value="villa">Villa</option>
+                    </select>
+                  </FilterField>
+
+                  <FilterField label="Bedrooms">
+                    <select
+                      value={filters.beds}
+                      onChange={(event) => updateFilters({ beds: event.target.value as HeroFilters["beds"] })}
+                      className="h-12 w-full rounded-2xl border border-white/18 bg-white/10 px-4 text-sm text-white outline-none transition focus:border-white/60 [&>option]:text-slate-950"
+                    >
+                      <option value="">Any</option>
+                      {[1, 2, 3, 4, 5].map((count) => (
+                        <option key={count} value={String(count)}>
+                          {count}+
+                        </option>
+                      ))}
+                    </select>
+                  </FilterField>
+
+                  <FilterField label="Min price">
+                    <div className="flex h-12 items-center gap-2 rounded-2xl border border-white/18 bg-white/10 px-4">
+                      <span className="text-sm font-medium text-white/68">₦</span>
+                      <input
+                        value={filters.minPrice}
+                        onChange={(event) => updateFilters({ minPrice: event.target.value.replace(/[^\d]/g, "") })}
+                        inputMode="numeric"
+                        placeholder="Any"
+                        className="w-full bg-transparent text-sm text-white outline-none placeholder:text-white/58"
+                      />
+                    </div>
+                  </FilterField>
+
+                  <FilterField label="Max price">
+                    <div className="flex h-12 items-center gap-2 rounded-2xl border border-white/18 bg-white/10 px-4">
+                      <span className="text-sm font-medium text-white/68">₦</span>
+                      <input
+                        value={filters.maxPrice}
+                        onChange={(event) => updateFilters({ maxPrice: event.target.value.replace(/[^\d]/g, "") })}
+                        inputMode="numeric"
+                        placeholder="Any"
+                        className="w-full bg-transparent text-sm text-white outline-none placeholder:text-white/58"
                       />
                     </div>
                   </FilterField>
                 </div>
+              ) : null}
 
-                <FilterField label="Location">
-                  <div className="flex h-12 items-center gap-2 rounded-input border border-[var(--color-border)] bg-[var(--color-surface)] px-4">
-                    <MapPin className="h-4 w-4 text-[var(--color-text-secondary)]" />
-                    <input
-                      value={filters.location}
-                      onChange={(event) => updateFilters({ location: event.target.value })}
-                      list="homepage-cities"
-                      placeholder="Any city"
-                      className="w-full bg-transparent text-sm outline-none placeholder:text-[var(--color-text-secondary)]"
-                    />
-                    <datalist id="homepage-cities">
-                      {citySuggestions.map((city) => (
-                        <option key={city} value={city} />
-                      ))}
-                    </datalist>
-                  </div>
-                </FilterField>
-
-                <FilterField label="Listing type">
-                  <div className="grid h-12 grid-cols-3 overflow-hidden rounded-input border border-[var(--color-border)] bg-[var(--color-surface)] text-sm">
-                    {[
-                      { label: "Any", value: "" },
-                      { label: "Buy", value: "sale" },
-                      { label: "Rent", value: "rent" },
-                    ].map((item) => (
-                      <button
-                        key={item.label}
-                        type="button"
-                        onClick={() => updateFilters({ listingType: item.value as HeroFilters["listingType"] })}
-                        className={cn(
-                          "transition",
-                          filters.listingType === item.value
-                            ? "bg-[var(--color-accent)] text-white"
-                            : "text-[var(--color-text-secondary)] hover:bg-[var(--color-surface-raised)] hover:text-[var(--color-text-primary)]",
-                        )}
-                      >
-                        {item.label}
-                      </button>
-                    ))}
-                  </div>
-                </FilterField>
-
-                <FilterField label="Bedrooms">
-                  <select
-                    value={filters.beds}
-                    onChange={(event) => updateFilters({ beds: event.target.value as HeroFilters["beds"] })}
-                    className="ui-field h-12"
-                  >
-                    <option value="">Any</option>
-                    {[1, 2, 3, 4, 5].map((count) => (
-                      <option key={count} value={String(count)}>
-                        {count}+
-                      </option>
-                    ))}
-                  </select>
-                </FilterField>
-
-                <FilterField label="Min price">
-                  <div className="flex h-12 items-center gap-2 rounded-input border border-[var(--color-border)] bg-[var(--color-surface)] px-4">
-                    <span className="text-sm font-medium text-[var(--color-text-secondary)]">₦</span>
-                    <input
-                      value={filters.minPrice}
-                      onChange={(event) => updateFilters({ minPrice: event.target.value.replace(/[^\d]/g, "") })}
-                      inputMode="numeric"
-                      placeholder="Any"
-                      className="w-full bg-transparent text-sm outline-none placeholder:text-[var(--color-text-secondary)]"
-                    />
-                  </div>
-                </FilterField>
-
-                <FilterField label="Max price">
-                  <div className="flex h-12 items-center gap-2 rounded-input border border-[var(--color-border)] bg-[var(--color-surface)] px-4">
-                    <span className="text-sm font-medium text-[var(--color-text-secondary)]">₦</span>
-                    <input
-                      value={filters.maxPrice}
-                      onChange={(event) => updateFilters({ maxPrice: event.target.value.replace(/[^\d]/g, "") })}
-                      inputMode="numeric"
-                      placeholder="Any"
-                      className="w-full bg-transparent text-sm outline-none placeholder:text-[var(--color-text-secondary)]"
-                    />
-                  </div>
-                </FilterField>
-              </div>
-
-              <div className="mt-4 flex flex-wrap items-center justify-between gap-3 border-t border-[var(--color-border)] pt-4">
-                <p className="text-small text-[var(--color-text-secondary)]" aria-live="polite">
+              <div className="mt-4 flex flex-wrap items-center justify-between gap-3 border-t border-white/14 pt-4">
+                <p className="text-small text-white/76" aria-live="polite">
                   {listingsQuery.isLoading ? "Loading listings..." : `${totalListings} properties available`}
                 </p>
                 <button
                   type="button"
+                  onClick={resetFilters}
+                  className="text-small font-medium text-white/72 underline-offset-4 transition hover:text-white hover:underline"
+                >
+                  Clear filters
+                </button>
+                <button
+                  type="button"
                   onClick={() => scrollTo("listings")}
-                  className="inline-flex h-11 items-center justify-center gap-2 rounded-full bg-[var(--color-accent)] px-4 text-sm font-medium text-white transition hover:bg-[var(--color-accent-hover)]"
+                  className="inline-flex h-11 items-center justify-center gap-2 rounded-full border border-white/24 bg-white px-4 text-sm font-medium text-slate-950 transition hover:bg-white/90"
                 >
                   View results
                   <ArrowRight className="h-4 w-4" />

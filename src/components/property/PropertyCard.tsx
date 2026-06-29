@@ -1,5 +1,5 @@
 import { Suspense, lazy, useState } from "react";
-import { Bath, Bed, Heart, Share2, Maximize2 } from "lucide-react";
+import { ArrowRight, Bath, Bed, Heart, Maximize2, Share2 } from "lucide-react";
 import { Link } from "react-router-dom";
 import { motion } from "framer-motion";
 import { useQueryClient } from "@tanstack/react-query";
@@ -116,6 +116,7 @@ export function PropertyCard({ property, showEnquiry = false, variant = "grid", 
                 setFavorite((value) => !value);
               }}
               className={cn(
+                "pointer-events-auto",
                 "inline-flex h-10 w-10 items-center justify-center rounded-full border border-white/60 bg-white/92 text-[var(--color-text-primary)] shadow-sm backdrop-blur transition hover:scale-[1.02]",
                 favorite && "text-[var(--color-danger)]",
               )}
@@ -129,29 +130,27 @@ export function PropertyCard({ property, showEnquiry = false, variant = "grid", 
                 event.preventDefault();
                 void shareProperty();
               }}
-              className="inline-flex h-10 w-10 items-center justify-center rounded-full border border-white/60 bg-white/92 text-[var(--color-text-primary)] shadow-sm backdrop-blur transition hover:scale-[1.02]"
+              className="pointer-events-auto inline-flex h-10 w-10 items-center justify-center rounded-full border border-white/60 bg-white/92 text-[var(--color-text-primary)] shadow-sm backdrop-blur transition hover:scale-[1.02]"
             >
               <Share2 className="h-4 w-4" />
             </button>
           </div>
         </div>
       </div>
-      <div className="relative z-10 flex min-w-0 flex-1 flex-col gap-4 p-4 pointer-events-none">
-        <div>
-          <div className="flex items-start justify-between gap-3">
-            <div className="min-w-0">
-              <p className="line-clamp-2 font-display text-h4 text-[var(--color-text-primary)]">{property.title}</p>
-              <p className="mt-1 text-caption text-[var(--color-text-secondary)]">
-                {property.area}, {property.city}, {property.state}
-              </p>
-            </div>
-            <p className="shrink-0 font-display text-h4 font-bold text-[var(--color-text-primary)]">
-              {formatPrice(property.priceKobo)}
-            </p>
-          </div>
+      <div className="pointer-events-none relative z-10 flex min-w-0 flex-1 flex-col gap-4 p-5">
+        <div className="space-y-2">
+          <p className="line-clamp-2 font-display text-h4 font-semibold leading-snug text-[var(--color-text-primary)]">
+            {property.title}
+          </p>
+          <p className="font-display text-[1.15rem] font-medium text-slate-700">
+            {formatPrice(property.priceKobo)}
+          </p>
+          <p className="text-caption text-slate-700">
+            {property.area}, {property.city}, {property.state}
+          </p>
         </div>
 
-        <div className="flex flex-wrap gap-4 text-sm text-[var(--color-text-secondary)]">
+        <div className="flex flex-wrap gap-4 text-sm font-medium text-slate-700">
           <span className="inline-flex items-center gap-1">
             <Bed className="h-4 w-4" />
             {toLabel(property.bedrooms)} Beds
@@ -166,18 +165,23 @@ export function PropertyCard({ property, showEnquiry = false, variant = "grid", 
           </span>
         </div>
 
-        {showEnquiry ? (
-          <div className="mt-auto flex gap-3">
+        <div className="mt-auto flex items-center justify-between gap-3 border-t border-[var(--color-border)] pt-4">
+          <span className="inline-flex items-center gap-1 text-sm font-semibold text-[var(--color-text-primary)] transition group-hover:translate-x-1">
+            View Details
+            <ArrowRight className="h-4 w-4" />
+          </span>
+
+          {showEnquiry ? (
             <button
               type="button"
               onClick={() => setInquiryOpen(true)}
               aria-label={`Inquire about ${property.title}`}
-              className="pointer-events-auto relative z-20 inline-flex h-10 items-center justify-center rounded-full bg-[var(--color-accent)] px-4 text-small font-semibold text-white transition hover:bg-[var(--color-accent-hover)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--color-accent)]"
+              className="pointer-events-auto relative z-20 inline-flex h-10 items-center justify-center rounded-full border border-[var(--color-border)] bg-transparent px-4 text-small font-semibold text-[var(--color-text-primary)] transition hover:border-[var(--color-text-primary)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--color-accent)]"
             >
               Enquire
             </button>
-          </div>
-        ) : null}
+          ) : null}
+        </div>
       </div>
       {showEnquiry ? (
         <Suspense fallback={null}>

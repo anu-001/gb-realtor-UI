@@ -57,7 +57,8 @@ describe("HomePage", () => {
     expect(await screen.findByRole("heading", { name: /find the right property, faster\./i })).toBeInTheDocument();
     expect(await screen.findByText("Latest homes")).toBeInTheDocument();
     expect(screen.getByRole("link", { name: /view details for modern family home/i })).toBeInTheDocument();
-    expect(screen.getByRole("link", { name: /request a property/i })).toBeInTheDocument();
+    expect(screen.getByRole("textbox", { name: /search city, title, or feature/i })).toBeInTheDocument();
+    expect(screen.getByRole("button", { name: /advanced filters/i })).toBeInTheDocument();
     expect(screen.getByRole("button", { name: /view results/i })).toBeInTheDocument();
   });
 });
