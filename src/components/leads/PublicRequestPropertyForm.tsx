@@ -7,18 +7,23 @@ import { ArrowRight, CheckCircle2 } from "lucide-react";
 import { createPublicPropertyRequest } from "@/services/leads.service";
 import { getApiErrorMessage, getFieldErrors, parseApiError } from "@/utils/api-error";
 import { cn } from "@/utils/cn";
+import { formatNumberWithCommas, stripNumberFormatting } from "@/utils/formatters";
 
-function isValidNigerianPhone(value: string): boolean {
-  return /^(?:\+234|0)[789][01]\d{8}$/.test(value.replace(/\s+/g, ""));
+const countryCodes = [
+  { label: "NG", value: "+234" },
+  { label: "GH", value: "+233" },
+  { label: "UK", value: "+44" },
+  { label: "US", value: "+1" },
+];
+
+function isValidPhone(value: string): boolean {
+  return /^\+?[1-9]\d{7,14}$/.test(value.replace(/[\s-]/g, ""));
 }
 
 const publicRequestSchema = z.object({
   fullName: z.string().trim().min(1, "Full name is required"),
-  phoneNumber: z
-    .string()
-    .trim()
-    .min(1, "Phone number is required")
-    .refine(isValidNigerianPhone, "Enter a valid Nigerian phone number"),
+  countryCode: z.string().trim().min(1),
+  phoneNumber: z.string().trim().min(1, "Phone number is required"),
   email: z.string().trim().optional().refine((value) => !value || z.string().email().safeParse(value).success, "Enter a valid email address"),
   preferredLocation: z.string().trim().optional(),
   budgetKobo: z
@@ -27,8 +32,7 @@ const publicRequestSchema = z.object({
     .optional()
     .transform((value) => {
       if (!value) return undefined;
-      const digits = value.replace(/[^\d]/g, "");
-      return digits.length ? digits : undefined;
+      return stripNumberFormatting(value);
     }),
   propertyInterest: z.string().trim().optional(),
   inquiryNotes: z.string().trim().min(1, "Tell us what you need").max(5000, "Brief must not exceed 5000 characters"),
@@ -96,6 +100,7 @@ export function PublicRequestPropertyForm({
   const formId = useId();
   const fieldIds = {
     fullName: `public-request-full-name-${formId}`,
+    countryCode: `public-request-country-code-${formId}`,
     phoneNumber: `public-request-phone-number-${formId}`,
     email: `public-request-email-${formId}`,
     preferredLocation: `public-request-location-${formId}`,
@@ -109,6 +114,7 @@ export function PublicRequestPropertyForm({
     register,
     handleSubmit,
     setError,
+    setValue,
     reset,
     watch,
     formState: { errors, isSubmitting },
@@ -119,6 +125,7 @@ export function PublicRequestPropertyForm({
     shouldFocusError: true,
     defaultValues: {
       fullName: "",
+      countryCode: "+234",
       phoneNumber: "",
       email: "",
       preferredLocation: "",
@@ -132,14 +139,21 @@ export function PublicRequestPropertyForm({
   });
 
   const inquiryNotes = watch("inquiryNotes") ?? "";
+  const budgetValue = watch("budgetKobo") ?? "";
+  const budgetRegistration = register("budgetKobo");
 
   const onSubmit = handleSubmit(async (values) => {
     setSubmitError(null);
 
+    if (!isValidPhone(`${values.countryCode}${values.phoneNumber}`)) {
+      setError("phoneNumber", { type: "validate", message: "Enter a valid phone number" });
+      return;
+    }
+
     try {
       await createPublicPropertyRequest({
         fullName: values.fullName.trim(),
-        phoneNumber: values.phoneNumber.replace(/\s+/g, ""),
+        phoneNumber: `${values.countryCode}${values.phoneNumber}`.replace(/[\s-]/g, ""),
         ...(values.email?.trim() ? { email: values.email.trim() } : {}),
         ...(values.preferredLocation?.trim() ? { preferredLocation: values.preferredLocation.trim() } : {}),
         ...(values.budgetKobo ? { budgetKobo: values.budgetKobo } : {}),
@@ -199,6 +213,7 @@ export function PublicRequestPropertyForm({
                   setSubmittedName(null);
                   reset({
                     fullName: "",
+                    countryCode: "+234",
                     phoneNumber: "",
                     email: "",
                     preferredLocation: "",
@@ -238,7 +253,7 @@ export function PublicRequestPropertyForm({
                     id={fieldIds.fullName}
                     autoComplete="name"
                     placeholder="Jane Doe"
-                    className="ui-field"
+                    className="ui-field placeholder:text-gray-500 focus-visible:ring-2 focus-visible:ring-[var(--color-accent)]"
                     aria-invalid={Boolean(errors.fullName)}
                     aria-describedby={errors.fullName ? `${fieldIds.fullName}-error` : undefined}
                     {...register("fullName")}
@@ -246,16 +261,30 @@ export function PublicRequestPropertyForm({
                 </FormField>
 
                 <FormField label="Phone number" htmlFor={fieldIds.phoneNumber} error={errors.phoneNumber?.message}>
-                  <input
-                    id={fieldIds.phoneNumber}
-                    autoComplete="tel"
-                    inputMode="tel"
-                    placeholder="+2348012345678"
-                    className="ui-field"
-                    aria-invalid={Boolean(errors.phoneNumber)}
-                    aria-describedby={errors.phoneNumber ? `${fieldIds.phoneNumber}-error` : undefined}
-                    {...register("phoneNumber")}
-                  />
+                  <div className="flex min-h-12 overflow-hidden rounded-input border border-[var(--color-border)] bg-[var(--color-surface)] transition focus-within:border-[var(--color-accent)] focus-within:ring-2 focus-within:ring-[var(--color-accent)]">
+                    <label htmlFor={fieldIds.countryCode} className="sr-only">Country code</label>
+                    <select
+                      id={fieldIds.countryCode}
+                      className="min-h-12 border-r border-[var(--color-border)] bg-transparent px-3 text-sm font-medium text-[var(--color-text-primary)] outline-none"
+                      {...register("countryCode")}
+                    >
+                      {countryCodes.map((country) => (
+                        <option key={country.value} value={country.value}>
+                          {country.label} {country.value}
+                        </option>
+                      ))}
+                    </select>
+                    <input
+                      id={fieldIds.phoneNumber}
+                      autoComplete="tel"
+                      inputMode="tel"
+                      placeholder="801 234 5678"
+                      className="min-h-12 w-full bg-transparent px-4 text-body text-[var(--color-text-primary)] outline-none placeholder:text-gray-500"
+                      aria-invalid={Boolean(errors.phoneNumber)}
+                      aria-describedby={errors.phoneNumber ? `${fieldIds.phoneNumber}-error` : undefined}
+                      {...register("phoneNumber")}
+                    />
+                  </div>
                 </FormField>
               </div>
 
@@ -266,7 +295,7 @@ export function PublicRequestPropertyForm({
                     type="email"
                     autoComplete="email"
                     placeholder="jane@example.com"
-                    className="ui-field"
+                    className="ui-field placeholder:text-gray-500 focus-visible:ring-2 focus-visible:ring-[var(--color-accent)]"
                     aria-invalid={Boolean(errors.email)}
                     aria-describedby={errors.email ? `${fieldIds.email}-error` : undefined}
                     {...register("email")}
@@ -278,7 +307,7 @@ export function PublicRequestPropertyForm({
                     id={fieldIds.preferredLocation}
                     autoComplete="off"
                     placeholder="Lekki"
-                    className="ui-field"
+                    className="ui-field placeholder:text-gray-500 focus-visible:ring-2 focus-visible:ring-[var(--color-accent)]"
                     aria-invalid={Boolean(errors.preferredLocation)}
                     aria-describedby={errors.preferredLocation ? `${fieldIds.preferredLocation}-error` : undefined}
                     {...register("preferredLocation")}
@@ -288,17 +317,23 @@ export function PublicRequestPropertyForm({
 
               <div className="grid gap-4 md:grid-cols-2">
                 <FormField label="Budget" htmlFor={fieldIds.budgetKobo} error={errors.budgetKobo?.message} hint="Numbers only.">
-                  <div className="flex h-12 items-center gap-2 rounded-input border border-[var(--color-border)] bg-[var(--color-surface)] px-4 transition focus-within:border-[var(--color-accent)]">
+                  <div className="flex h-12 items-center gap-2 rounded-input border border-[var(--color-border)] bg-[var(--color-surface)] px-4 transition focus-within:border-[var(--color-accent)] focus-within:ring-2 focus-within:ring-[var(--color-accent)]">
                     <span className="text-sm font-medium text-[var(--color-text-secondary)]">₦</span>
                     <input
                       id={fieldIds.budgetKobo}
                       inputMode="numeric"
                       autoComplete="off"
-                      placeholder="150000000"
-                      className="w-full bg-transparent text-body text-[var(--color-text-primary)] outline-none placeholder:text-[var(--color-text-secondary)]"
+                      placeholder="150,000,000"
+                      value={budgetValue}
+                      className="w-full bg-transparent text-body text-[var(--color-text-primary)] outline-none placeholder:text-gray-500"
                       aria-invalid={Boolean(errors.budgetKobo)}
                       aria-describedby={errors.budgetKobo ? `${fieldIds.budgetKobo}-error` : undefined}
-                      {...register("budgetKobo")}
+                      name={budgetRegistration.name}
+                      ref={budgetRegistration.ref}
+                      onBlur={budgetRegistration.onBlur}
+                      onChange={(event) => {
+                        setValue("budgetKobo", formatNumberWithCommas(event.target.value), { shouldDirty: true, shouldValidate: false });
+                      }}
                     />
                   </div>
                 </FormField>
@@ -308,7 +343,7 @@ export function PublicRequestPropertyForm({
                     id={fieldIds.propertyInterest}
                     autoComplete="off"
                     placeholder="3-bedroom apartment"
-                    className="ui-field"
+                    className="ui-field placeholder:text-gray-500 focus-visible:ring-2 focus-visible:ring-[var(--color-accent)]"
                     aria-invalid={Boolean(errors.propertyInterest)}
                     aria-describedby={errors.propertyInterest ? `${fieldIds.propertyInterest}-error` : undefined}
                     {...register("propertyInterest")}
@@ -322,7 +357,7 @@ export function PublicRequestPropertyForm({
                   rows={8}
                   maxLength={5000}
                   placeholder="Tell us what you need, e.g. 3-bedroom apartment in Lekki, gated estate, budget under 150m."
-                  className="min-h-[220px] w-full resize-y rounded-input border border-[var(--color-border)] bg-[var(--color-surface)] px-4 py-3 text-body leading-7 text-[var(--color-text-primary)] outline-none transition focus-visible:border-[var(--color-accent)]"
+                  className="min-h-[220px] w-full resize-y rounded-input border border-[var(--color-border)] bg-[var(--color-surface)] px-4 py-3 text-body leading-7 text-[var(--color-text-primary)] outline-none transition placeholder:text-gray-500 focus-visible:border-[var(--color-accent)] focus-visible:ring-2 focus-visible:ring-[var(--color-accent)]"
                   aria-invalid={Boolean(errors.inquiryNotes)}
                   aria-describedby={errors.inquiryNotes ? `${fieldIds.inquiryNotes}-error` : `${fieldIds.inquiryNotes}-counter`}
                   {...register("inquiryNotes")}

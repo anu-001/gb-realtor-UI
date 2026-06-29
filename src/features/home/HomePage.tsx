@@ -106,6 +106,7 @@ export default function HomePage() {
     debouncedFilters.maxPrice,
     debouncedFilters.beds,
   ].join("|");
+  const hasActiveFilters = Object.values(filters).some((value) => value.trim().length > 0);
 
   const updateFilters = (next: Partial<HeroFilters>) => {
     setFilters((current) => ({ ...current, ...next }));
@@ -214,7 +215,7 @@ export default function HomePage() {
                       type="button"
                       onClick={() => updateFilters({ listingType: item.value as HeroFilters["listingType"] })}
                       className={cn(
-                        "min-w-24 px-5 transition",
+                        "min-w-24 px-5 transition focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white/80",
                         filters.listingType === item.value
                           ? "bg-white text-slate-950"
                           : "text-white/88 hover:bg-white/12 hover:text-white",
@@ -319,13 +320,15 @@ export default function HomePage() {
                 <p className="text-small text-white/76" aria-live="polite">
                   {listingsQuery.isLoading ? "Loading listings..." : `${totalListings} properties available`}
                 </p>
-                <button
-                  type="button"
-                  onClick={resetFilters}
-                  className="text-small font-medium text-white/80 underline-offset-4 transition hover:text-white hover:underline focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white/80"
-                >
-                  Clear filters
-                </button>
+                {hasActiveFilters ? (
+                  <button
+                    type="button"
+                    onClick={resetFilters}
+                    className="text-small font-medium text-white/80 underline-offset-4 transition hover:text-white hover:underline focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white/80"
+                  >
+                    Clear filters
+                  </button>
+                ) : null}
                 <button
                   type="button"
                   onClick={() => scrollTo("listings")}

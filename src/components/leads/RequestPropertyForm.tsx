@@ -7,6 +7,7 @@ import { ArrowRight, CheckCircle2, MapPin } from "lucide-react";
 import { createPublicLead } from "@/services/leads.service";
 import { getApiErrorMessage, getFieldErrors, parseApiError } from "@/utils/api-error";
 import { cn } from "@/utils/cn";
+import { formatNumberWithCommas, stripNumberFormatting } from "@/utils/formatters";
 
 const citySuggestions = [
   "Lagos",
@@ -26,36 +27,54 @@ const citySuggestions = [
   "Calabar",
 ];
 
-function isValidNigerianPhone(value: string): boolean {
-  return /^(?:\+234|0)[789][01]\d{8}$/.test(value.replace(/\s+/g, ""));
+const countryCodes = [
+  { label: "NG", value: "+234" },
+  { label: "GH", value: "+233" },
+  { label: "UK", value: "+44" },
+  { label: "US", value: "+1" },
+];
+
+function isValidPhone(value: string): boolean {
+  return /^\+?[1-9]\d{7,14}$/.test(value.replace(/[\s-]/g, ""));
 }
 
-const requestPropertySchema = z.object({
-  fullName: z.string().trim().min(1, "Full name is required"),
-  phoneNumber: z
-    .string()
-    .trim()
-    .min(1, "Phone number is required")
-    .refine(isValidNigerianPhone, "Enter a valid Nigerian phone number"),
-  email: z.string().trim().min(1, "Email address is required").email("Enter a valid email address"),
-  preferredLocation: z.string().trim().min(1, "Preferred location is required"),
-  budgetKobo: z
-    .string()
-    .optional()
-    .transform((value) => {
-      const digits = value?.replace(/[^\d]/g, "");
-      return digits && digits.length > 0 ? digits : undefined;
-    }),
-  propertyInterest: z.string().trim().min(1, "Property interest is required"),
-  inquiryNotes: z.string().trim().min(1, "Tell us a little about what you need").max(5000, "Notes must not exceed 5000 characters"),
-  source: z.string().optional(),
-  website: z.string().max(0, "Spam detected").optional(),
-});
+function createRequestPropertySchema(variant: RequestFormVariant) {
+  return z
+    .object({
+      fullName: z.string().trim().min(1, "Full name is required"),
+      countryCode: z.string().trim().min(1),
+      phoneNumber: z.string().trim().min(1, "Phone number is required"),
+      email: z.string().trim().min(1, "Email address is required").email("Enter a valid email address"),
+      preferredLocation: z.string().trim().optional(),
+      budgetKobo: z.string().optional().transform(stripNumberFormatting),
+      propertyInterest: z.string().trim().optional(),
+      inquiryNotes: z.string().trim().min(1, "Tell us a little about what you need").max(5000, "Notes must not exceed 5000 characters"),
+      source: z.string().optional(),
+      website: z.string().max(0, "Spam detected").optional(),
+    })
+    .superRefine((value, context) => {
+      if (!isValidPhone(`${value.countryCode}${value.phoneNumber}`)) {
+        context.addIssue({ code: "custom", path: ["phoneNumber"], message: "Enter a valid phone number" });
+      }
 
-type RequestPropertyFormInput = z.input<typeof requestPropertySchema>;
-type RequestPropertyFormValues = z.output<typeof requestPropertySchema>;
+      if (variant === "generic") {
+        if (!value.preferredLocation?.trim()) {
+          context.addIssue({ code: "custom", path: ["preferredLocation"], message: "Preferred location is required" });
+        }
+        if (!value.propertyInterest?.trim()) {
+          context.addIssue({ code: "custom", path: ["propertyInterest"], message: "Property interest is required" });
+        }
+      }
+    });
+}
+
+type RequestFormVariant = "generic" | "property_specific";
+type RequestPropertySchema = ReturnType<typeof createRequestPropertySchema>;
+type RequestPropertyFormInput = z.input<RequestPropertySchema>;
+type RequestPropertyFormValues = z.output<RequestPropertySchema>;
 
 type RequestPropertyFormProps = {
+  variant?: RequestFormVariant;
   propertyId?: string;
   propertyTitle?: string;
   preferredLocation?: string;
@@ -104,6 +123,7 @@ function FormField({
 }
 
 export function RequestPropertyForm({
+  variant = "generic",
   propertyId,
   propertyTitle,
   preferredLocation,
@@ -120,6 +140,7 @@ export function RequestPropertyForm({
   const fieldIds = useMemo(
     () => ({
       fullName: `request-full-name-${noteEditorId}`,
+      countryCode: `request-country-code-${noteEditorId}`,
       phoneNumber: `request-phone-number-${noteEditorId}`,
       email: `request-email-${noteEditorId}`,
       preferredLocation: `request-location-${noteEditorId}`,
@@ -130,6 +151,8 @@ export function RequestPropertyForm({
     }),
     [noteEditorId],
   );
+  const schema = useMemo(() => createRequestPropertySchema(variant), [variant]);
+  const isPropertySpecific = variant === "property_specific";
 
   const {
     register,
@@ -141,12 +164,13 @@ export function RequestPropertyForm({
     watch,
     formState: { errors, isSubmitting },
   } = useForm<RequestPropertyFormInput, unknown, RequestPropertyFormValues>({
-    resolver: zodResolver(requestPropertySchema),
+    resolver: zodResolver(schema),
     mode: "onSubmit",
     reValidateMode: "onChange",
     shouldFocusError: false,
     defaultValues: {
       fullName: "",
+      countryCode: "+234",
       phoneNumber: "",
       email: "",
       preferredLocation: preferredLocation ?? "",
@@ -159,6 +183,8 @@ export function RequestPropertyForm({
   });
 
   const inquiryNotes = watch("inquiryNotes") ?? "";
+  const budgetValue = watch("budgetKobo") ?? "";
+  const budgetRegistration = register("budgetKobo");
 
   useEffect(() => {
     if (!preferredLocation) {
@@ -189,11 +215,11 @@ export function RequestPropertyForm({
         await createPublicLead({
           ...(propertyId ? { propertyId } : {}),
           fullName: values.fullName.trim(),
-          phoneNumber: values.phoneNumber.replace(/\s+/g, ""),
+          phoneNumber: `${values.countryCode}${values.phoneNumber}`.replace(/[\s-]/g, ""),
           email: values.email.trim(),
-          preferredLocation: values.preferredLocation.trim(),
-          budgetKobo: values.budgetKobo,
-          propertyInterest: values.propertyInterest.trim(),
+          ...(isPropertySpecific ? {} : { preferredLocation: values.preferredLocation?.trim() ?? "" }),
+          ...(isPropertySpecific || !values.budgetKobo ? {} : { budgetKobo: values.budgetKobo }),
+          ...(isPropertySpecific ? {} : { propertyInterest: values.propertyInterest?.trim() ?? "" }),
           inquiryNotes: values.inquiryNotes.trim(),
           message: normalizedNotes.slice(0, 500) || undefined,
           source: values.source?.trim() || source,
@@ -223,9 +249,7 @@ export function RequestPropertyForm({
         "fullName",
         "phoneNumber",
         "email",
-        "preferredLocation",
-        "budgetKobo",
-        "propertyInterest",
+        ...(isPropertySpecific ? [] : (["preferredLocation", "budgetKobo", "propertyInterest"] as const)),
         "inquiryNotes",
       ];
       focusFirstError(orderedFields.filter((field) => Boolean(fieldErrors[field])));
@@ -300,6 +324,7 @@ export function RequestPropertyForm({
                       setSubmittedName(null);
                       reset({
                         fullName: "",
+                        countryCode: "+234",
                         phoneNumber: "",
                         email: "",
                         preferredLocation: preferredLocation ?? "",
@@ -339,28 +364,38 @@ export function RequestPropertyForm({
                       id={fieldIds.fullName}
                       autoComplete="name"
                       placeholder="Jane Doe"
-                      className="ui-field"
+                      className="ui-field placeholder:text-gray-500 focus-visible:ring-2 focus-visible:ring-[var(--color-accent)]"
                       aria-invalid={Boolean(errors.fullName)}
                       aria-describedby={errors.fullName ? `${fieldIds.fullName}-error` : undefined}
                       {...register("fullName")}
                     />
                   </FormField>
 
-                  <FormField
-                    label="Phone number"
-                    htmlFor={fieldIds.phoneNumber}
-                    error={errors.phoneNumber?.message}
-                  >
-                    <input
-                      id={fieldIds.phoneNumber}
-                      autoComplete="tel"
-                      inputMode="tel"
-                      placeholder="+2348012345678"
-                      className="ui-field"
-                      aria-invalid={Boolean(errors.phoneNumber)}
-                      aria-describedby={errors.phoneNumber ? `${fieldIds.phoneNumber}-error` : undefined}
-                      {...register("phoneNumber")}
-                    />
+                  <FormField label="Phone number" htmlFor={fieldIds.phoneNumber} error={errors.phoneNumber?.message}>
+                    <div className="flex min-h-12 overflow-hidden rounded-input border border-[var(--color-border)] bg-[var(--color-surface)] transition focus-within:border-[var(--color-accent)] focus-within:ring-2 focus-within:ring-[var(--color-accent)]">
+                      <label htmlFor={fieldIds.countryCode} className="sr-only">Country code</label>
+                      <select
+                        id={fieldIds.countryCode}
+                        className="min-h-12 border-r border-[var(--color-border)] bg-transparent px-3 text-sm font-medium text-[var(--color-text-primary)] outline-none"
+                        {...register("countryCode")}
+                      >
+                        {countryCodes.map((country) => (
+                          <option key={country.value} value={country.value}>
+                            {country.label} {country.value}
+                          </option>
+                        ))}
+                      </select>
+                      <input
+                        id={fieldIds.phoneNumber}
+                        autoComplete="tel"
+                        inputMode="tel"
+                        placeholder="801 234 5678"
+                        className="min-h-12 w-full bg-transparent px-4 text-body text-[var(--color-text-primary)] outline-none placeholder:text-gray-500"
+                        aria-invalid={Boolean(errors.phoneNumber)}
+                        aria-describedby={errors.phoneNumber ? `${fieldIds.phoneNumber}-error` : undefined}
+                        {...register("phoneNumber")}
+                      />
+                    </div>
                   </FormField>
                 </div>
 
@@ -371,64 +406,65 @@ export function RequestPropertyForm({
                       type="email"
                       autoComplete="email"
                       placeholder="jane@example.com"
-                      className="ui-field"
+                      className="ui-field placeholder:text-gray-500 focus-visible:ring-2 focus-visible:ring-[var(--color-accent)]"
                       aria-invalid={Boolean(errors.email)}
                       aria-describedby={errors.email ? `${fieldIds.email}-error` : undefined}
                       {...register("email")}
                     />
                   </FormField>
 
-                  <FormField
-                    label="Preferred location"
-                    htmlFor={fieldIds.preferredLocation}
-                    error={errors.preferredLocation?.message}
-                  >
-                    <div className="flex h-12 items-center gap-2 rounded-input border border-[var(--color-border)] bg-[var(--color-surface)] px-4 transition focus-within:border-[var(--color-accent)]">
-                      <MapPin className="h-4 w-4 text-[var(--color-text-secondary)]" />
-                      <input
-                        id={fieldIds.preferredLocation}
-                        list={`${fieldIds.preferredLocation}-cities`}
-                        autoComplete="off"
-                        className="w-full bg-transparent text-body text-[var(--color-text-primary)] outline-none placeholder:text-[var(--color-text-secondary)]"
-                        placeholder="Lagos"
-                        aria-invalid={Boolean(errors.preferredLocation)}
-                        aria-describedby={errors.preferredLocation ? `${fieldIds.preferredLocation}-error` : undefined}
-                        {...register("preferredLocation")}
-                      />
-                      <datalist id={`${fieldIds.preferredLocation}-cities`}>
-                        {citySuggestions.map((city) => (
-                          <option key={city} value={city} />
-                        ))}
-                      </datalist>
-                    </div>
-                  </FormField>
+                  {!isPropertySpecific ? (
+                    <FormField
+                      label="Preferred location"
+                      htmlFor={fieldIds.preferredLocation}
+                      error={errors.preferredLocation?.message}
+                    >
+                      <div className="flex h-12 items-center gap-2 rounded-input border border-[var(--color-border)] bg-[var(--color-surface)] px-4 transition focus-within:border-[var(--color-accent)] focus-within:ring-2 focus-within:ring-[var(--color-accent)]">
+                        <MapPin className="h-4 w-4 text-[var(--color-text-secondary)]" />
+                        <input
+                          id={fieldIds.preferredLocation}
+                          list={`${fieldIds.preferredLocation}-cities`}
+                          autoComplete="off"
+                          className="w-full bg-transparent text-body text-[var(--color-text-primary)] outline-none placeholder:text-gray-500"
+                          placeholder="Lagos"
+                          aria-invalid={Boolean(errors.preferredLocation)}
+                          aria-describedby={errors.preferredLocation ? `${fieldIds.preferredLocation}-error` : undefined}
+                          {...register("preferredLocation")}
+                        />
+                        <datalist id={`${fieldIds.preferredLocation}-cities`}>
+                          {citySuggestions.map((city) => (
+                            <option key={city} value={city} />
+                          ))}
+                        </datalist>
+                      </div>
+                    </FormField>
+                  ) : null}
                 </div>
 
-                <div className="grid gap-4 md:grid-cols-[minmax(0,0.9fr)_minmax(0,1.1fr)]">
+                {!isPropertySpecific ? (
+                  <div className="grid gap-4 md:grid-cols-[minmax(0,0.9fr)_minmax(0,1.1fr)]">
                   <FormField
                     label="Budget"
                     htmlFor={fieldIds.budgetKobo}
                     error={errors.budgetKobo?.message}
                   >
-                    <div className="flex h-12 items-center gap-2 rounded-input border border-[var(--color-border)] bg-[var(--color-surface)] px-4 transition focus-within:border-[var(--color-accent)]">
+                    <div className="flex h-12 items-center gap-2 rounded-input border border-[var(--color-border)] bg-[var(--color-surface)] px-4 transition focus-within:border-[var(--color-accent)] focus-within:ring-2 focus-within:ring-[var(--color-accent)]">
                       <span className="text-sm font-medium text-[var(--color-text-secondary)]">₦</span>
                       <input
                         id={fieldIds.budgetKobo}
                         inputMode="numeric"
                         autoComplete="off"
-                        placeholder="Optional"
-                        className="w-full bg-transparent text-body text-[var(--color-text-primary)] outline-none placeholder:text-[var(--color-text-secondary)]"
+                        placeholder="150,000,000"
+                        value={budgetValue}
+                        className="w-full bg-transparent text-body text-[var(--color-text-primary)] outline-none placeholder:text-gray-500"
                         aria-invalid={Boolean(errors.budgetKobo)}
                         aria-describedby={errors.budgetKobo ? `${fieldIds.budgetKobo}-error` : undefined}
-                        {...register("budgetKobo", {
-                          setValueAs: (value) => {
-                            if (typeof value !== "string") {
-                              return undefined;
-                            }
-                            const digits = value.replace(/[^\d]/g, "");
-                            return digits.length > 0 ? digits : undefined;
-                          },
-                        })}
+                        name={budgetRegistration.name}
+                        ref={budgetRegistration.ref}
+                        onBlur={budgetRegistration.onBlur}
+                        onChange={(event) => {
+                          setValue("budgetKobo", formatNumberWithCommas(event.target.value), { shouldDirty: true, shouldValidate: false });
+                        }}
                       />
                     </div>
                   </FormField>
@@ -442,13 +478,14 @@ export function RequestPropertyForm({
                       id={fieldIds.propertyInterest}
                       autoComplete="off"
                       placeholder="3-bedroom apartment"
-                      className="ui-field"
+                      className="ui-field placeholder:text-gray-500 focus-visible:ring-2 focus-visible:ring-[var(--color-accent)]"
                       aria-invalid={Boolean(errors.propertyInterest)}
                       aria-describedby={errors.propertyInterest ? `${fieldIds.propertyInterest}-error` : undefined}
                       {...register("propertyInterest")}
                     />
                   </FormField>
-                </div>
+                  </div>
+                ) : null}
 
                 <FormField label="What do you need?" htmlFor={fieldIds.inquiryNotes} error={errors.inquiryNotes?.message}>
                   <textarea
@@ -456,7 +493,7 @@ export function RequestPropertyForm({
                     rows={compact ? 6 : 8}
                     maxLength={5000}
                     placeholder="Example: 3-bedroom apartment in Lekki, gated estate, budget under 150m."
-                    className="min-h-[160px] w-full resize-y rounded-input border border-[var(--color-border)] bg-[var(--color-surface)] px-4 py-3 text-body leading-7 text-[var(--color-text-primary)] outline-none transition focus-visible:border-[var(--color-accent)]"
+                    className="min-h-[160px] w-full resize-y rounded-input border border-[var(--color-border)] bg-[var(--color-surface)] px-4 py-3 text-body leading-7 text-[var(--color-text-primary)] outline-none transition placeholder:text-gray-500 focus-visible:border-[var(--color-accent)] focus-visible:ring-2 focus-visible:ring-[var(--color-accent)]"
                     aria-invalid={Boolean(errors.inquiryNotes)}
                     aria-describedby={errors.inquiryNotes ? `${fieldIds.inquiryNotes}-error` : `${fieldIds.inquiryNotes}-counter`}
                     {...register("inquiryNotes")}

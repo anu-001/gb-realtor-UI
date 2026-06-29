@@ -6,7 +6,7 @@ import { useQueryClient } from "@tanstack/react-query";
 import type { components } from "@/types/api.generated";
 import { StatusBadge } from "./StatusBadge";
 import { cn } from "@/utils/cn";
-import { formatCompactNaira } from "@/utils/formatters";
+import { formatCompactNaira, formatPropertyStatus } from "@/utils/formatters";
 import { getPublicPropertyById } from "@/services/properties.service";
 
 type PropertyCardProps = {
@@ -65,10 +65,9 @@ export function PropertyCard({ property, variant = "grid", className }: Property
 
   return (
     <motion.article
-      whileHover={{ y: -4 }}
       transition={{ duration: 0.2 }}
       className={cn(
-        "group relative isolate cursor-pointer overflow-hidden rounded-card border border-[var(--color-border)] bg-[linear-gradient(180deg,color-mix(in_srgb,var(--color-surface)_97%,white)_0%,var(--color-surface)_100%)] shadow-card transition-transform duration-200 ease-out hover:shadow-card-hover",
+        "group relative isolate cursor-pointer overflow-hidden rounded-card border border-[var(--color-border)] bg-[linear-gradient(180deg,color-mix(in_srgb,var(--color-surface)_97%,white)_0%,var(--color-surface)_100%)] shadow-card transition-transform duration-300 ease-out hover:-translate-y-1 hover:shadow-card-hover",
         variant === "list" && "flex flex-col md:flex-row",
         className,
       )}
@@ -84,7 +83,7 @@ export function PropertyCard({ property, variant = "grid", className }: Property
       </Link>
 
       <div className={cn("block pointer-events-none", variant === "list" ? "md:w-[40%]" : "w-full")}>
-        <div className="group relative z-10 aspect-[4/3] overflow-hidden bg-[var(--color-border)]">
+        <div className="relative z-10 aspect-[4/3] overflow-hidden bg-[var(--color-border)]">
           <img
             src={image?.url ?? "https://images.unsplash.com/photo-1512917774080-9991f1c4c750?auto=format&fit=crop&w=1200&q=80"}
             alt={typeof image?.altText === "string" ? image.altText : property.title}
@@ -93,8 +92,9 @@ export function PropertyCard({ property, variant = "grid", className }: Property
             decoding="async"
             sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
           />
+          <div className="absolute inset-0 bg-black/0 transition-colors duration-300 group-hover:bg-black/15" />
           <div className="absolute left-3 top-3 z-10">
-            <StatusBadge status={property.listingType} />
+            <StatusBadge status={formatPropertyStatus(property.listingType)} />
           </div>
           <div className="absolute right-3 top-3 z-20 flex gap-2">
             <button
@@ -156,9 +156,9 @@ export function PropertyCard({ property, variant = "grid", className }: Property
         </div>
 
         <div className="mt-auto flex items-center justify-between gap-3 pt-2">
-          <span className="inline-flex items-center gap-1 text-sm font-semibold text-[var(--color-text-primary)] transition group-hover:translate-x-1">
+          <span className="inline-flex items-center gap-1 text-sm font-semibold text-[var(--color-text-primary)]">
             View Details
-            <ArrowRight className="h-4 w-4" />
+            <ArrowRight className="h-4 w-4 transition-transform duration-300 group-hover:translate-x-1" />
           </span>
         </div>
       </div>

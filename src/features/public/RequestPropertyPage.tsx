@@ -17,7 +17,9 @@ export default function RequestPropertyPage() {
         </p>
       </div>
 
-      <PublicRequestPropertyForm />
+      <div className="w-full max-w-2xl mx-auto">
+        <PublicRequestPropertyForm />
+      </div>
     </motion.div>
   );
 }
